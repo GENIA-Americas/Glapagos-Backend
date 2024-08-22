@@ -1,0 +1,3 @@
+echo Build started on `date`
+echo Building the Docker image...
+docker build -t {{app_name}}-backend-api:latest . -f compose/production/django/Dockerfile
