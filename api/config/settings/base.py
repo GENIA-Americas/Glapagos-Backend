@@ -75,8 +75,8 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'api.users.apps.UsersAppConfig',
     'api.authentication.apps.AuthenticationAppConfig',
-    'api.cms.apps.CMSAppConfig',
     'api.events.apps.EventsAppConfig',
+    'api.datasets.apps.DatasetsConfig'
 ]
 
 INSTALLED_APPS = THIRD_PARTY_APPS + DJANGO_APPS + LOCAL_APPS

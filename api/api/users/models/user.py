@@ -61,7 +61,11 @@ class User(BaseModel, AbstractUser):
 
     email = models.EmailField(unique=True)
 
-    dob = models.DateField(null=True)
+    organization = models.CharField(max_length=255, null=True)
+
+    country = models.CharField(max_length=255, null=True)
+
+    country_code = models.CharField(max_length=10, null=True)
 
     phone_number = models.CharField(max_length=16, null=True)
 
@@ -69,7 +73,7 @@ class User(BaseModel, AbstractUser):
         choices=SetUpStatus.choices, default=SetUpStatus.SIGN_UP_VALIDATION)
 
     password_status = models.IntegerField(
-        choices=PasswordStatus.choices, default=PasswordStatus.CHANGE)
+        choices=PasswordStatus.choices, default=PasswordStatus.ACTIVE)
 
     preferred_language_code = models.CharField(max_length=16, default='en_US')
 

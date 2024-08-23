@@ -25,6 +25,7 @@ urlpatterns = [
                                              cache_timeout=0), name='schema-swagger-ui'),
     re_path(settings.API_URI + '/', include('api.users.urls')),
     re_path(settings.API_URI + '/', include('api.events.urls')),
+    re_path(settings.API_URI + '/', include('api.datasets.urls')),
     re_path(settings.API_URI + '/',
             include('api.authentication.urls')),
 
