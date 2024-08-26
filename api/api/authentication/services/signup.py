@@ -39,16 +39,15 @@ def signup_request_code(
     resend,
     channel,
     user_id,
+    **kwargs,
 ):
     if not resend:
-        user_id = create_user(email=email)
+        password = kwargs.pop('password')
+        user_id = create_user(email=email, username=email, password=password, **kwargs)
     else:
         destroy_token_by(email=email)
-    create_token(user_id=user_id, channel=channel)
-    return {
-        'channel': channel,
-        'resend': resend,
-    }
+    # create_token(user_id=user_id, channel=channel)
+    return user_id
 
 
 def signup_validated(

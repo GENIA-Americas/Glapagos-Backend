@@ -63,6 +63,8 @@ class User(BaseModel, AbstractUser):
 
     organization = models.CharField(max_length=255, null=True)
 
+    industry = models.CharField(max_length=255, null=True)
+
     country = models.CharField(max_length=255, null=True)
 
     country_code = models.CharField(max_length=10, null=True)

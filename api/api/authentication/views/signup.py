@@ -6,8 +6,9 @@ from rest_framework.response import Response
 
 # models
 from api.users.models import User
+from api.users.serializers import UserSerializer
 from api.authentication.models import ExternalToken
-from api.authentication.enums import ExternalTokenType
+from api.authentication.enums import ExternalTokenType, ExternalTokenChannel
 
 # Serializers
 from api.authentication.serializers import *
@@ -23,13 +24,21 @@ from django.conf import settings
 
 class SignupViewSet(GenericViewSet):
 
-    @action(detail=False, methods=['post'], serializer_class=SignUpRequestCodeSerializer, permission_classes=[
+    @action(detail=False, methods=['post'], serializer_class=SignUpEmailSerializer, permission_classes=[
         AllowAny
     ], name='sign-up', url_path='sign-up')
-    @validate_data()
+    @validate_data(out_serializer_class=UserSerializer)
     def sign_up(self, request, validated_data):
-        result = signup.signup_request_code(**validated_data)
-        return dict(data=result)
+        email = validated_data.pop("email")
+        user_id = signup.signup_request_code(
+            email=email,
+            resend=False,
+            channel=ExternalTokenChannel.EMAIL,
+            user_id=None,
+            **validated_data
+        )
+        user = User.objects.filter(pk=user_id).first()
+        return dict(data=user)
 
     @action(detail=False, methods=['post'], serializer_class=SignUpValidateCodeSerializer, permission_classes=[
         AllowAny

@@ -166,3 +166,37 @@ class ForgotPasswordValidateCodeSerializer(serializers.Serializer):
                 {"token": "Token is invalid or has expired"})
 
         return attrs
+
+class SignUpEmailSerializer(serializers.Serializer):
+    """
+    Sign up form serializer
+    """
+
+    email = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+    repeat = serializers.CharField(write_only=True)
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    country = serializers.CharField()
+    country_code = serializers.CharField()
+    phone_number = serializers.CharField()
+    organization = serializers.CharField()
+    industry = serializers.CharField()
+
+
+    def validate(self, attrs):
+        """ Validate sign up form"""
+        attrs = super().validate(attrs)
+        email = attrs['email']
+        password = attrs['password']
+        repeat = attrs['repeat']
+
+        if password != repeat:
+            raise serializers.ValidationError({"detail": "passwords doesn't match."})
+
+        attrs.pop('repeat')
+
+        user_queryset = User.objects.filter(email=email)
+        if user_queryset:
+            raise serializers.ValidationError({"detail": "user already exists."})
+        return attrs
