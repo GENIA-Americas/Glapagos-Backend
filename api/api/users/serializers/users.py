@@ -23,9 +23,8 @@ class UserSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {
             'password': {'write_only': True},
-            'phone_number': {'required': False},
             'organization': {'required': False},
-            'industry': {'required': False},
+            'country': {'required': False},
         }
 
     def update(self, instance, validated_data):

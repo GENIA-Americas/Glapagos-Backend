@@ -10,6 +10,7 @@ from api.utils.models import BaseModel
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.urls import reverse
 
 
 class ExternalToken(BaseModel):
@@ -43,13 +44,12 @@ class ExternalToken(BaseModel):
 
     def get_message_details(self):
         if self.channel_verbose.lower() not in settings.AUTHENTICATION_EXTERNAL_TOKEN_MESSAGE_FORMATS:
-            message = self.token
+            message = self.activation_url
         else:
             format_values = {
-                "app_name": settings.APP_NAME, "token": self.token}
+                "app_name": settings.APP_NAME, "activation_url": self.activation_url}
             if self.channel_verbose.lower() == 'email':
                 format_values["email"] = self.user.email
-
             message = settings.AUTHENTICATION_EXTERNAL_TOKEN_MESSAGE_FORMATS[self.channel_verbose.lower()][
                 self.type_verbose.lower()].format(**format_values)
 
@@ -90,6 +90,10 @@ class ExternalToken(BaseModel):
     @property
     def is_expired(self):
         return self.expires_at < now()
+
+    @property
+    def activation_url(self):
+        return f"{settings.SITE_SCHEME}://{settings.SITE_DOMAIN}{reverse('auth-sign-up-validate', kwargs={'user_id': self.user.id, 'token': self.token})}"
 
 
 @receiver(post_save, sender=ExternalToken)

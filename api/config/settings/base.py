@@ -8,6 +8,10 @@ APP_NAME = '{{app_name}}'
 
 API_URI = 'api/v1'
 
+SITE_SCHEME = os.getenv('SITE_SCHEME')
+SITE_DOMAIN = os.getenv('SITE_DOMAIN')
+FRONTEND_LOGIN_URL = os.getenv('FRONTEND_LOGIN_URL')
+
 ROOT_DIR = environ.Path(__file__) - 3
 APPS_DIR = ROOT_DIR.path('api')
 
@@ -244,7 +248,7 @@ AUTHENTICATION_EXTERNAL_MESSAGE_PROVIDERS = [
     {'name': 'email', "has_title": True}
 ]
 AUTHENTICATION_EXTERNAL_MESSAGE_FORMAT_DEFAULT = os.getenv(
-    'AUTHENTICATION_EXTERNAL_MESSAGE_FORMAT_CONSOLE', 'This is your token for {app_name}: {token}')
+    'AUTHENTICATION_EXTERNAL_MESSAGE_FORMAT_CONSOLE', 'Activation URL: {activation_url}')
 AUTHENTICATION_EXTERNAL_TOKEN_MESSAGE_FORMATS = {
     provider["name"]: {
         'validate_account': os.getenv(f'AUTHENTICATION_EXTERNAL_MESSAGE_FORMAT_{provider["name"].upper()}_VALIDATE_ACCOUNT', AUTHENTICATION_EXTERNAL_MESSAGE_FORMAT_DEFAULT),

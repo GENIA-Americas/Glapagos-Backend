@@ -46,7 +46,7 @@ def signup_request_code(
         user_id = create_user(email=email, username=email, password=password, **kwargs)
     else:
         destroy_token_by(email=email)
-    # create_token(user_id=user_id, channel=channel)
+    create_token(user_id=user_id, channel=channel)
     return user_id
 
 

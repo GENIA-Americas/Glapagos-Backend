@@ -1,5 +1,7 @@
 """Signup serializers"""
 
+from django.utils.translation import gettext_lazy as _
+
 # Rest framework
 from rest_framework import serializers
 
@@ -43,26 +45,22 @@ class SignUpRequestCodeSerializer(serializers.Serializer):
             attrs['resend'] = False
         return attrs
 
-
 class SignUpValidateCodeSerializer(serializers.Serializer):
     """
     Sign up validate code serializer
     """
-    email = serializers.CharField(required=True, write_only=True)
+    user_id = serializers.CharField(required=True, write_only=True)
     token = serializers.CharField(required=True, write_only=True)
 
-    # TODO: key from settings
-    ACCESS = serializers.CharField(read_only=True)
-    REFRESH = serializers.CharField(read_only=True)
 
     def validate(self, attrs):
         """ Validate sign up form"""
         attrs = super().validate(attrs)
-        email = attrs['email']
+        user_id = attrs['user_id']
         token = attrs.pop('token')
 
         user_queryset = User.objects.filter(
-            email=email, setup_status=SetUpStatus.SIGN_UP_VALIDATION)
+            pk=user_id, setup_status=SetUpStatus.SIGN_UP_VALIDATION)
         if not user_queryset:
             raise serializers.ValidationError(
                 {"detail": "user is invalid"})
@@ -75,7 +73,7 @@ class SignUpValidateCodeSerializer(serializers.Serializer):
         attrs['user'] = user
 
         token_queryset = ExternalToken.get_valid_tokens(
-            field=dict(user__email=email), token_type=ExternalTokenType.VALIDATE_ACCOUNT)
+            field=dict(user__id=user_id), token_type=ExternalTokenType.VALIDATE_ACCOUNT)
         if not token_queryset:
             raise serializers.ValidationError(
                 {"token": "Token is invalid or has expired"})
@@ -172,14 +170,16 @@ class SignUpEmailSerializer(serializers.Serializer):
     Sign up form serializer
     """
 
-    email = serializers.CharField()
+    email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
     repeat = serializers.CharField(write_only=True)
     first_name = serializers.CharField()
     last_name = serializers.CharField()
     country = serializers.CharField()
     country_code = serializers.CharField()
-    phone_number = serializers.CharField()
+    phone_number = serializers.RegexField(regex=r'^\d+$', max_length=16, error_messages={
+        'invalid': _('The phone number must contain only digits.')
+    })
     organization = serializers.CharField()
     industry = serializers.CharField()
 

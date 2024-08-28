@@ -19,7 +19,7 @@ class CustomUserAdmin(UserAdmin):
         (None, {'fields': ('username', 'password')}),
         (_('Personal info'), {'fields': (
             'first_name', 'last_name', 'email', 'organization', 'industry',
-            'country_code', 'country', 'phone_number')}),
+            'country_code', 'country', 'phone_number', 'setup_status', 'password_status')}),
         (_('Roles'), {'fields': ('role',)}),
         (_('Deleted'), {'fields': ('deleted',)}),
         (_('Permissions'), {
