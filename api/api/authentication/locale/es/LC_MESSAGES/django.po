@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-02 22:32+0000\n"
+"POT-Creation-Date: 2024-09-02 23:19+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -46,11 +46,11 @@ msgstr "Recuperar cuenta"
 msgid "No active account found with the given credentials"
 msgstr "No se encontraron cuentas activas con las credenciales enviadas"
 
-#: api/authentication/serializers/authentication.py:28
+#: api/authentication/serializers/authentication.py:23
 msgid "you can not log in"
 msgstr "No puede iniciar sesión"
 
-#: api/authentication/serializers/authentication.py:49
+#: api/authentication/serializers/authentication.py:44
 #, fuzzy
 #| msgid "Token is invalid or has expired"
 msgid "invalid refresh token or has expired"
