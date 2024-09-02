@@ -53,3 +53,11 @@ django-cryptography==1.1
 
 # interface
 django-admin-interface
+
+# Google Cloud
+google-cloud-storage
+google-cloud-bigquery
+google-cloud-firestore
+google-cloud-datacatalog
+google-cloud-dataplex
+google-cloud-dataproc

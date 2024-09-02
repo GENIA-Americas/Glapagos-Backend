@@ -1,6 +1,6 @@
 from django.db import models
 
-class DatasetType(models.TextChoices):
+class FileType(models.TextChoices):
     CSV = 'csv', 'CSV'
     JSON = 'json', 'JSON'
     TXT = 'txt', 'TXT'
