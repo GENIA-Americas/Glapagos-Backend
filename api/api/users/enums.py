@@ -16,12 +16,13 @@ class PasswordStatus(models.IntegerChoices):
 class Industry(models.TextChoices):
     AUTOMOTIVE = 'Automotive', _('Automotive')
     TECHNOLOGY = 'Technology', _('Technology')
+    ENERGY = 'Energy', _('Energy')
     CHEMICAL = 'Chemical', _('Chemical')
     FOOD = 'Food', _('Food')
-    PHARMACEUTICAL= 'Pharmaceutical', _('Pharmaceutical')
+    PHARMACEUTICAL = 'Pharmaceutical', _('Pharmaceutical')
     TEXTILE_AND_FASHION = 'Textile and Fashion', _('Textile and Fashion')
     CONSTRUCTION = 'Construction', _('Construction')
-    FINANCIAL_SERVICES = 'Financial Services"', _('Financial Services"')
+    FINANCIAL_SERVICES = 'Financial Services', _('Financial Services')
     TOURISM_AND_HOSPITALITY = 'Tourism and Hospitality', _('Tourism and Hospitality')
     ENTERTAINMENT = 'Entertainment', _('Entertainment')
     MINING = 'Mining', _('Mining')
@@ -65,5 +66,5 @@ class Country(models.TextChoices):
     SURINAM = 'Surinam', _('Surinam')
     TRINIDAD_Y_TOBAGO = 'Trinidad y Tobago', _('Trinidad y Tobago')
     URUGUAY = 'Uruguay', _('Uruguay')
-    VENEZUELA = 'Venezuela', _('VENEZUELA')
+    VENEZUELA = 'Venezuela', _('Venezuela')
 

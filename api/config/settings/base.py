@@ -22,11 +22,15 @@ DEBUG = env.bool('DJANGO_DEBUG', False)
 
 # Language and timezone
 TIME_ZONE = 'America/New_York'
-LANGUAGE_CODE = 'en-en'
+LANGUAGE_CODE = 'es'
 SITE_ID = 1
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
+
+LOCALE_PATHS = [
+    f"{ROOT_DIR}/locale",
+]
 
 # DATABASES
 DATABASES = {
@@ -116,6 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Middlewares
 MIDDLEWARE = [
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -123,7 +128,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware'
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 # Static files
@@ -213,7 +218,7 @@ LANGUAGES = (
     ('es', gettext('Spanish')),
     ('en', gettext('English')),
 )
-MODELTRANSLATION_DEFAULT_LANGUAGE = 'en'
+MODELTRANSLATION_DEFAULT_LANGUAGE = 'es'
 
 # MODELTRANSLATION_TRANSLATION_FILES = (
 #    'cms.translation',
