@@ -175,12 +175,14 @@ class SignUpEmailSerializer(serializers.Serializer):
     repeat = serializers.CharField(write_only=True)
     first_name = serializers.CharField()
     last_name = serializers.CharField()
-    country = serializers.CharField()
-    country_code = serializers.CharField()
+    country = serializers.CharField(required=False)
+    country_code = serializers.RegexField(regex=r'^\+?[0-9]{1,3}([- ]?[0-9]{1,3})?$', max_length=10, error_messages={
+        'invalid': _('Invalid country code.')
+    })
     phone_number = serializers.RegexField(regex=r'^\d+$', max_length=16, error_messages={
         'invalid': _('The phone number must contain only digits.')
     })
-    organization = serializers.CharField()
+    organization = serializers.CharField(required=False)
     industry = serializers.CharField()
 
 
