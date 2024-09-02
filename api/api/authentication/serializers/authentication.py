@@ -5,13 +5,22 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, Toke
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework import serializers
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        data = super().validate(attrs)
+        try:
+            data = super().validate(attrs)
+        except serializers.ValidationError as e:
+            original_error = str(e.detail)
+
+            if "No active account found" in original_error:
+                e.detail = {'non_field_errors': _("No active account found with the given credentials")}
+            raise e
+
         if not self.user.can_auth():
-            raise serializers.ValidationError(dict(user="you can not log in"))
+            raise serializers.ValidationError(dict(user=_("you can not log in")))
         refresh = self.get_token(self.user)
         data['refresh'] = str(refresh)
         data['access'] = str(refresh.access_token)
@@ -32,5 +41,5 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
             data = super().validate(attrs)
         except TokenError:
             raise serializers.ValidationError(
-                dict(refresh="invalid refresh token or has expired"))
+                dict(refresh=_("invalid refresh token or has expired")))
         return data
