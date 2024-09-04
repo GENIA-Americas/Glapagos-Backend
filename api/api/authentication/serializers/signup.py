@@ -1,6 +1,10 @@
 """Signup serializers"""
 
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
+
 
 # Rest framework
 from rest_framework import serializers
@@ -12,38 +16,6 @@ from api.authentication.enums import ExternalTokenChannel, ExternalTokenType
 from api.authentication.models import ExternalToken
 
 from api.utils.serializers import ChoiceField
-
-
-class SignUpRequestCodeSerializer(serializers.Serializer):
-    """
-    Sign up form serializer
-    """
-
-    email = serializers.CharField(required=True, write_only=True)
-    password = serializers.CharField(required=True, write_only=True)
-    channel = ChoiceField(choices=ExternalTokenChannel.choices)
-
-    status = serializers.CharField(read_only=True)
-    resend = serializers.BooleanField(read_only=True)
-
-    def validate(self, attrs):
-        """ Validate sign up form"""
-        attrs = super().validate(attrs)
-        email = attrs['email']
-
-        user_queryset = User.objects.filter(email=email)
-        if user_queryset:
-            user = user_queryset.first()
-            if user.setup_status != SetUpStatus.SIGN_UP_VALIDATION:
-                raise serializers.ValidationError(
-                    {"detail": _("user already exists.")})
-
-            attrs['user_id'] = user.id
-            attrs['resend'] = True
-        else:
-            attrs['user_id'] = None
-            attrs['resend'] = False
-        return attrs
 
 class SignUpValidateCodeSerializer(serializers.Serializer):
     """
@@ -95,7 +67,7 @@ class ForgotPasswordRequestCodeSerializer(serializers.Serializer):
     Forgot Password form serializer
     """
 
-    email = serializers.CharField(required=True, write_only=True)
+    email = serializers.EmailField(required=True, write_only=True)
     channel = ChoiceField(choices=ExternalTokenChannel.choices,
                           default=ExternalTokenChannel.CONSOLE)
 
@@ -132,6 +104,13 @@ class ForgotPasswordValidateCodeSerializer(serializers.Serializer):
     token = serializers.CharField(required=True, write_only=True)
     password = serializers.CharField(required=True, write_only=True)
     repeat = serializers.CharField(required=True, write_only=True)
+
+    def validate_password(self, value):
+        try:
+            validate_password(value)
+        except ValidationError as e:
+            raise serializers.ValidationError(e.messages)
+        return value
 
     def validate(self, attrs):
         """ Validate Forgot Password form"""
@@ -176,18 +155,34 @@ class SignUpEmailSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
     repeat = serializers.CharField(write_only=True)
-    first_name = serializers.CharField()
-    last_name = serializers.CharField()
-    country = serializers.CharField(required=False)
+    first_name = serializers.CharField(validators=[
+        RegexValidator(regex=r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$', message=_('First name can only contain letters and spaces.'))
+    ])
+    last_name = serializers.CharField(validators=[
+        RegexValidator(regex=r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$', message=_('Last name can only contain letters and spaces.'))
+    ])
+    country = serializers.CharField(required=False, validators=[
+        RegexValidator(regex=r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$', message=_('Country can only contain letters and spaces.'))
+    ])
     country_code = serializers.RegexField(regex=r'^\+?[0-9]{1,3}([- ]?[0-9]{1,3})?$', max_length=10, error_messages={
         'invalid': _('Invalid country code.')
     })
     phone_number = serializers.RegexField(regex=r'^\d+$', max_length=16, error_messages={
         'invalid': _('The phone number must contain only digits.')
     })
-    organization = serializers.CharField(required=False)
-    industry = serializers.CharField()
+    organization = serializers.CharField(required=False, validators=[
+        RegexValidator(regex=r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$', message=_('Organization can only contain letters and spaces.'))
+    ])
+    industry = serializers.CharField(validators=[
+        RegexValidator(regex=r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$', message=_('Industry can only contain letters and spaces.'))
+    ])
 
+    def validate_password(self, value):
+        try:
+            validate_password(value)
+        except ValidationError as e:
+            raise serializers.ValidationError(e.messages)
+        return value
 
     def validate(self, attrs):
         """ Validate sign up form"""
