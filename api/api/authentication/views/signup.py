@@ -20,9 +20,7 @@ from rest_framework.permissions import AllowAny
 
 # Utilities
 from django.conf import settings
-from django.http import HttpResponse
 from django.shortcuts import render
-from django.utils.translation import activate
 
 
 class SignupViewSet(GenericViewSet):
