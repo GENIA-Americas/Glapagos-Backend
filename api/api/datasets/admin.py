@@ -15,3 +15,12 @@ class FileAdmin(admin.ModelAdmin):
         'public',
         'owner',
     )
+
+@admin.register(Table)
+class TableAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'name',
+        'dataset_name',
+        'mounted',
+    )

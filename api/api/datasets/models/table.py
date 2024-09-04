@@ -17,7 +17,8 @@ class Table(BaseModel):
     active_physical_bytes = models.FloatField(null=True)
     long_term_physical_bytes = models.FloatField(null=True)
     time_travel_physical_bytes = models.FloatField(null=True)
-    file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='datasets')
+    mounted = models.BooleanField(default=False)
+    file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='tables')
 
     @property
     def path(self):
