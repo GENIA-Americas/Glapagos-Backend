@@ -67,15 +67,11 @@ class SignupViewSet(GenericViewSet):
     ], name='forgot-password-validate', url_path='forgot-password-validate')
     @validate_data()
     def forgot_password_validate(self, request, validated_data):
+        password = validated_data['password']
         user = validated_data.pop('user')
-        signup.forgot_password_validated(
-            user=user
-        )
+        signup.forgot_password_validated(user=user, password=password)
         response = Response(status=200)
-        jwt_tokens = jwt_authentication.django_user_jwt(user)
-        jwt = authentication.user_jwt_setting(
-            response.set_cookie, settings.SIMPLE_JWT, refresh_token=jwt_tokens['refresh'], access_token=jwt_tokens['access'])
-        response.data = jwt
+
         return response
 
     @action(detail=False, methods=['post'], serializer_class=ForgotPasswordRequestCodeSerializer, permission_classes=[

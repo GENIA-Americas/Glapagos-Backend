@@ -89,9 +89,11 @@ def forgot_password_request_code(
 
 def forgot_password_validated(
     user: User,
+    password: str,
 ):
     ExternalToken.objects.filter(
         user=user, type=ExternalTokenType.RECOVER_ACCOUNT).delete()
-    user.password_status = PasswordStatus.CHANGE
+    user.password_status = PasswordStatus.ACTIVE
+    user.set_password(password)
     user.save()
     return True

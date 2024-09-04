@@ -47,7 +47,9 @@ class ExternalToken(BaseModel):
             message = self.activation_url
         else:
             format_values = {
-                "app_name": settings.APP_NAME, "activation_url": self.activation_url}
+                "app_name": settings.APP_NAME, "url": self.activation_url}
+            if self.type_verbose.lower() == 'recover_account':
+                format_values["url"] = self.reset_password_url
             if self.channel_verbose.lower() == 'email':
                 format_values["email"] = self.user.email
             message = settings.AUTHENTICATION_EXTERNAL_TOKEN_MESSAGE_FORMATS[self.channel_verbose.lower()][
@@ -94,6 +96,10 @@ class ExternalToken(BaseModel):
     @property
     def activation_url(self):
         return f"{settings.SITE_SCHEME}://{settings.SITE_DOMAIN}{reverse('auth-sign-up-validate', kwargs={'user_id': self.user.id, 'token': self.token})}"
+
+    @property
+    def reset_password_url(self):
+        return f"{settings.FRONTEND_RECOVER_URL}/{self.user.id}/{self.token}"
 
 
 @receiver(post_save, sender=ExternalToken)

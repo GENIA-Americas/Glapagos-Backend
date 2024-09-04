@@ -97,7 +97,7 @@ class ForgotPasswordRequestCodeSerializer(serializers.Serializer):
 
     email = serializers.CharField(required=True, write_only=True)
     channel = ChoiceField(choices=ExternalTokenChannel.choices,
-                          default=ExternalTokenChannel.EMAIL)
+                          default=ExternalTokenChannel.CONSOLE)
 
     status = serializers.CharField(read_only=True)
     resend = serializers.BooleanField(read_only=True)
@@ -128,20 +128,20 @@ class ForgotPasswordValidateCodeSerializer(serializers.Serializer):
     Forgot Password validate code serializer
     """
 
-    email = serializers.CharField(required=True, write_only=True)
+    user_id = serializers.CharField(required=True, write_only=True)
     token = serializers.CharField(required=True, write_only=True)
-
-    # TODO: key from settings
-    ACCESS = serializers.CharField(read_only=True)
-    REFRESH = serializers.CharField(read_only=True)
+    password = serializers.CharField(required=True, write_only=True)
+    repeat = serializers.CharField(required=True, write_only=True)
 
     def validate(self, attrs):
         """ Validate Forgot Password form"""
         attrs = super().validate(attrs)
-        email = attrs['email']
+        user_id = attrs['user_id']
         token = attrs.pop('token')
+        password = attrs['password']
+        repeat = attrs['repeat']
 
-        user_queryset = User.objects.filter(email=email)
+        user_queryset = User.objects.filter(pk=user_id)
         if not user_queryset:
             raise serializers.ValidationError({"email": _("user is invalid")})
 
@@ -149,7 +149,7 @@ class ForgotPasswordValidateCodeSerializer(serializers.Serializer):
         attrs['user'] = user
 
         token_queryset = ExternalToken.get_valid_tokens(
-            field=dict(user__email=email), token_type=ExternalTokenType.RECOVER_ACCOUNT)
+            field=dict(user__pk=user_id), token_type=ExternalTokenType.RECOVER_ACCOUNT)
         if not token_queryset:
             raise serializers.ValidationError(
                 {"token": _("Token is invalid or has expired")})
@@ -162,6 +162,9 @@ class ForgotPasswordValidateCodeSerializer(serializers.Serializer):
         if expected_token.token != token:
             raise serializers.ValidationError(
                 {"token": _("Token is invalid or has expired")})
+
+        if password != repeat:
+            raise serializers.ValidationError({"detail": _("passwords doesn't match.")})
 
         return attrs
 
