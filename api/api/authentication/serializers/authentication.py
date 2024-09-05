@@ -4,20 +4,23 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework import serializers
+from rest_framework.exceptions import AuthenticationFailed
 from django.conf import settings
+from django.core.validators import validate_email
 from django.utils.translation import gettext_lazy as _
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
+        email = attrs.get('email')
+        if not email or not validate_email(email):
+            raise AuthenticationFailed(_('Invalid email format'))
+
         try:
             data = super().validate(attrs)
-        except serializers.ValidationError as e:
-            original_error = str(e.detail)
-
-            if "No active account found" in original_error:
-                e.detail = {'non_field_errors': _("No active account found with the given credentials")}
-            raise e
+        except AuthenticationFailed as exp:
+            exp.detail = _("Invalid credentials")
+            raise exp
 
         if not self.user.can_auth():
             raise serializers.ValidationError(dict(user=_("you can not log in")))

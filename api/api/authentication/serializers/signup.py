@@ -11,7 +11,7 @@ from rest_framework import serializers
 
 # Models
 from api.users.models import User
-from api.users.enums import SetUpStatus
+from api.users.enums import SetUpStatus, Industry, Country
 from api.authentication.enums import ExternalTokenChannel, ExternalTokenType
 from api.authentication.models import ExternalToken
 
@@ -161,9 +161,7 @@ class SignUpEmailSerializer(serializers.Serializer):
     last_name = serializers.CharField(validators=[
         RegexValidator(regex=r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$', message=_('Last name can only contain letters and spaces.'))
     ])
-    country = serializers.CharField(required=False, validators=[
-        RegexValidator(regex=r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$', message=_('Country can only contain letters and spaces.'))
-    ])
+    country = serializers.ChoiceField(choices=Country.choices)
     country_code = serializers.RegexField(regex=r'^\+?[0-9]{1,3}([- ]?[0-9]{1,3})?$', max_length=10, error_messages={
         'invalid': _('Invalid country code.')
     })
@@ -173,9 +171,7 @@ class SignUpEmailSerializer(serializers.Serializer):
     organization = serializers.CharField(required=False, validators=[
         RegexValidator(regex=r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$', message=_('Organization can only contain letters and spaces.'))
     ])
-    industry = serializers.CharField(validators=[
-        RegexValidator(regex=r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$', message=_('Industry can only contain letters and spaces.'))
-    ])
+    industry = serializers.ChoiceField(choices=Industry.choices)
 
     def validate_password(self, value):
         try:
