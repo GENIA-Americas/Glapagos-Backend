@@ -42,5 +42,9 @@ def mount_file_in_bq(table: Table):
     )
 
     load_job.result()
+    table_bq = client.get_table(table_ref)
     table.mounted = True
+    table.data_expiration = table_bq.expires
+    table.number_of_rows = table_bq.num_rows
+    table.total_logical_bytes = table_bq.num_bytes
     table.save()

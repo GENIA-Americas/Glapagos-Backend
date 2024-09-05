@@ -16,7 +16,11 @@ class FileViewSet(viewsets.ViewSet):
     def upload_file(self, request, *args, **kwargs):
         serializer = FileUploadSerializer(data=request.data)
         if serializer.is_valid():
-            file_content = serializer.validated_data['file']
+            file = serializer.validated_data['file']
+            extension = serializer.validated_data['extension']
+            public = serializer.validated_data['public']
+
+            file_content = file
             bucket_name = settings.GCS_BUCKET
             destination_blob_name = f"{generate_random_string(6)}_{file_content.name}"
             file_url = upload_to_gcs(file_content, bucket_name, destination_blob_name)
@@ -24,21 +28,21 @@ class FileViewSet(viewsets.ViewSet):
 
             file = File.objects.create(
                 name=destination_blob_name,
-                type=serializer.validated_data['extension'],
+                type=extension,
                 storage_url=file_url,
-                public=serializer.validated_data['public'],
+                public=public,
                 owner=user
             )
             file.save()
 
-            table = Table.objects.create(
-                name=destination_blob_name.split(".")[0],
-                dataset_name='glapagos_dataset',
-                file=file
-            )
-            table.save()
-
-            mount_file_in_bq(table)
+            if extension != 'txt':
+                table = Table.objects.create(
+                    name=destination_blob_name.split(".")[0],
+                    dataset_name='glapagos_dataset',
+                    file=file
+                )
+                table.save()
+                mount_file_in_bq(table)
 
             return Response({"file_url": file_url}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
