@@ -61,3 +61,6 @@ google-cloud-firestore
 google-cloud-datacatalog
 google-cloud-dataplex
 google-cloud-dataproc
+
+# MIME TYPES
+python-magic

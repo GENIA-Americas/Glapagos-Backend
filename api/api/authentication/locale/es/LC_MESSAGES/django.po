@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-05 15:24+0000\n"
+"POT-Creation-Date: 2024-09-06 15:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,19 +42,19 @@ msgstr "Validar cuenta"
 msgid "Recover account"
 msgstr "Recuperar cuenta"
 
-#: api/authentication/serializers/authentication.py:18
+#: api/authentication/serializers/authentication.py:17
 msgid "Invalid email format"
 msgstr "Formato de correo electrónico inválido"
 
-#: api/authentication/serializers/authentication.py:23
+#: api/authentication/serializers/authentication.py:22
 msgid "Invalid credentials"
 msgstr "Credenciales inválidas"
 
-#: api/authentication/serializers/authentication.py:27
+#: api/authentication/serializers/authentication.py:26
 msgid "you can not log in"
 msgstr "No puede iniciar sesión"
 
-#: api/authentication/serializers/authentication.py:48
+#: api/authentication/serializers/authentication.py:47
 #, fuzzy
 #| msgid "Token is invalid or has expired"
 msgid "invalid refresh token or has expired"
@@ -66,7 +66,7 @@ msgid "user is invalid"
 msgstr "El nombre de usuario es inválido."
 
 #: api/authentication/serializers/signup.py:43
-#: api/authentication/serializers/signup.py:201
+#: api/authentication/serializers/signup.py:197
 msgid "user already exists."
 msgstr "El usuario ya existe."
 
@@ -86,7 +86,7 @@ msgstr ""
 "vuelva a intentar"
 
 #: api/authentication/serializers/signup.py:146
-#: api/authentication/serializers/signup.py:195
+#: api/authentication/serializers/signup.py:191
 msgid "passwords doesn't match."
 msgstr "Las contraseñas no coinciden."
 
@@ -98,22 +98,20 @@ msgstr "El nombre solo puede incluir letras y espacios"
 msgid "Last name can only contain letters and spaces."
 msgstr "El apellido solo puede incluir letras y espacios"
 
-#: api/authentication/serializers/signup.py:165
-msgid "Country can only contain letters and spaces."
-msgstr "El país solo puede incluir letras y espacios"
-
-#: api/authentication/serializers/signup.py:168
+#: api/authentication/serializers/signup.py:166
 msgid "Invalid country code."
 msgstr "Código de país inválido"
 
-#: api/authentication/serializers/signup.py:171
+#: api/authentication/serializers/signup.py:169
 msgid "The phone number must contain only digits."
 msgstr "El número de teléfono solo puede contener dígitos"
 
-#: api/authentication/serializers/signup.py:174
+#: api/authentication/serializers/signup.py:172
 msgid "Organization can only contain letters and spaces."
 msgstr "La organización solo puede incluir letras y espacios"
 
-#: api/authentication/serializers/signup.py:177
-msgid "Industry can only contain letters and spaces."
-msgstr "La industria solo puede incluir letras y espacios"
+#~ msgid "Country can only contain letters and spaces."
+#~ msgstr "El país solo puede incluir letras y espacios"
+
+#~ msgid "Industry can only contain letters and spaces."
+#~ msgstr "La industria solo puede incluir letras y espacios"

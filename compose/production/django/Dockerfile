@@ -16,6 +16,7 @@ RUN apk update \
 
 # Requirements are installed here to ensure they will be cached.
 RUN apk add python3-dev
+RUN apk add libmagic
 
 COPY ./requirements /requirements
 RUN pip install -r /requirements/production.txt
