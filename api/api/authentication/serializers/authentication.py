@@ -13,7 +13,9 @@ from django.utils.translation import gettext_lazy as _
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         email = attrs.get('email')
-        if not email or not validate_email(email):
+        try:
+            validate_email(email)
+        except Exception:
             raise AuthenticationFailed(_('Invalid email format'))
 
         try:

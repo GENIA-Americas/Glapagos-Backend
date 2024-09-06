@@ -1,50 +1,186 @@
+import json
+from abc import ABC, abstractmethod
+from io import StringIO
+
+from django.conf import settings
 from google.cloud import storage
 from google.cloud import bigquery
-from django.conf import settings
-from api.datasets.models import Table
+
+from api.users.models import User
+from api.datasets.models import File, Table
+from api.datasets.utils import generate_random_string
 
 
-def upload_to_gcs(file, bucket_name, destination_blob_name):
-    client = storage.Client()
-    bucket = client.get_bucket(bucket_name)
-    blob = bucket.blob(destination_blob_name)
-    blob.upload_from_file(file, content_type=file.content_type)
-    return blob.public_url
+class GCSUploadServiceFactory:
+    @staticmethod
+    def get_upload_service(extension):
+        if extension.lower() == 'json':
+            return JSONGCSUploadService()
+        else:
+            return GCSUploadService()
 
 
-def get_source_format(extension):
-    """Returns the BigQuery SourceFormat based on file extension."""
-    formats = {
-        "csv": bigquery.SourceFormat.CSV,
-        "json": bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
-    }
-    return formats.get(extension, bigquery.SourceFormat.CSV)
+class GCSUploadService:
+
+    def upload(self, file, filename: str) -> str:
+        """Upload file to Google Cloud Storage."""
+        client = storage.Client()
+        bucket_name = settings.GCS_BUCKET
+        bucket = client.get_bucket(bucket_name)
+        blob = bucket.blob(filename)
+        blob.upload_from_file(file, content_type=file.content_type)
+        return blob.public_url
 
 
-def mount_file_in_bq(table: Table):
-    client = bigquery.Client()
+class JSONGCSUploadService(GCSUploadService):
 
-    dataset_ref = bigquery.DatasetReference(settings.BQ_PROJECT_ID, table.dataset_name)
-    dataset = client.get_dataset(dataset_ref)
-    table_ref = dataset.table(table.name)
-    extension = table.file.type
+    def is_newline_delimited_json(self, content):
+        try:
+            for line in content.splitlines():
+                json.loads(line)
+            return True
+        except json.JSONDecodeError:
+            return False
+    def convert_to_newline_delimited_json(self, file):
+        content = file.read().decode('utf-8')
 
-    job_config = bigquery.LoadJobConfig(
-        source_format=get_source_format(extension),
-        autodetect=True,
-        skip_leading_rows=1,
-    )
+        if self.is_newline_delimited_json(content):
+            return
 
-    gcs_uri = table.file.storage_url
+        data = json.loads(content)
+        if isinstance(data, list) and all(isinstance(item, dict) for item in data):
+            output = StringIO()
+            for item in data:
+                output.write(json.dumps(item) + '\n')
+            output.seek(0)
+            file.file = output
+            file.size = len(output.getvalue())
+            file.name = file.name
 
-    load_job = client.load_table_from_uri(
-        gcs_uri, table_ref, job_config=job_config
-    )
+    def upload(self, file, filename: str) -> str:
+        self.convert_to_newline_delimited_json(file)
+        file.seek(0)
+        return super().upload(file, filename)
 
-    load_job.result()
-    table_bq = client.get_table(table_ref)
-    table.mounted = True
-    table.data_expiration = table_bq.expires
-    table.number_of_rows = table_bq.num_rows
-    table.total_logical_bytes = table_bq.num_bytes
-    table.save()
+
+class BigQueryLoadService:
+
+    def update_table_info(self, table_ref, table_obj: Table):
+        client = bigquery.Client()
+        table_bq = client.get_table(table_ref)
+        table_obj.mounted = True
+        table_obj.data_expiration = table_bq.expires
+        table_obj.number_of_rows = table_bq.num_rows
+        table_obj.total_logical_bytes = table_bq.num_bytes
+        table_obj.save()
+
+    def get_source_format(self, extension: str):
+        """Returns the BigQuery SourceFormat based on file extension."""
+        formats = {
+            "csv": bigquery.SourceFormat.CSV,
+            "json": bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
+        }
+        return formats.get(extension.lower(), bigquery.SourceFormat.CSV)
+
+    def mount_table(self, table: Table, autodetect: bool = True, skip_leading_rows: int = 1):
+        client = bigquery.Client()
+        dataset_ref = bigquery.DatasetReference(settings.BQ_PROJECT_ID, table.dataset_name)
+        dataset = client.get_dataset(dataset_ref)
+        table_ref = dataset.table(table.name)
+        extension = table.file.type
+
+        job_config = bigquery.LoadJobConfig(
+            source_format=self.get_source_format(extension),
+            autodetect=autodetect,
+        )
+        if skip_leading_rows:
+            job_config.skip_leading_rows = skip_leading_rows
+
+        gcs_uri = table.file.storage_url
+
+        load_job = client.load_table_from_uri(
+            gcs_uri, table_ref, job_config=job_config
+        )
+
+        load_job.result()
+        self.update_table_info(table_ref, table)
+
+
+class FileServiceFactory:
+    @staticmethod
+    def get_file_service(file, extension: str, public: bool, user: User):
+        if extension.lower() == 'txt':
+            return TXTFileService(file, extension, public, user)
+        elif extension.lower() == 'csv':
+            return CSVFileService(file, extension, public, user)
+        elif extension.lower() == 'json':
+            return JSONFileService(file, extension, public, user)
+
+
+class FileService(ABC):
+    def __init__(self, file, extension: str, public: bool, user: User = None):
+        self.file = file
+        self.extension = extension
+        self.public = public
+        self.user = user
+        self.filename = f"{generate_random_string(10)}_{file.name}"
+
+    def create_file_object(self, file_url: str):
+        file_obj = File.objects.create(
+            name=self.filename,
+            type=self.extension,
+            storage_url=file_url,
+            public=self.public,
+            owner=self.user
+        )
+        file_obj.save()
+        return file_obj
+
+    @abstractmethod
+    def process_file(self):
+        ...
+
+
+class StructuredFileService(FileService):
+
+    def create_table_obj(self, file_obj: File) -> Table:
+        table = Table.objects.create(
+            name=self.filename.split(".")[0],
+            dataset_name=settings.BQ_DATASET_ID,
+            file=file_obj
+        )
+        table.save()
+        return table
+
+    @abstractmethod
+    def process_file(self):
+        ...
+
+
+class TXTFileService(FileService):
+    def process_file(self):
+        upload_service = GCSUploadService()
+        file_url = upload_service.upload(self.file, self.filename)
+        return file_url
+
+
+class CSVFileService(StructuredFileService):
+    def process_file(self):
+        upload_service = GCSUploadService()
+        file_url = upload_service.upload(self.file, self.filename)
+        file_obj = self.create_file_object(file_url)
+        table_obj = self.create_table_obj(file_obj)
+        big_query_service = BigQueryLoadService()
+        big_query_service.mount_table(table=table_obj)
+        return file_url
+
+
+class JSONFileService(StructuredFileService):
+    def process_file(self):
+        upload_service = JSONGCSUploadService()
+        file_url = upload_service.upload(self.file, self.filename)
+        file_obj = self.create_file_object(file_url)
+        table_obj = self.create_table_obj(file_obj)
+        big_query_service = BigQueryLoadService()
+        big_query_service.mount_table(table=table_obj, autodetect=True, skip_leading_rows=0)
+        return file_url
