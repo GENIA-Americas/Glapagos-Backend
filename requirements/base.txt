@@ -64,3 +64,6 @@ google-cloud-dataproc
 
 # MIME TYPES
 python-magic
+
+# Dataframes
+pandas
