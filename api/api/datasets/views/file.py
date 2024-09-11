@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 
 from api.datasets.services.file import FileServiceFactory
 from api.datasets.serializers import FileUploadSerializer, FilePreviewSerializer
+from api.datasets.utils import csv_parameters_detect
 
 
 class FileViewSet(viewsets.ViewSet):
@@ -21,7 +22,8 @@ class FileViewSet(viewsets.ViewSet):
                 file_url = file_service.process_file()
                 return Response({"file_url": file_url}, status=status.HTTP_201_CREATED)
             except Exception as exp:
-                raise exp
+                return Response({"detail": _("Error processing request"), "error": str(exp)},
+                                status=status.HTTP_400_BAD_REQUEST)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -30,19 +32,29 @@ class FileViewSet(viewsets.ViewSet):
     def file_preview(self, request, *args, **kwargs):
         serializer = FilePreviewSerializer(data=request.data)
         if serializer.is_valid():
-            preview = serializer.validated_data['preview']
+            try:
+                preview = serializer.validated_data['preview']
 
-            csv_file_like = StringIO(preview)
-            df = pd.read_csv(csv_file_like)
+                csv_file_like = StringIO(preview)
+                csv_params = csv_parameters_detect(preview)
+                df = pd.read_csv(
+                    csv_file_like,
+                    sep=csv_params['delimiter'],
+                    quotechar=csv_params['quotechar'],
+                    escapechar=csv_params['escapechar'],
+                )
 
-            result = []
-            for column in df.columns:
-                result.append({
-                    "column_name": column,
-                    "data_type": str(df[column].dtype),
-                    "example_values": df[column].head(5).tolist()
-                })
+                result = []
+                for column in df.columns:
+                    result.append({
+                        "column_name": column if csv_params['has_header'] else None,
+                        "data_type": str(df[column].dtype),
+                        "example_values": df[column].head(5).tolist()
+                    })
 
-            return Response(result, status=status.HTTP_200_OK)
+                return Response(result, status=status.HTTP_200_OK)
+            except Exception as exp:
+                return Response({"detail": _("Error processing request"), "error": str(exp)},
+                                status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
