@@ -1,6 +1,6 @@
 # Utilities
 from api.authentication.services.external_token.token import random_token
-from api.authentication.services.external_token.channels import send_token
+from api.authentication.services.external_token.channels import send_by_channel
 from django.utils.timezone import now
 from api.authentication.enums import ExternalTokenChannel, ExternalTokenType
 from django.conf import settings
@@ -106,7 +106,8 @@ class ExternalToken(BaseModel):
 def auth_token_created(sender, instance: ExternalToken, *args, **kwargs):
     try:
         channel_token_message, channel_token_title = instance.get_message_details()
-        send_token(instance.type_verbose, instance.channel_verbose,
-                   instance.user.preferred_language_code, email=instance.user.email, phone_number=instance.user.phone_number, channel_token_message=channel_token_message, channel_token_title=channel_token_title)
+        send_by_channel(instance.channel_verbose, instance.user.preferred_language_code,
+                        email=instance.user.email, phone_number=instance.user.phone_number,
+                        channel_token_message=channel_token_message, channel_token_title=channel_token_title)
     except Exception as e:
         raise e

@@ -85,7 +85,8 @@ LOCAL_APPS = [
     'api.users.apps.UsersAppConfig',
     'api.authentication.apps.AuthenticationAppConfig',
     'api.events.apps.EventsAppConfig',
-    'api.datasets.apps.DatasetsConfig'
+    'api.datasets.apps.DatasetsConfig',
+    'api.contacts.apps.ContactsConfig',
 ]
 
 INSTALLED_APPS = THIRD_PARTY_APPS + DJANGO_APPS + LOCAL_APPS
@@ -312,3 +313,4 @@ TWILIO_FROM_PHONE_NUMBER = os.getenv('TWILIO_FROM_PHONE_NUMBER')
 GCS_BUCKET = os.getenv('GCS_BUCKET')
 BQ_PROJECT_ID = os.getenv('BQ_PROJECT_ID')
 BQ_DATASET_ID = os.getenv('BQ_DATASET_ID')
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
