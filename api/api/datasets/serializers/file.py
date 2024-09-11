@@ -1,13 +1,25 @@
 import magic
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import FileExtensionValidator
 from rest_framework import serializers
 from api.datasets.enums import FileType
+
+
+class FilePreviewSerializer(serializers.Serializer):
+    csv_lines = serializers.CharField()
+
+    def validate_csv_lines(self, value):
+        lines = value.strip().split('\n')
+        if len(lines) < 2:
+            raise serializers.ValidationError(_("CSV content must have at least two lines."))
+        return value
 
 
 class FileUploadSerializer(serializers.Serializer):
     file = serializers.FileField()
     public = serializers.BooleanField()
+    skip_leading_rows = serializers.IntegerField(min_value=0, required=False)
+    autodetect = serializers.BooleanField(required=False)
+    schema = serializers.ListField(required=False)
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
@@ -28,7 +40,15 @@ class FileUploadSerializer(serializers.Serializer):
 
         attrs['extension'] = FileType(extension)
 
+        if extension == 'csv':
+            if attrs['skip_leading_rows'] is None or attrs['autodetect'] is None:
+                raise serializers.ValidationError({"detail": _(
+                    "Missing or incomplete parameters for CSV files."
+                )})
+
+            if not attrs['autodetect'] and not attrs['schema']:
+                raise serializers.ValidationError({"detail": _(
+                    "Unable to determine the file schema due to missing or incomplete parameters."
+                )})
+
         return attrs
-
-
-

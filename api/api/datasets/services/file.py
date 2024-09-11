@@ -1,6 +1,7 @@
 import json
 from abc import ABC, abstractmethod
 from io import StringIO
+from typing import List
 
 from django.conf import settings
 from google.cloud import storage
@@ -82,7 +83,20 @@ class BigQueryLoadService:
         }
         return formats.get(extension.lower(), bigquery.SourceFormat.CSV)
 
-    def mount_table(self, table: Table, autodetect: bool = True, skip_leading_rows: int = 1):
+    def convert_schema_to_bigquery(self, schema: List):
+        bigquery_schema = []
+
+        for field in schema:
+            bigquery_schema.append(
+                bigquery.SchemaField(
+                    name=field['name'],
+                    field_type=field['type'],
+                    mode=field.get('mode', 'NULLABLE')
+                )
+            )
+        return bigquery_schema
+
+    def mount_table(self, table: Table, autodetect, skip_leading_rows, schema: List):
         client = bigquery.Client()
         dataset_ref = bigquery.DatasetReference(settings.BQ_PROJECT_ID, table.dataset_name)
         dataset = client.get_dataset(dataset_ref)
@@ -93,8 +107,14 @@ class BigQueryLoadService:
             source_format=self.get_source_format(extension),
             autodetect=autodetect,
         )
+
         if skip_leading_rows:
             job_config.skip_leading_rows = skip_leading_rows
+
+        if schema:
+            schema = json.loads(schema[0])
+            bigquery_schema = self.convert_schema_to_bigquery(schema)
+            job_config.schema = bigquery_schema
 
         gcs_uri = table.file.storage_url
 
@@ -108,22 +128,24 @@ class BigQueryLoadService:
 
 class FileServiceFactory:
     @staticmethod
-    def get_file_service(file, extension: str, public: bool, user: User):
+    def get_file_service(user: User, **kwargs):
+        extension = kwargs['extension']
+
         if extension.lower() == 'txt':
-            return TXTFileService(file, extension, public, user)
+            return TXTFileService(user, **kwargs)
         elif extension.lower() == 'csv':
-            return CSVFileService(file, extension, public, user)
+            return CSVFileService(user, **kwargs)
         elif extension.lower() == 'json':
-            return JSONFileService(file, extension, public, user)
+            return JSONFileService(user, **kwargs)
 
 
 class FileService(ABC):
-    def __init__(self, file, extension: str, public: bool, user: User = None):
-        self.file = file
-        self.extension = extension
-        self.public = public
+    def __init__(self, user: User = None, **kwargs):
+        self.file = kwargs["file"]
+        self.extension = kwargs["extension"]
+        self.public = kwargs["public"]
         self.user = user
-        self.filename = f"{generate_random_string(10)}_{file.name}"
+        self.filename = f"{generate_random_string(10)}_{kwargs['file'].name}"
 
     def create_file_object(self, file_url: str):
         file_obj = File.objects.create(
@@ -165,13 +187,24 @@ class TXTFileService(FileService):
 
 
 class CSVFileService(StructuredFileService):
+    def __init__(self, user: User, **kwargs):
+        super().__init__(user, **kwargs)
+        self.skip_leading_rows = kwargs.get("skip_leading_rows", 0)
+        self.autodetect = kwargs.get("autodetect", True)
+        self.schema = kwargs.get("schema")
+
     def process_file(self):
         upload_service = GCSUploadService()
         file_url = upload_service.upload(self.file, self.filename)
         file_obj = self.create_file_object(file_url)
         table_obj = self.create_table_obj(file_obj)
         big_query_service = BigQueryLoadService()
-        big_query_service.mount_table(table=table_obj)
+        big_query_service.mount_table(
+            table=table_obj,
+            autodetect=self.autodetect,
+            skip_leading_rows=self.skip_leading_rows,
+            schema=self.schema
+        )
         return file_url
 
 
@@ -182,5 +215,5 @@ class JSONFileService(StructuredFileService):
         file_obj = self.create_file_object(file_url)
         table_obj = self.create_table_obj(file_obj)
         big_query_service = BigQueryLoadService()
-        big_query_service.mount_table(table=table_obj, autodetect=True, skip_leading_rows=0)
+        big_query_service.mount_table(table=table_obj, autodetect=True, skip_leading_rows=0, schema=[])
         return file_url

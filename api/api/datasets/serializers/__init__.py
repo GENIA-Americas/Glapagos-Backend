@@ -1,1 +1,1 @@
-from .file import FileUploadSerializer
+from .file import FileUploadSerializer, FilePreviewSerializer
