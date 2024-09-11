@@ -7,7 +7,7 @@ from rest_framework.response import Response
 # models
 from api.users.models import User
 from api.users.serializers import UserSerializer
-from api.users.enums import SetUpStatus
+from api.users.enums import SetUpStatus, PasswordStatus
 from api.authentication.enums import ExternalTokenType, ExternalTokenChannel
 
 # Serializers
@@ -30,15 +30,24 @@ class SignupViewSet(GenericViewSet):
     ], name='sign-up', url_path='sign-up')
     @validate_data(out_serializer_class=UserSerializer)
     def sign_up(self, request, validated_data):
+        # Users validated by default (Temporal)
         email = validated_data.pop("email")
-        user_id = signup.signup_request_code(
-            email=email,
-            resend=False,
-            channel=ExternalTokenChannel.CONSOLE,
-            user_id=None,
-            **validated_data
-        )
-        user = User.objects.filter(pk=user_id).first()
+        password = validated_data.pop("password")
+        user = User.objects.create_user(email=email, username=email, password=password, **validated_data)
+        user.setup_status = SetUpStatus.VALIDATED
+        user.password_status = PasswordStatus.ACTIVE
+        user.save()
+
+        # Validate data by email
+        # email = validated_data.pop("email")
+        # user_id = signup.signup_request_code(
+        #     email=email,
+        #     resend=False,
+        #     channel=ExternalTokenChannel.CONSOLE,
+        #     user_id=None,
+        #     **validated_data
+        # )
+        # user = User.objects.filter(pk=user_id).first()
         return dict(data=user)
 
     @action(detail=False, methods=['get'], serializer_class=SignUpValidateCodeSerializer, permission_classes=[
