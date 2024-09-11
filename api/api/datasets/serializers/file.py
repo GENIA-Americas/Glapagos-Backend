@@ -5,12 +5,12 @@ from api.datasets.enums import FileType
 
 
 class FilePreviewSerializer(serializers.Serializer):
-    csv_lines = serializers.CharField()
+    preview = serializers.CharField()
 
-    def validate_csv_lines(self, value):
+    def validate_preview(self, value):
         lines = value.strip().split('\n')
         if len(lines) < 2:
-            raise serializers.ValidationError(_("CSV content must have at least two lines."))
+            raise serializers.ValidationError(_("File content must have at least two lines."))
         return value
 
 
@@ -41,12 +41,7 @@ class FileUploadSerializer(serializers.Serializer):
         attrs['extension'] = FileType(extension)
 
         if extension == 'csv':
-            if attrs['skip_leading_rows'] is None or attrs['autodetect'] is None:
-                raise serializers.ValidationError({"detail": _(
-                    "Missing or incomplete parameters for CSV files."
-                )})
-
-            if not attrs['autodetect'] and not attrs['schema']:
+            if attrs['skip_leading_rows'] is None or attrs['schema'] is None:
                 raise serializers.ValidationError({"detail": _(
                     "Unable to determine the file schema due to missing or incomplete parameters."
                 )})

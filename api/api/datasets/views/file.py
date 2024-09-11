@@ -26,13 +26,13 @@ class FileViewSet(viewsets.ViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'], name='file-preview', url_path='file-preview',
-            permission_classes=[permissions.IsAuthenticated()])
+            permission_classes=[permissions.IsAuthenticated])
     def file_preview(self, request, *args, **kwargs):
         serializer = FilePreviewSerializer(data=request.data)
         if serializer.is_valid():
-            csv_lines = serializer.validated_data['csv_lines']
+            preview = serializer.validated_data['preview']
 
-            csv_file_like = StringIO(csv_lines)
+            csv_file_like = StringIO(preview)
             df = pd.read_csv(csv_file_like)
 
             result = []

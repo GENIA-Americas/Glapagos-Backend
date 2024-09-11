@@ -89,8 +89,8 @@ class BigQueryLoadService:
         for field in schema:
             bigquery_schema.append(
                 bigquery.SchemaField(
-                    name=field['name'],
-                    field_type=field['type'],
+                    name=field['column_name'],
+                    field_type=field['data_type'],
                     mode=field.get('mode', 'NULLABLE')
                 )
             )
@@ -110,7 +110,6 @@ class BigQueryLoadService:
 
         if skip_leading_rows:
             job_config.skip_leading_rows = skip_leading_rows
-
         if schema:
             schema = json.loads(schema[0])
             bigquery_schema = self.convert_schema_to_bigquery(schema)
@@ -189,8 +188,8 @@ class TXTFileService(FileService):
 class CSVFileService(StructuredFileService):
     def __init__(self, user: User, **kwargs):
         super().__init__(user, **kwargs)
-        self.skip_leading_rows = kwargs.get("skip_leading_rows", 0)
-        self.autodetect = kwargs.get("autodetect", True)
+        self.skip_leading_rows = kwargs.get("skip_leading_rows", 1)
+        self.autodetect = kwargs.get("autodetect", False)
         self.schema = kwargs.get("schema")
 
     def process_file(self):
