@@ -1,6 +1,3 @@
-import pandas as pd
-from io import StringIO
-
 from django.utils.translation import gettext_lazy as _
 from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
@@ -8,7 +5,7 @@ from rest_framework.decorators import action
 
 from api.datasets.services.file import FileServiceFactory
 from api.datasets.serializers import FileUploadSerializer, FilePreviewSerializer
-from api.datasets.utils import csv_parameters_detect
+from api.datasets.utils import csv_parameters_detect, prepare_csv_data_format
 
 
 class FileViewSet(viewsets.ViewSet):
@@ -34,25 +31,8 @@ class FileViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             try:
                 preview = serializer.validated_data['preview']
-
-                csv_file_like = StringIO(preview)
-                csv_params = csv_parameters_detect(preview)
-                df = pd.read_csv(
-                    csv_file_like,
-                    sep=csv_params['delimiter'],
-                    quotechar=csv_params['quotechar'],
-                    escapechar=csv_params['escapechar'],
-                )
-
-                result = []
-                for column in df.columns:
-                    result.append({
-                        "column_name": column if csv_params['has_header'] else None,
-                        "data_type": str(df[column].dtype),
-                        "example_values": df[column].head(5).tolist()
-                    })
-
-                return Response(result, status=status.HTTP_200_OK)
+                bigquery_format = prepare_csv_data_format(data=preview)
+                return Response(bigquery_format, status=status.HTTP_200_OK)
             except Exception as exp:
                 return Response({"detail": _("Error processing request"), "error": str(exp)},
                                 status=status.HTTP_400_BAD_REQUEST)
