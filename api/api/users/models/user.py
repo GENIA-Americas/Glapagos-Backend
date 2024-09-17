@@ -61,11 +61,11 @@ class User(BaseModel, AbstractUser):
 
     email = models.EmailField(unique=True)
 
-    organization = models.CharField(max_length=255, null=True)
+    organization = models.CharField(max_length=255, null=True, blank=True)
 
-    industry = models.CharField(choices=Industry.choices, max_length=255)
+    industry = models.CharField(choices=Industry.choices, max_length=255, null=True, blank=True)
 
-    country = models.CharField(choices=Country.choices, max_length=255, null=True)
+    country = models.CharField(choices=Country.choices, max_length=255, null=True, blank=True)
 
     country_code = models.CharField(max_length=5)
 

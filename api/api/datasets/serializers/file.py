@@ -1,6 +1,8 @@
 import magic
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
+
+from api.datasets.models import File
 from api.datasets.enums import FileType
 
 
@@ -47,3 +49,9 @@ class FileUploadSerializer(serializers.Serializer):
                 )})
 
         return attrs
+
+
+class FileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = File
+        fields = '__all__'

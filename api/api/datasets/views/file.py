@@ -1,14 +1,35 @@
 from django.utils.translation import gettext_lazy as _
-from rest_framework import viewsets, status, permissions
+from django.db.models import Q
+from rest_framework.viewsets import GenericViewSet
+from rest_framework import viewsets, status, permissions, mixins, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
+from api.datasets.models import File
 from api.datasets.services.file import FileServiceFactory
-from api.datasets.serializers import FileUploadSerializer, FilePreviewSerializer
+from api.datasets.serializers import FileSerializer, FileUploadSerializer, FilePreviewSerializer
 from api.datasets.utils import csv_parameters_detect, prepare_csv_data_format
+from api.utils.pagination import StartEndPagination
 
 
-class FileViewSet(viewsets.ViewSet):
+class FileViewSet(mixins.ListModelMixin, GenericViewSet):
+    serializer_class = FileSerializer
+    serializer_classes = dict(
+        list=FileSerializer,
+    )
+    model = File
+    pagination_class = StartEndPagination
+    permission_classes = [permissions.IsAuthenticated]
+
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
+
+    def get_queryset(self):
+        user = self.request.user
+        return File.objects.filter(
+            Q(public=True) | Q(owner=user)
+        )
+
     @action(detail=False, methods=['post'], name='upload_file', url_path='upload_file',
             permission_classes=[])
     def upload_file(self, request, *args, **kwargs):
@@ -28,6 +49,7 @@ class FileViewSet(viewsets.ViewSet):
             permission_classes=[permissions.IsAuthenticated])
     def file_preview(self, request, *args, **kwargs):
         serializer = FilePreviewSerializer(data=request.data)
+        print(request.data)
         if serializer.is_valid():
             try:
                 preview = serializer.validated_data['preview']

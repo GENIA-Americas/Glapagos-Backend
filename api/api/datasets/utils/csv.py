@@ -50,7 +50,7 @@ def detect_datetime(series):
                 return 'DATE'
             else:
                 return 'DATETIME'
-    except (ValueError, TypeError):
+    except Exception:
         return None
 
     return None
@@ -72,7 +72,7 @@ def detect_time(series):
         if not series.isna().all():
             if series.notna().all():
                 return 'TIME'
-    except (ValueError, TypeError):
+    except Exception:
         return None
 
     return None
@@ -159,7 +159,7 @@ def prepare_csv_data_format(data: str) -> List:
         result.append({
             "column_name": column if csv_params['has_header'] else None,
             "data_type": bigquery_type,
-            "example_values": df[column].head(5).tolist()
+            "example_values": df[column].head(5).fillna("").tolist()
         })
     return result
 
