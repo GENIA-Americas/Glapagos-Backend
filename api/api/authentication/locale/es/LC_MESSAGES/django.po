@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-06 15:50+0000\n"
+"POT-Creation-Date: 2024-09-11 20:39+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,19 +42,19 @@ msgstr "Validar cuenta"
 msgid "Recover account"
 msgstr "Recuperar cuenta"
 
-#: api/authentication/serializers/authentication.py:17
+#: api/authentication/serializers/authentication.py:19
 msgid "Invalid email format"
 msgstr "Formato de correo electrónico inválido"
 
-#: api/authentication/serializers/authentication.py:22
+#: api/authentication/serializers/authentication.py:24
 msgid "Invalid credentials"
 msgstr "Credenciales inválidas"
 
-#: api/authentication/serializers/authentication.py:26
+#: api/authentication/serializers/authentication.py:28
 msgid "you can not log in"
 msgstr "No puede iniciar sesión"
 
-#: api/authentication/serializers/authentication.py:47
+#: api/authentication/serializers/authentication.py:49
 #, fuzzy
 #| msgid "Token is invalid or has expired"
 msgid "invalid refresh token or has expired"

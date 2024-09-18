@@ -201,7 +201,7 @@ REST_FRAMEWORK = {
         "api.utils.auth0.validator.DoubleAuthentication",
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 12,
+    'PAGE_SIZE': 10,
 }
 
 # AUTOFIELD
@@ -314,3 +314,7 @@ GCS_BUCKET = os.getenv('GCS_BUCKET')
 BQ_PROJECT_ID = os.getenv('BQ_PROJECT_ID')
 BQ_DATASET_ID = os.getenv('BQ_DATASET_ID')
 ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+]
