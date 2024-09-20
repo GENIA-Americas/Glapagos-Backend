@@ -168,8 +168,8 @@ def create_dataframe_from_csv(file, sample: str = None) -> pd.DataFrame:
         sep=csv_params['delimiter'],
         quotechar=csv_params['quotechar'],
         escapechar=csv_params['escapechar'],
+        skipinitialspace=csv_params['skipinitialspace']
     )
     file.seek(0)
 
     return df, csv_params
-

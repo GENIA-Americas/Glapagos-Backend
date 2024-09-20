@@ -28,6 +28,13 @@ class FileUploadSerializer(serializers.Serializer):
     autodetect = serializers.BooleanField(required=False)
     schema = serializers.ListField(required=False)
 
+    def validate_file(self, value):
+        content = value.read().decode('utf-8').splitlines()
+        if content[-1].strip() == '':
+            raise serializers.ValidationError({"detail": _("You must remove the blank rows at the end of the file.")})
+        value.seek(0)
+        return value
+
     def validate_schema(self, value):
         value_obj = []
         if isinstance(value, list) and len(value) == 1:
