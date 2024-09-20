@@ -40,7 +40,6 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
                 file_url = file_service.process_file()
                 return Response({"file_url": file_url}, status=status.HTTP_201_CREATED)
             except Exception as exp:
-                raise exp
                 return Response({"detail": _("Error processing request"), "error": str(exp)},
                                 status=status.HTTP_400_BAD_REQUEST)
 
