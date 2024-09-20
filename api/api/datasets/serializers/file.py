@@ -62,10 +62,11 @@ class FileUploadSerializer(serializers.Serializer):
             raise serializers.ValidationError({"detail": _("Error reading CSV file")})
 
         if autodetect:
+            suffix_message = _("Column names must start with a letter and can only contain alphanumeric characters. Modify the column names in the source file or in the schema.")
             invalid_columns = [col for col in df.columns if not is_valid_column_name(col)]
             if invalid_columns:
                 raise serializers.ValidationError({
-                    "detail": _("Invalid column names in CSV:") + ', '.join(invalid_columns)
+                    "detail": _("Invalid column names in CSV:") + ', '.join(invalid_columns) + f". {suffix_message}"
                 })
 
         if schema:
@@ -81,26 +82,29 @@ class FileUploadSerializer(serializers.Serializer):
             mode = item.get('mode', 'NULLABLE')
 
             actual_column_name = df.columns[idx]
-            actual_type = str(df[actual_column_name].dtype)
-            print(actual_type)
-
-            base_message = _("Column should be of type")
-            if expected_type == "STRING" and actual_type not in ["object", "string"]:
-                raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}"})
-            elif expected_type == "INT64" and actual_type not in ["int64"]:
-                raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}"})
-            elif expected_type == "FLOAT64" and actual_type not in ["float64"]:
-                raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}"})
-            elif expected_type == "BOOLEAN" and actual_type not in ["bool"]:
-                raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}"})
-            elif expected_type == "DATETIME":
-                if not pd.to_datetime(df[actual_column_name], errors='coerce').notnull().all():
-                    raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}"})
 
             if mode == "REQUIRED" and df[actual_column_name].isnull().any():
+                suffix_message = _("You must indicate in the schema that the column can accept null values.")
                 raise serializers.ValidationError({
-                    "detail": _("Column is required but contains null values:") + column_name
+                    "detail": _("Column is required but contains null values:") + column_name + f". {suffix_message}"
                 })
+
+            df_temp = df.dropna(subset=[actual_column_name])
+            actual_type = str(df_temp[actual_column_name].dtype)
+
+            base_message = _("Column should be of type")
+            suffix_message = _("You must ensure that all rows are of this data type or modify the schema.")
+            if expected_type == "STRING" and actual_type not in ["object", "string"]:
+                raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}. {suffix_message}"})
+            elif expected_type == "INT64" and actual_type not in ["int64"]:
+                raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}. {suffix_message}"})
+            elif expected_type == "FLOAT64" and actual_type not in ["float64"]:
+                raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}. {suffix_message}"})
+            elif expected_type == "BOOLEAN" and actual_type not in ["bool"]:
+                raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}. {suffix_message}"})
+            elif expected_type == "DATETIME":
+                if not pd.to_datetime(df[actual_column_name], errors='coerce').notnull().all():
+                    raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}. {suffix_message}"})
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
