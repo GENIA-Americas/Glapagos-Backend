@@ -1,9 +1,14 @@
+import json
+import re
+
 import magic
+import pandas as pd
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from api.datasets.models import File
 from api.datasets.enums import FileType
+from api.datasets.utils import is_valid_column_name, create_dataframe_from_csv
 
 
 class FilePreviewSerializer(serializers.Serializer):
@@ -23,6 +28,80 @@ class FileUploadSerializer(serializers.Serializer):
     autodetect = serializers.BooleanField(required=False)
     schema = serializers.ListField(required=False)
 
+    def validate_schema(self, value):
+        value_obj = []
+        if isinstance(value, list) and len(value) == 1:
+            try:
+                value_obj = json.loads(value[0])
+            except json.JSONDecodeError:
+                raise serializers.ValidationError({"detail": _("Invalid JSON format in schema.")})
+
+        invalid_columns = []
+        for item in value_obj:
+            name = item.get('column_name')
+
+            if isinstance(name, str) and re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', name):
+                continue
+
+            invalid_columns.append(name)
+
+        if invalid_columns:
+            invalid_columns_str = ', '.join(invalid_columns)
+            raise serializers.ValidationError({"detail": _("Invalid column names:") + invalid_columns_str})
+
+        return value
+
+    def csv_validate(self, attrs):
+        file = attrs.get('file')
+        schema = attrs.get('schema', [])
+        autodetect = attrs.get('autodetect', False)
+
+        try:
+            df, csv_params = create_dataframe_from_csv(file)
+        except Exception:
+            raise serializers.ValidationError({"detail": _("Error reading CSV file")})
+
+        if autodetect:
+            invalid_columns = [col for col in df.columns if not is_valid_column_name(col)]
+            if invalid_columns:
+                raise serializers.ValidationError({
+                    "detail": _("Invalid column names in CSV:") + ', '.join(invalid_columns)
+                })
+
+        if schema:
+            schema = json.loads(schema[0])
+            if len(schema) != len(df.columns):
+                raise serializers.ValidationError({"detail": _(
+                    "The number of columns in the schema does not match the number of columns in the CSV file."
+                )})
+
+        for idx, item in enumerate(schema):
+            column_name = item['column_name']
+            expected_type = item['data_type']
+            mode = item.get('mode', 'NULLABLE')
+
+            actual_column_name = df.columns[idx]
+            actual_type = str(df[actual_column_name].dtype)
+            print(actual_type)
+
+            base_message = _("Column should be of type")
+            if expected_type == "STRING" and actual_type not in ["object", "string"]:
+                raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}"})
+            elif expected_type == "INT64" and actual_type not in ["int64"]:
+                raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}"})
+            elif expected_type == "FLOAT64" and actual_type not in ["float64"]:
+                raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}"})
+            elif expected_type == "BOOLEAN" and actual_type not in ["bool"]:
+                raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}"})
+            elif expected_type == "DATETIME":
+                if not pd.to_datetime(df[actual_column_name], errors='coerce').notnull().all():
+                    raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}"})
+
+            if mode == "REQUIRED" and df[actual_column_name].isnull().any():
+                raise serializers.ValidationError({
+                    "detail": _("Column is required but contains null values:") + column_name
+                })
+
     def validate(self, attrs):
         attrs = super().validate(attrs)
         file = attrs['file']
@@ -34,19 +113,31 @@ class FileUploadSerializer(serializers.Serializer):
             raise serializers.ValidationError({"detail": _('Only CSV, TXT, and JSON files are allowed.')})
 
         mime = magic.Magic(mime=True)
-        mime_type = mime.from_buffer(file.read(1024))
+        mime_type = mime.from_buffer(file.read(4096))
         file.seek(0)
 
         if mime_type not in valid_mime_types:
             raise serializers.ValidationError({"detail": _('The filetype does not match with the extension')})
 
+        if attrs.get('skip_leading_rows') is None:
+            raise serializers.ValidationError({"detail": _(
+                "Missing or incomplete parameters for CSV files."
+            )})
+
+        if not attrs.get('autodetect') and not attrs.get('schema'):
+            raise serializers.ValidationError({"detail": _(
+                "Unable to determine the file schema due to missing or incomplete parameters."
+            )})
+
+        if attrs.get('autodetect') and attrs.get('schema'):
+            raise serializers.ValidationError({"detail": _(
+                "Schema autodetection cannot be used simultaneously with a provided schema."
+            )})
+
         attrs['extension'] = FileType(extension)
 
         if extension == 'csv':
-            if attrs['skip_leading_rows'] is None or attrs['schema'] is None:
-                raise serializers.ValidationError({"detail": _(
-                    "Unable to determine the file schema due to missing or incomplete parameters."
-                )})
+            self.csv_validate(attrs)
 
         return attrs
 
