@@ -49,7 +49,6 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
             permission_classes=[permissions.IsAuthenticated])
     def file_preview(self, request, *args, **kwargs):
         serializer = FilePreviewSerializer(data=request.data)
-        print(request.data)
         if serializer.is_valid():
             try:
                 preview = serializer.validated_data['preview']
