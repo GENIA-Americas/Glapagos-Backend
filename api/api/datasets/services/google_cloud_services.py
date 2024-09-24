@@ -2,17 +2,40 @@ import json
 from io import StringIO
 from typing import List, Dict
 
+# Google cloud
+from google.oauth2 import service_account
+from google.cloud import bigquery
 from django.conf import settings
 from google.cloud import storage
 from google.cloud import bigquery
 
+# Models
+from api.datasets.models.service_account import ServiceAccount
+from api.users.models import User
 from api.datasets.models import Table
+
+# Utils
+import json
+
+
+def search_query(user: User, query: str):
+
+    account = ServiceAccount.objects.filter(owner=user).first()
+    content = json.loads(account.key.private_key_data)
+    credentials = service_account.Credentials.from_service_account_info(
+        content
+    )
+
+    client = bigquery.Client(credentials=credentials, location="US")
+    result = client.query(query)
+
+    return result
 
 
 class GCSUploadServiceFactory:
     @staticmethod
     def get_upload_service(extension):
-        if extension.lower() == 'json':
+        if extension.lower() == "json":
             return JSONGCSUploadService()
         else:
             return GCSUploadService()
@@ -40,8 +63,9 @@ class JSONGCSUploadService(GCSUploadService):
             return True
         except json.JSONDecodeError:
             return False
+
     def convert_to_newline_delimited_json(self, file):
-        content = file.read().decode('utf-8')
+        content = file.read().decode("utf-8")
 
         if self.is_newline_delimited_json(content):
             return
@@ -50,7 +74,7 @@ class JSONGCSUploadService(GCSUploadService):
         if isinstance(data, list) and all(isinstance(item, dict) for item in data):
             output = StringIO()
             for item in data:
-                output.write(json.dumps(item) + '\n')
+                output.write(json.dumps(item) + "\n")
             output.seek(0)
             file.file = output
             file.size = len(output.getvalue())
@@ -87,16 +111,25 @@ class BigQueryLoadService:
         for field in schema:
             bigquery_schema.append(
                 bigquery.SchemaField(
-                    name=field['column_name'],
-                    field_type=field['data_type'],
-                    mode=field.get('mode', 'NULLABLE')
+                    name=field["column_name"],
+                    field_type=field["data_type"],
+                    mode=field.get("mode", "NULLABLE"),
                 )
             )
         return bigquery_schema
 
-    def mount_table(self, table: Table, autodetect, skip_leading_rows, schema: List, format_params: Dict):
+    def mount_table(
+        self,
+        table: Table,
+        autodetect,
+        skip_leading_rows,
+        schema: List,
+        format_params: Dict,
+    ):
         client = bigquery.Client()
-        dataset_ref = bigquery.DatasetReference(settings.BQ_PROJECT_ID, table.dataset_name)
+        dataset_ref = bigquery.DatasetReference(
+            settings.BQ_PROJECT_ID, table.dataset_name
+        )
         dataset = client.get_dataset(dataset_ref)
         table_ref = dataset.table(table.name)
         extension = table.file.type
@@ -104,8 +137,8 @@ class BigQueryLoadService:
         job_config = bigquery.LoadJobConfig(
             source_format=self.get_source_format(extension),
             autodetect=autodetect,
-            field_delimiter=format_params.get('delimiter', ","),
-            quote_character=format_params.get('quotechar', '"'),
+            field_delimiter=format_params.get("delimiter", ","),
+            quote_character=format_params.get("quotechar", '"'),
         )
 
         if skip_leading_rows:
@@ -117,9 +150,7 @@ class BigQueryLoadService:
 
         gcs_uri = table.file.storage_url
 
-        load_job = client.load_table_from_uri(
-            gcs_uri, table_ref, job_config=job_config
-        )
+        load_job = client.load_table_from_uri(gcs_uri, table_ref, job_config=job_config)
 
         load_job.result()
         self.update_table_info(table_ref, table)

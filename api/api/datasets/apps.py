@@ -6,3 +6,8 @@ class DatasetsConfig(AppConfig):
 
     name = 'api.datasets'
     verbose_name = 'Datasets'
+
+    def ready(self):
+        from . import signals
+
+
