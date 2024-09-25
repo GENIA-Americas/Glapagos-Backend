@@ -19,8 +19,6 @@ import time
 def create_service_account(sender, instance, created, **kwargs):
     if created:
         account = GoogleServiceAccount.create_account(instance.get_email_name())
-        time.sleep(1)
-
         key = GoogleServiceAccount.create_key(account.unique_id)
         GoogleRole.assign_user_rol(account.email)
 

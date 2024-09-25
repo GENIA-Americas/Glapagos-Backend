@@ -3,6 +3,7 @@ from google.cloud import iam_admin_v1
 from google.cloud import resourcemanager_v3
 from google.cloud import bigquery
 from google.iam.v1 import policy_pb2
+from google.api_core.retry import Retry
 
 # Settings
 from django.conf import settings
@@ -22,8 +23,7 @@ class GoogleServiceAccount:
         """
         client = iam_admin_v1.IAMClient()
         request = iam_admin_v1.CreateServiceAccountRequest(
-            name=f"projects/{settings.BQ_PROJECT_ID}",
-            account_id=account_id
+            name=f"projects/{settings.BQ_PROJECT_ID}", account_id=account_id
         )
         response = client.create_service_account(request=request)
         return response
@@ -42,7 +42,17 @@ class GoogleServiceAccount:
         request = iam_admin_v1.CreateServiceAccountKeyRequest(
             name=f"projects/{settings.BQ_PROJECT_ID}/serviceAccounts/{unique_id}",
         )
-        response = client.create_service_account_key(request=request)
+        # needed because sometimes the account creation is not
+        # ready when this function is called
+        retry_strategy = Retry(
+            initial=1.0,
+            maximum=60.0,
+            multiplier=2.0,
+            deadline=10.0,
+        )
+        response = client.create_service_account_key(
+            request=request, retry=retry_strategy
+        )
         return response
 
 

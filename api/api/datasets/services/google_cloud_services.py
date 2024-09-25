@@ -5,17 +5,13 @@ from typing import List, Dict
 # Google cloud
 from google.oauth2 import service_account
 from google.cloud import bigquery
-from django.conf import settings
 from google.cloud import storage
-from google.cloud import bigquery
+from django.conf import settings
 
 # Models
 from api.datasets.models.service_account import ServiceAccount
 from api.users.models import User
 from api.datasets.models import Table
-
-# Utils
-import json
 
 
 def search_query(user: User, query: str):
