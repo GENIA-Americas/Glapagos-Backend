@@ -67,6 +67,16 @@ class GoogleRole:
 
     @staticmethod
     def assign_table_role(table_id: str, account_email: str):
+        """
+        Assing private table role
+
+        Attributes
+        ----------
+        table_id: str
+            Must be the full table path in this format project.dataset.table_id
+        account_email: str
+            Service account generated email
+        """
         client = bigquery.Client(project=settings.BQ_PROJECT_ID)
 
         policy = client.get_iam_policy(table_id)

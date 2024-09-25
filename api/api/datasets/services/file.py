@@ -84,7 +84,7 @@ class CSVFileService(StructuredFileService):
         file_url = upload_service.upload(self.file, self.filename)
         file_obj = self.create_file_object(file_url)
         table_obj = self.create_table_obj(file_obj)
-        sample = self.file.read(1024).decode("utf-8")
+        sample = self.file.read(4096).decode("utf-8")
         self.file.seek(0)
         format_params = csv_parameters_detect(sample)
 

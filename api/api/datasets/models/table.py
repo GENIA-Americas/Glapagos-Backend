@@ -8,17 +8,17 @@ class Table(BaseModel):
     name = models.CharField(max_length=255)
     dataset_name = models.CharField(max_length=255)
     data_expiration = models.DateTimeField(null=True)
-    description = models.TextField(null=True)
     number_of_rows = models.IntegerField(null=True)
     total_logical_bytes = models.FloatField(null=True)
-    active_logical_bytes = models.FloatField(null=True)
-    long_term_logical_bytes = models.FloatField(null=True)
-    total_physical_bytes = models.FloatField(null=True)
-    active_physical_bytes = models.FloatField(null=True)
-    long_term_physical_bytes = models.FloatField(null=True)
-    time_travel_physical_bytes = models.FloatField(null=True)
     mounted = models.BooleanField(default=False)
     file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='tables')
+
+    @property
+    def reference_name(self):
+        split_name = self.name.split("_")
+        if len(split_name) > 0:
+            return "_".join(split_name[1:])
+        return self.name
 
     @property
     def path(self):

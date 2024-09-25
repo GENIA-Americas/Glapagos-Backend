@@ -3,6 +3,8 @@ import pandas as pd
 from io import StringIO
 from typing import Dict, List
 
+from .bigquery import normalize_column_name
+
 
 def csv_parameters_detect(sample: str) -> Dict:
     """Detects format parameters of a given csv
@@ -40,16 +42,13 @@ def detect_datetime(series):
            series (pd.Series): Pandas Series to check.
 
        Returns:
-           str: Detected data type ('DATETIME', 'DATA' or None).
+           str: Detected data type ('DATETIME' or None).
     """
     try:
         series = pd.to_datetime(series, errors='coerce')
 
         if series.notna().all():
-            if (series.dt.time == pd.Timestamp('00:00:00').time()).all():
-                return 'DATE'
-            else:
-                return 'DATETIME'
+            return 'DATETIME'
     except Exception:
         return None
 
@@ -143,13 +142,7 @@ def prepare_csv_data_format(data: str) -> List:
 
     """
     csv_file = StringIO(data)
-    csv_params = csv_parameters_detect(data)
-    df = pd.read_csv(
-        csv_file,
-        sep=csv_params['delimiter'],
-        quotechar=csv_params['quotechar'],
-        escapechar=csv_params['escapechar'],
-    )
+    df, csv_params = create_dataframe_from_csv(csv_file, data)
 
     result = []
     for column in df.columns:
@@ -157,9 +150,26 @@ def prepare_csv_data_format(data: str) -> List:
         bigquery_type = get_bigquery_datatype(df[column], pandas_type)
 
         result.append({
-            "column_name": column if csv_params['has_header'] else None,
+            "column_name": normalize_column_name(column) if csv_params['has_header'] else None,
             "data_type": bigquery_type,
             "example_values": df[column].head(5).fillna("").tolist()
         })
     return result
 
+
+def create_dataframe_from_csv(file, sample: str = None) -> pd.DataFrame:
+    if not sample:
+        sample = file.read(4096).decode('utf-8')
+    file.seek(0)
+    csv_params = csv_parameters_detect(sample)
+
+    df = pd.read_csv(
+        file,
+        sep=csv_params['delimiter'],
+        quotechar=csv_params['quotechar'],
+        escapechar=csv_params['escapechar'],
+        skipinitialspace=csv_params['skipinitialspace']
+    )
+    file.seek(0)
+
+    return df, csv_params
