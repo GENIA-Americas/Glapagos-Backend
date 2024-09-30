@@ -13,10 +13,7 @@ class TableViewSet(mixins.ListModelMixin, GenericViewSet):
     search_fields = ['name']
 
     def get_queryset(self):
-        user = self.request.user
-        return Table.objects.filter(
-            Q(file__public=True) | Q(file__owner=user)
-        ).select_related('file')
+        return Table.objects.filter(mounted=True, file__owner=self.request.user)
 
 
 class PublicTableListView(mixins.ListModelMixin, GenericViewSet):
