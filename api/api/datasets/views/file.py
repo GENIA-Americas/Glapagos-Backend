@@ -1,7 +1,7 @@
 from django.utils.translation import gettext_lazy as _
-from django.db.models import Q 
+from django.db.models import Q
 from rest_framework.viewsets import GenericViewSet
-from rest_framework import pagination, status, permissions, mixins, filters
+from rest_framework import status, permissions, mixins, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
@@ -15,26 +15,8 @@ from api.datasets.serializers import (
     SearchQuerySerializer,
 )
 from api.datasets.utils import prepare_csv_data_format
-from api.utils.pagination import StartEndPagination
+from api.utils.pagination import StartEndPagination, SearchQueryPagination
 
-class SearchQueryPagination(pagination.LimitOffsetPagination):
-    def paginate_queryset(self, queryset, request, view=None):
-        self.request = request
-        self.limit = self.get_limit(request)
-        if self.limit is None:
-            return None
-
-        self.count = self.get_count(queryset)
-        print(self.count)
-        self.offset = self.get_offset(request)
-
-        if self.count == 0 or self.offset > self.count:
-            return []
-
-        return queryset 
-
-    def get_count(self, queryset):
-        return queryset.total_rows
 
 class FileViewSet(mixins.ListModelMixin, GenericViewSet):
     serializer_class = FileSerializer
@@ -104,7 +86,7 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         name="search_query",
         url_path="search_query",
         permission_classes=[permissions.IsAuthenticated],
-        pagination_class=SearchQueryPagination
+        pagination_class=SearchQueryPagination,
     )
     def search_query(self, request, *args, **kwargs):
         serializer = SearchQuerySerializer(
@@ -114,9 +96,10 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         if serializer.is_valid():
             try:
                 result = search_query(
-                    request.user, serializer.validated_data.get("query", ""),
-                    limit = int(request.query_params.get("limit", 20)),
-                    offset = int(request.query_params.get("offset", 0)) 
+                    request.user,
+                    serializer.validated_data.get("query", ""),
+                    limit=int(request.query_params.get("limit", 20)),
+                    offset=int(request.query_params.get("offset", 0)),
                 )
                 self.paginate_queryset(result)
                 return self.get_paginated_response(result)
@@ -127,4 +110,3 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
                 )
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
