@@ -14,18 +14,23 @@ from api.users.models import User
 from api.datasets.models import Table
 
 
-def search_query(user: User, query: str):
+def search_query(user: User, query: str, offset: int = 0, limit: int = 20):
+    assert type(offset) is int and type(limit) is int, "limit and offset must be integers"
 
     account = ServiceAccount.objects.filter(owner=user).first()
     content = json.loads(account.key.private_key_data)
-    credentials = service_account.Credentials.from_service_account_info(
-        content
-    )
+    credentials = service_account.Credentials.from_service_account_info(content)
 
     client = bigquery.Client(credentials=credentials, location="US")
-    result = client.query(query)
+    job = client.query(query)
+    job.result()
 
-    return result
+    assert job.destination is not None, "Job destination should be defined"
+
+    destination = client.get_table(job.destination)
+    result = client.list_rows(destination, start_index=offset, max_results=limit)
+
+    return result 
 
 
 class GCSUploadServiceFactory:
