@@ -14,8 +14,7 @@ from api.users.models import User
 from api.datasets.models import Table
 
 
-def search_query(user: User, query: str):
-
+def search_query(user: User, query: str, job_config: bigquery.QueryJobConfig = None):
     account = ServiceAccount.objects.filter(owner=user).first()
     content = json.loads(account.key.private_key_data)
     credentials = service_account.Credentials.from_service_account_info(
@@ -23,9 +22,20 @@ def search_query(user: User, query: str):
     )
 
     client = bigquery.Client(credentials=credentials, location="US")
-    result = client.query(query)
+    query_job = client.query(query, job_config=job_config)
+    result = query_job.result()
 
     return result
+
+
+def get_table_reference(project_id: str, dataset: str, table: str):
+    client = bigquery.Client()
+    dataset_ref = bigquery.DatasetReference(
+        project_id, dataset
+    )
+    dataset = client.get_dataset(dataset_ref)
+    table_ref = dataset.table(table)
+    return table_ref
 
 
 class GCSUploadServiceFactory:
@@ -84,15 +94,6 @@ class JSONGCSUploadService(GCSUploadService):
 
 class BigQueryLoadService:
 
-    def update_table_info(self, table_ref, table_obj: Table):
-        client = bigquery.Client()
-        table_bq = client.get_table(table_ref)
-        table_obj.mounted = True
-        table_obj.data_expiration = table_bq.expires
-        table_obj.number_of_rows = table_bq.num_rows
-        table_obj.total_logical_bytes = table_bq.num_bytes
-        table_obj.save()
-
     def get_source_format(self, extension: str):
         """Returns the BigQuery SourceFormat based on file extension."""
         formats = {
@@ -149,4 +150,4 @@ class BigQueryLoadService:
         load_job = client.load_table_from_uri(gcs_uri, table_ref, job_config=job_config)
 
         load_job.result()
-        self.update_table_info(table_ref, table)
+        table.update_table_stats(table_ref)

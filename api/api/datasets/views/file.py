@@ -40,7 +40,7 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         methods=["post"],
         name="upload_file",
         url_path="upload_file",
-        permission_classes=[],
+        permission_classes=[permissions.IsAuthenticated],
     )
     def upload_file(self, request, *args, **kwargs):
         serializer = FileUploadSerializer(data=request.data)
