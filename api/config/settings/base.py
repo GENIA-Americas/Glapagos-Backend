@@ -87,6 +87,7 @@ LOCAL_APPS = [
     'api.events.apps.EventsAppConfig',
     'api.datasets.apps.DatasetsConfig',
     'api.contacts.apps.ContactsConfig',
+    'api.ai.apps.AiAppConfig',
 ]
 
 INSTALLED_APPS = THIRD_PARTY_APPS + DJANGO_APPS + LOCAL_APPS
@@ -317,4 +318,8 @@ ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
+    "https://a8c7-181-29-196-144.ngrok-free.app"
 ]
+
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+
