@@ -20,8 +20,6 @@ def csv_parameters_detect(sample: str) -> Dict:
 
     dialect = sniffer.sniff(sample)
 
-    has_header = sniffer.has_header(sample)
-
     return {
         'delimiter': dialect.delimiter,
         'quotechar': dialect.quotechar,
@@ -30,7 +28,6 @@ def csv_parameters_detect(sample: str) -> Dict:
         'skipinitialspace': dialect.skipinitialspace,
         'lineterminator': dialect.lineterminator,
         'quoting': dialect.quoting,
-        'has_header': has_header
     }
 
 
@@ -131,11 +128,12 @@ def get_bigquery_datatype(column: pd.Series, pandas_type: str) -> str:
     return type_mapping.get(pandas_type.lower(), 'STRING')
 
 
-def prepare_csv_data_format(data: str) -> List:
+def prepare_csv_data_format(data: str, skip_leading_rows: int) -> List:
     """Prepare csv data schema to Big Query format
 
     Args:
         data (str): CSV data
+        skip_leading_rows (int): Headers rows
 
     Returns:
         (List): CSV rows in Big Query format
@@ -144,20 +142,34 @@ def prepare_csv_data_format(data: str) -> List:
     csv_file = StringIO(data)
     df, csv_params = create_dataframe_from_csv(csv_file, data)
 
+    first_example_index = max(skip_leading_rows - 1, 0)
     result = []
     for column in df.columns:
         pandas_type = str(df[column].dtype)
         bigquery_type = get_bigquery_datatype(df[column], pandas_type)
 
         result.append({
-            "column_name": normalize_column_name(column) if csv_params['has_header'] else None,
+            "column_name": normalize_column_name(column) if skip_leading_rows > 0 else None,
             "data_type": bigquery_type,
-            "example_values": df[column].head(5).fillna("").tolist()
+            "example_values": df[column][first_example_index:].head(5).fillna("").tolist()
         })
     return result
 
 
 def create_dataframe_from_csv(file, sample: str = None) -> pd.DataFrame:
+    """
+        Creates a pandas DataFrame from a CSV file while detecting CSV parameters such as delimiter,
+        quote character, and escape character.
+
+        Args:
+            file : The file containing the CSV data.
+            skip_leading_rows (int): Number of rows to skip at the beginning of the file.
+            sample : (str): A sample string from the file used to detect CSV parameters.
+
+        Returns:
+            df (pd.DataFrame): The DataFrame created from the CSV file.
+            csv_params (dict) A dictionary containing the detected CSV parameters
+    """
     if not sample:
         sample = file.read(4096).decode('utf-8')
     file.seek(0)
@@ -168,7 +180,7 @@ def create_dataframe_from_csv(file, sample: str = None) -> pd.DataFrame:
         sep=csv_params['delimiter'],
         quotechar=csv_params['quotechar'],
         escapechar=csv_params['escapechar'],
-        skipinitialspace=csv_params['skipinitialspace']
+        skipinitialspace=csv_params['skipinitialspace'],
     )
     file.seek(0)
 

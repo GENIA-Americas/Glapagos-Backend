@@ -13,6 +13,7 @@ from api.datasets.utils import is_valid_column_name, create_dataframe_from_csv
 
 class FilePreviewSerializer(serializers.Serializer):
     preview = serializers.CharField()
+    skip_leading_rows = serializers.IntegerField()
 
     def validate_preview(self, value):
         lines = value.strip().split('\n')
