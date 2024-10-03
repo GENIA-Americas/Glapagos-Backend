@@ -14,16 +14,25 @@ from api.users.models import User
 from api.datasets.models import Table
 
 
-def search_query(user: User, query: str, job_config: bigquery.QueryJobConfig = None):
+def search_query(user: User, query: str, limit: int | None = None, offset: int | None = None, job_config: bigquery.QueryJobConfig = None):
+
     account = ServiceAccount.objects.filter(owner=user).first()
     content = json.loads(account.key.private_key_data)
-    credentials = service_account.Credentials.from_service_account_info(
-        content
-    )
+    credentials = service_account.Credentials.from_service_account_info(content)
 
     client = bigquery.Client(credentials=credentials, location="US")
-    query_job = client.query(query, job_config=job_config)
-    result = query_job.result()
+    job = client.query(query, job_config=job_config)
+    result = job.result()
+
+    if limit is not None and offset is not None:
+        assert (
+            type(offset) is int and type(limit) is int
+        ), "limit and offset must be integers"
+
+        assert job.destination is not None, "Job destination should be defined"
+
+        destination = client.get_table(job.destination)
+        result = client.list_rows(destination, start_index=offset, max_results=limit)
 
     return result
 

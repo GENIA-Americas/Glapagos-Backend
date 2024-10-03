@@ -3,6 +3,8 @@ pytz
 python-slugify
 jinja2
 
+openai
+
 # Django
 Django==3.2
 django-cors-headers==3.7.0

@@ -1,12 +1,11 @@
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
 from rest_framework.viewsets import GenericViewSet
-from rest_framework import viewsets, status, permissions, mixins, filters
+from rest_framework import status, permissions, mixins, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from api.datasets.services.google_cloud_services import search_query
-from api.datasets.services.accounts import GoogleServiceAccount 
 from api.datasets.models import File
 from api.datasets.services.file import FileServiceFactory
 from api.datasets.serializers import (
@@ -15,8 +14,8 @@ from api.datasets.serializers import (
     FilePreviewSerializer,
     SearchQuerySerializer,
 )
-from api.datasets.utils import csv_parameters_detect, prepare_csv_data_format
-from api.utils.pagination import StartEndPagination
+from api.datasets.utils import prepare_csv_data_format
+from api.utils.pagination import StartEndPagination, SearchQueryPagination
 
 
 class FileViewSet(mixins.ListModelMixin, GenericViewSet):
@@ -87,6 +86,7 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         name="search_query",
         url_path="search_query",
         permission_classes=[permissions.IsAuthenticated],
+        pagination_class=SearchQueryPagination,
     )
     def search_query(self, request, *args, **kwargs):
         serializer = SearchQuerySerializer(
@@ -95,8 +95,14 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
 
         if serializer.is_valid():
             try:
-                result = search_query(request.user, serializer.validated_data.get("query", "")) 
-                return Response(dict(data=result.result()), status=status.HTTP_200_OK)
+                result = search_query(
+                    request.user,
+                    serializer.validated_data.get("query", ""),
+                    limit=int(request.query_params.get("limit", 20)),
+                    offset=int(request.query_params.get("offset", 0)),
+                )
+                self.paginate_queryset(result)
+                return self.get_paginated_response(result)
             except Exception as exp:
                 return Response(
                     {"detail": _("Error processing request"), "error": str(exp)},
