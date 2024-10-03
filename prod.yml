@@ -6,13 +6,15 @@ volumes:
 
 services:
   postgres:
-    image: postgres:11.6
+    image: postgres:15
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
 
   django: &django
     build:
       context: ./
       dockerfile: ./compose/production/django/Dockerfile
-    image: api
+    image: base-default-api
     depends_on:
       - postgres
     volumes:
