@@ -40,14 +40,16 @@ RUN pip install -r /requirements/production.txt
 COPY ./compose/production/django/wait_for_postgres.py /wait_for_postgres.py
 # RUN chmod +x /wait_for_postgres.py
 
-COPY ./compose/local/django/start /start
+COPY ./compose/production/django/start /start
 RUN sed -i 's/\r//' /start
 RUN chmod +x /start
 
-COPY ./compose/local/django/celery/beat/start /start-celerybeat
+COPY ./compose/production/django/celery/beat/start /start-celerybeat
 RUN sed -i 's/\r$//g' /start-celerybeat
 RUN chmod +x /start-celerybeat
 
+EXPOSE 8000
+
 WORKDIR /app
 
-# ENTRYPOINT ["/start"]
+ENTRYPOINT ["/start"]

@@ -21,8 +21,6 @@ services:
       - ./api:/app
     env_file:
       - ./.envs/.prod/.django
-      - ./.envs/.prod/.db
-      - ./.envs/.prod/.cloud
     ports:
       - "8000:8000"
     command: /start
