@@ -16,6 +16,7 @@ class SearchQuerySerializer(serializers.Serializer):
 
 class FilePreviewSerializer(serializers.Serializer):
     preview = serializers.CharField()
+    skip_leading_rows = serializers.IntegerField()
 
     def validate_preview(self, value):
         lines = value.strip().split("\n")
