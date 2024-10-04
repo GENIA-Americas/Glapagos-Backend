@@ -1,7 +1,7 @@
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
 from rest_framework.viewsets import GenericViewSet
-from rest_framework import status, permissions, mixins, filters
+from rest_framework import viewsets, status, permissions, mixins, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
@@ -69,7 +69,8 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         if serializer.is_valid():
             try:
                 preview = serializer.validated_data["preview"]
-                bigquery_format = prepare_csv_data_format(data=preview)
+                skip_leading_rows = serializer.validated_data['skip_leading_rows']
+                bigquery_format = prepare_csv_data_format(data=preview, skip_leading_rows=skip_leading_rows)
                 return Response(bigquery_format, status=status.HTTP_200_OK)
             except Exception as exp:
                 return Response(

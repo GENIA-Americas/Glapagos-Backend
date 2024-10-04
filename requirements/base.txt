@@ -9,6 +9,7 @@ openai
 Django==3.2
 django-cors-headers==3.7.0
 django-rest-passwordreset
+django-extensions
 
 # Environment
 django-environ==0.4.5
