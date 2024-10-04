@@ -5,6 +5,7 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractUser
 
 # Utilities
+from api.datasets.services.accounts import GoogleRole, GoogleServiceAccount
 from api.utils.models import BaseModel
 from api.users.roles import UserRoles
 from api.users.enums import SetUpStatus, PasswordStatus, Industry, Country
@@ -25,6 +26,7 @@ class UserManager(BaseUserManager):
         else:
             user.set_password(password)
         user.save()
+
         return user
 
     def create_superuser(self, email, password, **extra_fields):
@@ -122,6 +124,9 @@ class User(BaseModel, AbstractUser):
                   "password_status", self.password_status)
             return False
         return True
+
+    def get_email_name(self):
+        return str(self.email).replace("@", "").replace(".", "")[:30]
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

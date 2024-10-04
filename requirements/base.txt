@@ -3,6 +3,8 @@ pytz
 python-slugify
 jinja2
 
+openai
+
 # Django
 Django==3.2
 django-cors-headers==3.7.0
@@ -62,6 +64,9 @@ google-cloud-firestore
 google-cloud-datacatalog
 google-cloud-dataplex
 google-cloud-dataproc
+google-cloud-iam
+google-cloud-resource-manager
+grpc-google-iam-v1
 
 # MIME TYPES
 python-magic

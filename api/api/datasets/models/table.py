@@ -11,7 +11,9 @@ class Table(BaseModel):
     number_of_rows = models.IntegerField(null=True)
     total_logical_bytes = models.FloatField(null=True)
     mounted = models.BooleanField(default=False)
+    role_asigned = models.BooleanField(default=False)
     file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='tables')
+
 
     @property
     def reference_name(self):
