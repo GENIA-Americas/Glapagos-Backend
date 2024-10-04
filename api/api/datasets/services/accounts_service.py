@@ -4,9 +4,12 @@ from google.cloud import resourcemanager_v3
 from google.cloud import bigquery
 from google.iam.v1 import policy_pb2
 from google.api_core.retry import Retry
+from google.cloud.bigquery.enums import EntityTypes
 
 # Settings
 from django.conf import settings
+
+from .big_query_service import BigQueryService
 
 
 class GoogleServiceAccount:
@@ -78,7 +81,7 @@ class GoogleRole:
     @staticmethod
     def assign_table_role(table_id: str, account_email: str):
         """
-        Assing private table role
+        Assign private table role
 
         Attributes
         ----------
@@ -97,3 +100,36 @@ class GoogleRole:
         updated_policy = client.set_iam_policy(table_id, policy)
 
         return updated_policy
+
+    @staticmethod
+    def assign_dataset_role(dataset_name: str, account_email: str, role: str):
+        """
+        Assign dataset role
+
+        Attributes
+        ----------
+        dataset_name (str): Dataset name
+        account_email (str): Service account generated email
+        role (str): Role name. (OWNER | WRITER | READER)
+        """
+        dataset_id = f"{settings.BQ_PROJECT_ID}.{dataset_name}"
+
+        entity_type = EntityTypes.USER_BY_EMAIL
+
+        from google.cloud import bigquery
+        bigquery_service = BigQueryService(user=None)
+        client = bigquery_service.create_bigquery_client(project_owner=True)
+
+        dataset = client.get_dataset(dataset_id)
+
+        entries = list(dataset.access_entries)
+        entries.append(
+            bigquery.AccessEntry(
+                role=role,
+                entity_type=entity_type,
+                entity_id=account_email,
+            )
+        )
+        dataset.access_entries = entries
+
+        client.update_dataset(dataset, ["access_entries"])

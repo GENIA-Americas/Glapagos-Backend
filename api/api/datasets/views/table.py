@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from django.utils.translation import gettext_lazy as _
 
 from api.datasets.serializers import TableSerializer, TableTransformSerializer
-from api.datasets.services.transformations import apply_transformations
+from api.datasets.services import apply_transformations
 from api.datasets.models import File, Table
 
 

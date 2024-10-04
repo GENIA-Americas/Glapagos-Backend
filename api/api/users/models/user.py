@@ -5,7 +5,6 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractUser
 
 # Utilities
-from api.datasets.services.accounts import GoogleRole, GoogleServiceAccount
 from api.utils.models import BaseModel
 from api.users.roles import UserRoles
 from api.users.enums import SetUpStatus, PasswordStatus, Industry, Country

@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict
 
-from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from google.cloud import bigquery
 from google.api_core.exceptions import GoogleAPIError
 
 from api.users.models import User
 from api.datasets.models import Table
-from api.datasets.services.google_cloud_services import search_query, get_table_reference
+from .big_query_service import BigQueryService
+
 from api.datasets.utils import generate_random_string
 
 
@@ -69,15 +69,14 @@ class Transformation(ABC):
         self.create_table = create_table
         self.user = user
 
-    def get_mode(self):
+    def get_mode(self) -> bigquery.WriteDisposition:
         """
             Determines the BigQuery write disposition mode.
 
             Returns:
-                str: The write mode, either WRITE_EMPTY (for table creation) or WRITE_TRUNCATE.
+                bigquery.WriteDisposition: The write mode, either WRITE_EMPTY (for table creation) or WRITE_TRUNCATE.
         """
         return bigquery.WriteDisposition.WRITE_EMPTY if self.create_table else bigquery.WriteDisposition.WRITE_TRUNCATE
-
 
     @abstractmethod
     def get_query(self) -> str:
@@ -100,17 +99,19 @@ class Transformation(ABC):
                 GoogleAPIError: If there is an error executing the query in BigQuery.
                 Exception: For any other unexpected errors.
         """
-        client = bigquery.Client()
+        bigquery_service = BigQueryService(user=self.user)
         mode: bigquery.WriteDisposition = self.get_mode()
         destination_table: Table = self.table
         if self.create_table:
             destination_table = Table.objects.create(
                 name=f"{self.table.name}_copy_{generate_random_string(5)}",
-                dataset_name=self.table.dataset_name,
+                dataset_name=self.user.service_account.dataset_name,
                 is_transformed=True,
                 parent=self.table,
-                file=self.table.file
+                file=self.table.file,
+                owner=self.user,
             )
+
         job_config = bigquery.QueryJobConfig(
             destination=destination_table.path,
             write_disposition=mode,
@@ -119,12 +120,11 @@ class Transformation(ABC):
         query = self.get_query()
 
         try:
-            # query_job = search_query(user=self.user, query=query, job_config=job_config)
-            query_job = client.query(query, job_config=job_config)
-            query_job.result()
+            bigquery_service.query(query=query, job_config=job_config)
             destination_table.mounted = True
-            ref = get_table_reference(settings.BQ_PROJECT_ID, settings.BQ_DATASET_ID, destination_table.name)
+            ref = bigquery_service.get_table_reference(destination_table.dataset_name, destination_table.name)
             destination_table.update_table_stats(table_ref=ref)
+        # TODO: Exception handle
         except GoogleAPIError as e:
             print(f"Error al ejecutar la consulta en BigQuery: {str(e)}")
         except Exception as e:
@@ -142,4 +142,3 @@ class MissingValuesTransformation(Transformation):
             WHERE {self.field} IS NOT NULL;
         """
         return query
-

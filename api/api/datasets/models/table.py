@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from google.cloud import bigquery
 
 from api.datasets.models.file import File
+from api.users.models import User
 from utils.models import BaseModel
 
 
@@ -19,6 +20,7 @@ class Table(BaseModel):
     is_transformed = models.BooleanField(default=False)
     parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, related_name='child_tables')
     file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='tables')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tables', null=True)
 
 
     @property
