@@ -1,6 +1,7 @@
 FROM alpine:3.16
 
 ENV PYTHONUNBUFFERED 1
+ENV PORT 8000
 
 RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
 RUN python3 -m ensurepip
@@ -48,7 +49,7 @@ COPY ./compose/production/django/celery/beat/start /start-celerybeat
 RUN sed -i 's/\r$//g' /start-celerybeat
 RUN chmod +x /start-celerybeat
 
-EXPOSE 8000
+EXPOSE $PORT
 
 WORKDIR /app
 
