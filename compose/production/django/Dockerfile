@@ -43,12 +43,12 @@ COPY ./compose/production/django/wait_for_postgres.py /wait_for_postgres.py
 # RUN chmod +x /wait_for_postgres.py
 
 COPY ./compose/production/django/start /start
-RUN sed -i 's/\r//' /start
 RUN chmod +x /start
 
 COPY ./compose/production/django/celery/beat/start /start-celerybeat
-RUN sed -i 's/\r$//g' /start-celerybeat
 RUN chmod +x /start-celerybeat
+
+WORKDIR /app
 
 RUN cat /start
 
