@@ -116,7 +116,6 @@ class GoogleRole:
 
         entity_type = EntityTypes.USER_BY_EMAIL
 
-        from google.cloud import bigquery
         bigquery_service = BigQueryService(user=None)
         client = bigquery_service.create_bigquery_client(project_owner=True)
 
