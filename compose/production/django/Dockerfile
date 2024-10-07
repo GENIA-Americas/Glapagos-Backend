@@ -42,16 +42,17 @@ RUN pip install -r /app/requirements/production.txt
 COPY ./compose/production/django/wait_for_postgres.py /wait_for_postgres.py
 # RUN chmod +x /wait_for_postgres.py
 
-COPY ./compose/production/django/start /start
-RUN chmod +x /start
+# COPY ./compose/production/django/start /start
+# RUN chmod +x /start
 
-COPY ./compose/production/django/celery/beat/start /start-celerybeat
-RUN chmod +x /start-celerybeat
+# COPY ./compose/production/django/celery/beat/start /start-celerybeat
+# RUN chmod +x /start-celerybeat
 
 WORKDIR /app
 
-RUN cat /start
-
 EXPOSE $PORT
 
-ENTRYPOINT ["/start"]
+RUN python manage.py collectstatic --noinput
+RUN python manage.py migrate
+
+ENTRYPOINT ["gunicorn", "config.wsgi", "--bind", "0.0.0.0:$PORT", "--workers", "1"]
