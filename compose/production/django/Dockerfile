@@ -37,8 +37,6 @@ RUN apk add libmagic
 
 WORKDIR /app
 COPY . /app
-RUN ls -lah /app
-RUN pwd
 
 RUN pip install -r /app/requirements/production.txt
 
@@ -53,7 +51,7 @@ COPY ./compose/production/django/celery/beat/start /start-celerybeat
 RUN sed -i 's/\r$//g' /start-celerybeat
 RUN chmod +x /start-celerybeat
 
-RUN ls -lah /app
+RUN cat /start
 
 EXPOSE $PORT
 
