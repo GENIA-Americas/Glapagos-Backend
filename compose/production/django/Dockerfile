@@ -38,8 +38,9 @@ RUN apk add libmagic
 WORKDIR /app
 COPY . /app
 RUN ls -lah /app
+RUN pwd
 
-RUN pip install -r /requirements/production.txt
+RUN pip install -r /app/requirements/production.txt
 
 COPY ./compose/production/django/wait_for_postgres.py /wait_for_postgres.py
 # RUN chmod +x /wait_for_postgres.py
