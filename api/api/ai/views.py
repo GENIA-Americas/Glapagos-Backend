@@ -6,7 +6,6 @@ from rest_framework.views import status
 
 # Models
 from api.ai.serializers import ChatSerializer
-from api.ai.models import Chat 
 from api.datasets.models import Table
 
 # Permissions
@@ -16,8 +15,6 @@ from api.users.permissions import IsAdminPermission, CanCrudPermission
 
 class AiViewset(viewsets.ModelViewSet):
     serializer_class = ChatSerializer 
-    model = Chat 
-    queryset = Chat.objects.all()
     permission_classes = [IsAdminPermission | CanCrudPermission]
 
     @action(
