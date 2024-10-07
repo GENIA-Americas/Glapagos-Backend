@@ -35,6 +35,7 @@ RUN apk add python3-dev
 RUN apk add postgresql-client
 RUN apk add libmagic
 
+COPY . /app
 COPY ./requirements /requirements
 RUN pip install -r /requirements/production.txt
 
