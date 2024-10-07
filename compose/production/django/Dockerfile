@@ -37,6 +37,7 @@ RUN apk add libmagic
 
 WORKDIR /app
 COPY . /app
+RUN ls -lah /app
 
 RUN pip install -r /requirements/production.txt
 
