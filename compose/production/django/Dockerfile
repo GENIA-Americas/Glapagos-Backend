@@ -35,8 +35,9 @@ RUN apk add python3-dev
 RUN apk add postgresql-client
 RUN apk add libmagic
 
+WORKDIR /app
 COPY . /app
-COPY ./requirements /requirements
+
 RUN pip install -r /requirements/production.txt
 
 COPY ./compose/production/django/wait_for_postgres.py /wait_for_postgres.py
@@ -50,8 +51,8 @@ COPY ./compose/production/django/celery/beat/start /start-celerybeat
 RUN sed -i 's/\r$//g' /start-celerybeat
 RUN chmod +x /start-celerybeat
 
-EXPOSE $PORT
+RUN ls -lah /app
 
-WORKDIR /app
+EXPOSE $PORT
 
 ENTRYPOINT ["/start"]
