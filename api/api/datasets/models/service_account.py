@@ -17,7 +17,7 @@ class ServiceAccountKey(BaseModel):
 
 
 class ServiceAccount(BaseModel):
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    owner = models.OneToOneField(User, on_delete=models.CASCADE, related_name="service_account")
     key = models.OneToOneField(ServiceAccountKey, on_delete=models.CASCADE)
 
     name = models.CharField(max_length=255)
@@ -26,4 +26,5 @@ class ServiceAccount(BaseModel):
     email = models.CharField(max_length=255)
     etag = models.CharField(max_length=255)
     oauth2_client_id = models.CharField(max_length=255)
+    dataset_name = models.CharField(max_length=255, null=True)
 

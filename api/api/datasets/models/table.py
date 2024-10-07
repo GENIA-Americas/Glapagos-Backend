@@ -1,7 +1,12 @@
 from django.db import models
-from utils.models import BaseModel
-from api.datasets.models.file import File
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+from google.cloud import bigquery
+
+from api.datasets.models.file import File
+from api.users.models import User
+from utils.models import BaseModel
 
 
 class Table(BaseModel):
@@ -11,20 +16,40 @@ class Table(BaseModel):
     number_of_rows = models.IntegerField(null=True)
     total_logical_bytes = models.FloatField(null=True)
     mounted = models.BooleanField(default=False)
+    public = models.BooleanField(default=False)
     role_asigned = models.BooleanField(default=False)
+    is_transformed = models.BooleanField(default=False)
+    parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, related_name='child_tables')
     file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='tables')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tables', null=True)
 
 
     @property
     def reference_name(self):
-        split_name = self.name.split("_")
+        reference_name = self.name
+
+        split_name = reference_name.split("_")
         if len(split_name) > 0:
             return "_".join(split_name[1:])
-        return self.name
+        return reference_name
 
     @property
     def path(self):
         return f"{settings.BQ_PROJECT_ID}.{self.dataset_name}.{self.name}"
+
+    def clean(self):
+        super().clean()
+        if self.parent and self.parent == self:
+            raise ValidationError(_("A 'Table' object cannot have itself as its parent."))
+
+    def update_table_stats(self, table_ref):
+        client = bigquery.Client()
+        table_bq = client.get_table(table_ref)
+        self.mounted = True
+        self.data_expiration = table_bq.expires
+        self.number_of_rows = table_bq.num_rows
+        self.total_logical_bytes = table_bq.num_bytes
+        self.save()
 
     def __str__(self):
         return f"{self.path}"

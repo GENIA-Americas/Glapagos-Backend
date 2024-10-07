@@ -14,6 +14,7 @@ from api.datasets.utils import is_valid_column_name, create_dataframe_from_csv
 class SearchQuerySerializer(serializers.Serializer):
     query = serializers.CharField()
 
+
 class FilePreviewSerializer(serializers.Serializer):
     preview = serializers.CharField()
     skip_leading_rows = serializers.IntegerField()
