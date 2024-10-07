@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict
 
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from google.cloud import bigquery
 from google.api_core.exceptions import GoogleAPIError
@@ -16,7 +17,8 @@ def apply_transformations(
         table: Table,
         user: User,
         transformations: List[Dict[str, str]],
-        create_table: bool
+        create_table: bool,
+        public_destination: bool = None,
 ) -> Table:
     """
         Applies a series of transformations to a BigQuery table.
@@ -26,6 +28,7 @@ def apply_transformations(
             user (User): The user applying the transformations.
             transformations (list): A list of dictionaries with "field" and "transformation".
             create_table (bool): If True, allows table creation on the first transformation.
+            public_destination (bool | None): Set new table privacy if create table is True
 
         Returns:
             Table: The transformed table.
@@ -43,7 +46,9 @@ def apply_transformations(
         if TransformationClass is None:
             raise ValueError(_(f"Transformation class not found."))
 
-        obj = TransformationClass(table, field, user=user, create_table=create_table)
+        obj = TransformationClass(table=table, field=field, user=user,
+                                  create_table=create_table,
+                                  public_destination=public_destination)
         table = obj.execute()
         create_table = False
 
@@ -60,14 +65,16 @@ class Transformation(ABC):
             user (User): The user performing the transformation.
             create_table (bool): Flag to indicate if a new table should be created.
     """
-    def __init__(self, table: Table, field: str, user: User, create_table: bool) -> None:
+    def __init__(self, table: Table, field: str, user: User,
+                 create_table: bool, public_destination: bool) -> None:
         """
-            Initializes the transformation with the given table, field, user, and table creation flag.
+            Initializes the transformation with the given table, field and user
         """
-        self.table = table
-        self.field = field
-        self.create_table = create_table
-        self.user = user
+        self.table: Table = table
+        self.field: str = field
+        self.user: User = user
+        self.create_table: bool = create_table
+        self.public_destination: bool = public_destination
 
     def get_mode(self) -> bigquery.WriteDisposition:
         """
@@ -92,6 +99,10 @@ class Transformation(ABC):
         """
             Executes the transformation by running a BigQuery query and handling table creation if needed.
 
+            Params:
+            create_table (bool): If a new table should be created to storage transformation results
+            public_destination (bool): Destination privacy. True if destination table should be public.
+
             Returns:
                 Table: The transformed table.
 
@@ -103,13 +114,15 @@ class Transformation(ABC):
         mode: bigquery.WriteDisposition = self.get_mode()
         destination_table: Table = self.table
         if self.create_table:
+            dataset_name = settings.BQ_DATASET_ID if self.public_destination else self.user.service_account.dataset_name
             destination_table = Table.objects.create(
                 name=f"{self.table.name}_copy_{generate_random_string(5)}",
-                dataset_name=self.user.service_account.dataset_name,
+                dataset_name=dataset_name,
                 is_transformed=True,
                 parent=self.table,
                 file=self.table.file,
                 owner=self.user,
+                public=self.public_destination
             )
 
         job_config = bigquery.QueryJobConfig(

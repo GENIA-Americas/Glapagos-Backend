@@ -16,6 +16,7 @@ class Table(BaseModel):
     number_of_rows = models.IntegerField(null=True)
     total_logical_bytes = models.FloatField(null=True)
     mounted = models.BooleanField(default=False)
+    public = models.BooleanField(default=False)
     role_asigned = models.BooleanField(default=False)
     is_transformed = models.BooleanField(default=False)
     parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, related_name='child_tables')

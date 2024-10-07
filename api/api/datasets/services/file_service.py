@@ -57,6 +57,7 @@ class StructuredFileService(FileService):
             dataset_name=dataset_name,
             file=file_obj,
             owner=file_obj.owner,
+            public=self.public
         )
         table.save()
         return table

@@ -20,21 +20,23 @@ class TableViewSet(mixins.ListModelMixin, GenericViewSet):
 
     @action(detail=True, methods=['post'], name='transform', url_path='transform',
             permission_classes=[permissions.IsAuthenticated], serializer_class=TableTransformSerializer)
-    def transform(self, request, pk=None, **kwargs):
+    def transform(self, request, pk, **kwargs):
         user = request.user
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        create_table = serializer.validated_data['create_table']
-        transformations = serializer.validated_data['transformations']
-
         table = Table.objects.filter(pk=pk).first()
         if not table:
             return Response(
                 {"error": _(f"Table with id {pk} not found.")},
                 status=status.HTTP_404_NOT_FOUND
             )
-        transformed_table = apply_transformations(table, user, transformations, create_table)
+
+        serializer = self.get_serializer(data=request.data, context={"table": table, "user": user})
+        serializer.is_valid(raise_exception=True)
+
+        create_table = serializer.validated_data['create_table']
+        public_destination = serializer.validated_data.get('public_destination')
+        transformations = serializer.validated_data['transformations']
+
+        transformed_table = apply_transformations(table, user, transformations, create_table, public_destination)
 
         return Response(data={
             'detail': _("Table transformed successfully: ") + transformed_table.name
