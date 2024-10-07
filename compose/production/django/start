@@ -6,6 +6,8 @@ set -o nounset
 
 echo "Current directory:--------------------------------------------"
 pwd
+ls -lah .
+ls -lah /
 
 python manage.py collectstatic --noinput
 python manage.py migrate
