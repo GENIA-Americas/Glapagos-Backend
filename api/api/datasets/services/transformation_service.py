@@ -158,8 +158,17 @@ class Transformation(ABC):
 
 
 class MissingValuesTransformation(Transformation):
+    """
+    Transformation class to filter out rows where a specific field contains NULL values.
+    """
 
     def get_query(self) -> str:
+        """
+        Generates a SQL query that selects all rows where the specified field is not NULL.
+
+        Returns:
+            str: SQL query string to filter out rows with NULL values in the specified field.
+        """
         query = f"""
             SELECT * 
             FROM {self.table.path}
@@ -168,12 +177,31 @@ class MissingValuesTransformation(Transformation):
         return query
 
     def update_schema(self) -> List:
+        """
+        Returns the current schema of the table without any changes, as filtering out rows
+        does not modify the schema.
+
+        Returns:
+            List: The current table schema.
+        """
         return self.table.schema
 
 
 class DataTypeConversionTransformation(Transformation):
+    """
+    Transformation class to convert the data type of specific field to a target type.
+    """
 
     def get_query(self) -> str:
+        """
+        Generates a SQL query to convert the data type of the specified field.
+
+        The conversion type is obtained from the `options` dictionary. Supported types
+        include INT64, FLOAT64, and DATETIME.
+
+        Returns:
+            str: SQL query to cast the field to the new data type or parse it to a DATE format.
+        """
         convert_to = self.options.get("convert_to")
         query = None
         if convert_to.upper() in ["INT64", "FLOAT64"]:
@@ -181,19 +209,27 @@ class DataTypeConversionTransformation(Transformation):
                 SELECT 
                     * EXCEPT({self.field}),
                     SAFE_CAST({self.field} AS {convert_to.upper()}) as {self.field}
-                FROM {self.table};
+                FROM {self.table.path};
             """
         elif convert_to.upper() == "DATETIME":
             query = f"""
                 SELECT 
                     * EXCEPT({self.field}),
                     PARSE_DATE('%Y-%m-%d', {self.field}) as {self.field}
-                FROM {self.table}
+                FROM {self.table.path}
             """
-
         return query
 
     def update_schema(self) -> List:
+        """
+        Updates the schema of the table to reflect the new data type of the specified field.
+
+        The method modifies the field's data type in the schema based on the conversion
+        target specified in `options`.
+
+        Returns:
+            List: Updated schema with the new data type for the field.
+        """
         convert_to = self.options.get("convert_to")
         schema = self.table.schema
         for item in schema:
@@ -201,3 +237,43 @@ class DataTypeConversionTransformation(Transformation):
                 item["data_type"] = convert_to.upper()
                 break
         return schema
+
+
+class RemoveDuplicatesTransformation(Transformation):
+    """
+    Transformation class to remove duplicate rows based on a specified field.
+    """
+
+    def get_query(self) -> str:
+        """
+        Generates a SQL query to remove duplicate rows from the table.
+
+        The query assigns a row number to each row partitioned by the specified field
+        and keeps only the first occurrence of each partition.
+
+        Returns:
+            str: SQL query that removes duplicates based on the specified field.
+        """
+        query = f"""
+            WITH numbered_rows AS (
+              SELECT 
+                *,
+                ROW_NUMBER() OVER (PARTITION BY {self.field} ORDER BY {self.field}) AS row_num
+              FROM {self.table.path}
+            )
+
+            SELECT *
+            FROM numbered_rows
+            WHERE row_num = 1;
+        """
+        return query
+
+    def update_schema(self) -> List:
+        """
+        Returns the current schema of the table without any changes, as removing duplicates
+        does not affect the schema.
+
+        Returns:
+            List: The current table schema.
+        """
+        return self.table.schema
