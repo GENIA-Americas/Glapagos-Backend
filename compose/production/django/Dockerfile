@@ -36,10 +36,11 @@ RUN apk add postgresql-client
 RUN apk add libmagic
 
 COPY . /app
+WORKDIR /app
 
 RUN pip install -r /app/requirements/production.txt
 
-COPY ./compose/production/django/wait_for_postgres.py /wait_for_postgres.py
+COPY ./compose/production/django/wait_for_postgres.py /app/wait_for_postgres.py
 # RUN chmod +x /wait_for_postgres.py
 
 # COPY ./compose/production/django/start /start
@@ -48,9 +49,10 @@ COPY ./compose/production/django/wait_for_postgres.py /wait_for_postgres.py
 # COPY ./compose/production/django/celery/beat/start /start-celerybeat
 # RUN chmod +x /start-celerybeat
 
-WORKDIR /app
 
 EXPOSE $PORT
+
+RUN pwd
 
 RUN python manage.py collectstatic --noinput
 RUN python manage.py migrate
