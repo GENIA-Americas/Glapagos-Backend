@@ -49,13 +49,14 @@ COPY ./compose/production/django/wait_for_postgres.py /app/wait_for_postgres.py
 # COPY ./compose/production/django/celery/beat/start /start-celerybeat
 # RUN chmod +x /start-celerybeat
 
+RUN chmod +x /api/manage.py
 
 EXPOSE $PORT
 
 RUN pwd
 RUN ls -la
 
-RUN python manage.py collectstatic --noinput
-RUN python manage.py migrate
+RUN python /api/manage.py collectstatic --noinput
+RUN python /api/manage.py migrate
 
 ENTRYPOINT ["gunicorn", "config.wsgi", "--bind", "0.0.0.0:$PORT", "--workers", "1"]
