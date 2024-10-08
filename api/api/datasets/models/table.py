@@ -22,7 +22,7 @@ class Table(BaseModel):
     parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, related_name='child_tables')
     file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='tables')
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tables', null=True)
-
+    schema = models.JSONField(null=True, blank=True)
 
     @property
     def reference_name(self):

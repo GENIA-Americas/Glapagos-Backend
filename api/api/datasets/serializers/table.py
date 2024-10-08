@@ -16,9 +16,20 @@ class TableSerializer(serializers.ModelSerializer):
                   'number_of_rows', 'total_logical_bytes', 'reference_name', 'path', 'file', 'owner']
 
 
+class OptionSerializer(serializers.Serializer):
+    convert_to = serializers.CharField(required=False)
+
+    def validate_convert_to(self, value):
+        data_types = ["INT64", "FLOAT64", "DATETIME"]
+        if value not in data_types:
+            raise serializers.ValidationError({"detail": _("Invalid format to convert")})
+        return value
+
+
 class SingleTransformSerializer(serializers.Serializer):
     field = serializers.CharField()
     transformation = serializers.ChoiceField(choices=[(tag.value, tag.name) for tag in TransformationOption])
+    options = OptionSerializer(required=False)
 
 
 class TableTransformSerializer(serializers.Serializer):

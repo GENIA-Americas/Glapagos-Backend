@@ -11,3 +11,4 @@ class FileType(models.TextChoices):
 
 class TransformationOption(Enum):
     MISSING_VALUES = "MissingValues"
+    DATA_TYPE_CONVERSION = "DataTypeConversion"

@@ -5,6 +5,7 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from google.cloud import bigquery
 from google.api_core.exceptions import GoogleAPIError
+from rest_framework.exceptions import ValidationError
 
 from api.users.models import User
 from api.datasets.models import Table
@@ -16,7 +17,7 @@ from api.datasets.utils import generate_random_string
 def apply_transformations(
         table: Table,
         user: User,
-        transformations: List[Dict[str, str]],
+        transformations: List[Dict],
         create_table: bool,
         public_destination: bool = None,
 ) -> Table:
@@ -26,7 +27,7 @@ def apply_transformations(
         Args:
             table (Table): The table to transform.
             user (User): The user applying the transformations.
-            transformations (list): A list of dictionaries with "field" and "transformation".
+            transformations (list): A list of dictionaries with "field", "transformation" and "options".
             create_table (bool): If True, allows table creation on the first transformation.
             public_destination (bool | None): Set new table privacy if create table is True
 
@@ -39,6 +40,7 @@ def apply_transformations(
     for item in transformations:
         field = item["field"]
         transformation = item["transformation"]
+        options = item["options"]
 
         class_name = f"{transformation}Transformation"
         TransformationClass = globals().get(class_name)
@@ -48,7 +50,8 @@ def apply_transformations(
 
         obj = TransformationClass(table=table, field=field, user=user,
                                   create_table=create_table,
-                                  public_destination=public_destination)
+                                  public_destination=public_destination,
+                                  options=options)
         table = obj.execute()
         create_table = False
 
@@ -66,7 +69,8 @@ class Transformation(ABC):
             create_table (bool): Flag to indicate if a new table should be created.
     """
     def __init__(self, table: Table, field: str, user: User,
-                 create_table: bool, public_destination: bool) -> None:
+                 create_table: bool, public_destination: bool,
+                 options: Dict = None) -> None:
         """
             Initializes the transformation with the given table, field and user
         """
@@ -75,6 +79,7 @@ class Transformation(ABC):
         self.user: User = user
         self.create_table: bool = create_table
         self.public_destination: bool = public_destination
+        self.options: Dict = options
 
     def get_mode(self) -> bigquery.WriteDisposition:
         """
@@ -93,6 +98,10 @@ class Transformation(ABC):
             Returns:
                 str: The query to execute in BigQuery.
         """
+        ...
+
+    @abstractmethod
+    def update_schema(self) -> List:
         ...
 
     def execute(self) -> None:
@@ -122,7 +131,8 @@ class Transformation(ABC):
                 parent=self.table,
                 file=self.table.file,
                 owner=self.user,
-                public=self.public_destination
+                public=self.public_destination,
+                schema=self.update_schema()
             )
 
         job_config = bigquery.QueryJobConfig(
@@ -155,3 +165,43 @@ class MissingValuesTransformation(Transformation):
             WHERE {self.field} IS NOT NULL;
         """
         return query
+
+    def update_schema(self) -> List:
+        return self.table.schema
+
+
+class DataTypeConversionTransformation(Transformation):
+
+    def get_query(self) -> str:
+        convert_to = self.options.get("convert_to")
+        if not convert_to:
+            raise ValidationError({"detail": "'convert_to' " + _("is a mandatory field")})
+
+        query = None
+        if convert_to.upper() in ["INT64", "FLOAT64"]:
+            query = f"""
+                SELECT 
+                    * EXCEPT({self.field}),
+                    SAFE_CAST({self.field} AS {convert_to.upper()}) as {self.field}
+                FROM {self.table};
+            """
+        elif convert_to.upper() == "DATETIME":
+            query = f"""
+                SELECT 
+                    * EXCEPT({self.field}),
+                    PARSE_DATE('%Y-%m-%d', {self.field})  as {self.field}
+                FROM {self.table}
+            """
+
+        return query
+
+    def update_schema(self) -> List:
+        convert_to = self.options.get("convert_to")
+        if not convert_to:
+            raise ValidationError({"detail": "'convert_to' " + _("is a mandatory field")})
+        schema = self.table.schema
+        for item in schema:
+            if item["column_name"] == self.field:
+                item["data_type"] = convert_to.upper()
+                break
+        return schema

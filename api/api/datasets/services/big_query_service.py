@@ -60,14 +60,6 @@ class BigQueryService:
         table_ref = dataset.table(table_name)
         return table_ref
 
-    def create_empty_table(self, table: Table):
-        table_ref = self.get_table_reference(dataset=table.dataset_name, table_name=table.name)
-        empty_table = bigquery.Table(table_ref)
-        empty_table = self.client.create_table(empty_table)
-        print(f"Table {empty_table.project}.{empty_table.dataset_id}.{empty_table.table_id} created without schema.")
-        table.mounted = True
-        table.save()
-
     def create_dataset(self, dataset_name: str):
         owner_client = self.create_bigquery_client(project_owner=True)
         dataset_ref = self.get_dataset_reference(dataset_name)
@@ -114,7 +106,6 @@ class BigQueryService:
         if skip_leading_rows:
             job_config.skip_leading_rows = skip_leading_rows
         if schema:
-            schema = json.loads(schema[0])
             bigquery_schema = BigQueryService.convert_schema_to_bigquery(schema)
             job_config.schema = bigquery_schema
 
