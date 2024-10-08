@@ -4,13 +4,11 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-echo "Current directory:--------------------------------------------"
-pwd
-ls -lah .
-ls -lah /
+mkdir -p /app/api/api/static
 
 python api/manage.py collectstatic --noinput
 python api/manage.py migrate
+
 echo "Starting gunicorn!"
 gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 1
 
