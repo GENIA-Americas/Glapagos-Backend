@@ -10,6 +10,6 @@ python api/manage.py collectstatic --noinput
 python api/manage.py migrate
 
 echo "Starting gunicorn!"
-gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 1
+gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 1
 
 #daphne config.asgi:application -b 0.0.0.0 -p 8000
