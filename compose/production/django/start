@@ -9,8 +9,8 @@ pwd
 ls -lah .
 ls -lah /
 
-python manage.py collectstatic --noinput
-python manage.py migrate
+python api/manage.py collectstatic --noinput
+python api/manage.py migrate
 echo "Starting gunicorn!"
 gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 1
 
