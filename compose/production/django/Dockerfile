@@ -16,7 +16,6 @@ RUN apk --no-cache add bash mc \
             ttf-liberation \
         && rm -rf /var/cache/apk/*
 
-
 RUN apk update \
   # psycopg2 dependencies
   && apk add --virtual build-deps gcc musl-dev \
@@ -48,8 +47,6 @@ RUN chmod +x /start
 
 COPY ./compose/production/django/celery/beat/start /start-celerybeat
 RUN chmod +x /start-celerybeat
-
-RUN cat /start
 
 EXPOSE $PORT
 
