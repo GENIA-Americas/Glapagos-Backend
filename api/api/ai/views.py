@@ -6,7 +6,7 @@ from rest_framework.views import status
 
 # Models
 from api.ai.serializers import ChatSerializer
-from api.ai.models import Chat 
+# from api.ai.models import Chat TODO: Uncomment. This was breaking the app
 from api.datasets.models import Table
 
 # Permissions
