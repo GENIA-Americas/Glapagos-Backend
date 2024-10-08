@@ -6,7 +6,6 @@ from rest_framework.views import status
 
 # Models
 from api.ai.serializers import ChatSerializer
-# from api.ai.models import Chat TODO: Uncomment. This was breaking the app
 from api.datasets.models import Table
 
 # Permissions
@@ -14,11 +13,8 @@ from api.ai.services import ChatAssistant
 from api.users.permissions import IsAdminPermission, CanCrudPermission
 
 
-class AiViewset(viewsets.ModelViewSet):
+class AiViewset(viewsets.ViewSet):
     serializer_class = ChatSerializer 
-    model = Chat 
-    queryset = Chat.objects.all()
-    permission_classes = [IsAdminPermission | CanCrudPermission]
 
     @action(
         detail=False,
@@ -29,6 +25,7 @@ class AiViewset(viewsets.ModelViewSet):
         serializer = ChatSerializer(
             data=request.data, context=dict(request=request)
         )
+
         serializer.is_valid()
         msg = serializer.validated_data.get("msg", ""),
 

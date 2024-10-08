@@ -87,7 +87,7 @@ LOCAL_APPS = [
     'api.events.apps.EventsAppConfig',
     'api.datasets.apps.DatasetsConfig',
     'api.contacts.apps.ContactsConfig',
-    # 'api.ai.apps.AiAppConfig',
+    'api.ai.apps.AiAppConfig',
 ]
 
 INSTALLED_APPS = THIRD_PARTY_APPS + DJANGO_APPS + LOCAL_APPS
