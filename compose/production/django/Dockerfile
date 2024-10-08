@@ -35,8 +35,8 @@ RUN apk add python3-dev
 RUN apk add postgresql-client
 RUN apk add libmagic
 
-COPY . /app
 WORKDIR /app
+COPY . /app
 
 RUN pip install -r /app/requirements/production.txt
 
@@ -53,6 +53,7 @@ COPY ./compose/production/django/wait_for_postgres.py /app/wait_for_postgres.py
 EXPOSE $PORT
 
 RUN pwd
+RUN ls -la
 
 RUN python manage.py collectstatic --noinput
 RUN python manage.py migrate
