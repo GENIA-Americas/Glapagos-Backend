@@ -79,6 +79,7 @@ THIRD_PARTY_APPS = [
     'django_rest_passwordreset',
     'corsheaders',
     'django_filters',
+    'secured_fields',
 ]
 
 LOCAL_APPS = [
