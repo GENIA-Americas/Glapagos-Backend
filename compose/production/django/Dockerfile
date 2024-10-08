@@ -56,7 +56,7 @@ EXPOSE $PORT
 RUN pwd
 RUN ls -la
 
-RUN python /api/manage.py collectstatic --noinput
-RUN python /api/manage.py migrate
+RUN python api/manage.py collectstatic --noinput
+RUN python api/manage.py migrate
 
 ENTRYPOINT ["gunicorn", "config.wsgi", "--bind", "0.0.0.0:$PORT", "--workers", "1"]
