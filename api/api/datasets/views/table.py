@@ -2,6 +2,7 @@ from rest_framework import permissions, mixins, filters, status
 from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
+from rest_framework.exceptions import NotFound
 from django.utils.translation import gettext_lazy as _
 
 from api.datasets.serializers import TableSerializer, TableTransformSerializer
@@ -24,10 +25,7 @@ class TableViewSet(mixins.ListModelMixin, GenericViewSet):
         user = request.user
         table = Table.objects.filter(pk=pk).first()
         if not table:
-            return Response(
-                {"error": _(f"Table with id {pk} not found.")},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            raise NotFound(detail=_(f"Table not found."))
 
         serializer = self.get_serializer(data=request.data, context={"table": table, "user": user})
         serializer.is_valid(raise_exception=True)

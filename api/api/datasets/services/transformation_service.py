@@ -5,10 +5,10 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from google.cloud import bigquery
 from google.api_core.exceptions import GoogleAPIError
-from rest_framework.exceptions import ValidationError
 
 from api.users.models import User
 from api.datasets.models import Table
+from api.datasets.exceptions import TransformationFailedException
 from .big_query_service import BigQueryService
 
 from api.datasets.utils import generate_random_string
@@ -52,8 +52,16 @@ def apply_transformations(
                                   create_table=create_table,
                                   public_destination=public_destination,
                                   options=options)
-        table = obj.execute()
-        create_table = False
+        try:
+            table = obj.execute()
+            create_table = False
+        except GoogleAPIError as exp:
+            raise TransformationFailedException(
+                detail=_("Error while applying transformation {transformation} over {field}").format(
+                    transformation=transformation, field=field
+                ),
+                error=str(exp)
+            )
 
     return table
 
@@ -141,17 +149,10 @@ class Transformation(ABC):
         )
 
         query = self.get_query()
-
-        try:
-            bigquery_service.query(query=query, job_config=job_config)
-            destination_table.mounted = True
-            ref = bigquery_service.get_table_reference(destination_table.dataset_name, destination_table.name)
-            destination_table.update_table_stats(table_ref=ref)
-        # TODO: Exception handle
-        except GoogleAPIError as e:
-            print(f"Error al ejecutar la consulta en BigQuery: {str(e)}")
-        except Exception as e:
-            print(f"Error inesperado: {str(e)}")
+        bigquery_service.query(query=query, job_config=job_config)
+        destination_table.mounted = True
+        ref = bigquery_service.get_table_reference(destination_table.dataset_name, destination_table.name)
+        destination_table.update_table_stats(table_ref=ref)
 
         return destination_table
 
@@ -174,9 +175,6 @@ class DataTypeConversionTransformation(Transformation):
 
     def get_query(self) -> str:
         convert_to = self.options.get("convert_to")
-        if not convert_to:
-            raise ValidationError({"detail": "'convert_to' " + _("is a mandatory field")})
-
         query = None
         if convert_to.upper() in ["INT64", "FLOAT64"]:
             query = f"""
@@ -189,7 +187,7 @@ class DataTypeConversionTransformation(Transformation):
             query = f"""
                 SELECT 
                     * EXCEPT({self.field}),
-                    PARSE_DATE('%Y-%m-%d', {self.field})  as {self.field}
+                    PARSE_DATE('%Y-%m-%d', {self.field}) as {self.field}
                 FROM {self.table}
             """
 
@@ -197,8 +195,6 @@ class DataTypeConversionTransformation(Transformation):
 
     def update_schema(self) -> List:
         convert_to = self.options.get("convert_to")
-        if not convert_to:
-            raise ValidationError({"detail": "'convert_to' " + _("is a mandatory field")})
         schema = self.table.schema
         for item in schema:
             if item["column_name"] == self.field:

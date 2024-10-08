@@ -31,6 +31,18 @@ class SingleTransformSerializer(serializers.Serializer):
     transformation = serializers.ChoiceField(choices=[(tag.value, tag.name) for tag in TransformationOption])
     options = OptionSerializer(required=False)
 
+    def validate(self, attrs):
+        transformation = attrs.get("transformation")
+        options = attrs.get("options")
+        if transformation == TransformationOption.DATA_TYPE_CONVERSION.value and (
+                not options or not options.get("convert_to")):
+            raise serializers.ValidationError(
+                _("'{option}' is a mandatory field for {transformation} transformation").format(
+                    option='convert_to', transformation=transformation
+                )
+            )
+        return attrs
+
 
 class TableTransformSerializer(serializers.Serializer):
     create_table = serializers.BooleanField()
