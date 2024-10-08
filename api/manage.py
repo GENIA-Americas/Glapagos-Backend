@@ -8,6 +8,9 @@ import sys
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 
+    print("Django manage.py is starting... HEREEEEE")
+
+
     try:
         from django.core.management import execute_from_command_line
     except ImportError:
@@ -27,6 +30,8 @@ if __name__ == "__main__":
 
     # This allows easy placement of apps within the interior
     # api directory.
+    print("Django manage.py is starting... HEREEEEE LINE 33")
+
     current_path = os.path.dirname(os.path.abspath(__file__))
     sys.path.append(os.path.join(current_path, "api"))
 
