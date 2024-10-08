@@ -49,7 +49,7 @@ COPY ./compose/production/django/wait_for_postgres.py /app/wait_for_postgres.py
 # COPY ./compose/production/django/celery/beat/start /start-celerybeat
 # RUN chmod +x /start-celerybeat
 
-RUN chmod +x /api/manage.py
+RUN chmod +x api/manage.py
 
 EXPOSE $PORT
 
