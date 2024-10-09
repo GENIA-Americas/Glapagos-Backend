@@ -40,7 +40,7 @@ COPY ./requirements /app/requirements
 
 RUN pip install -r /app/requirements/production.txt
 
-RUN mkdir -p ./api/api/static
+RUN mkdir -p /app/api/api/static
 
 COPY ./compose/production/django/wait_for_postgres.py /wait_for_postgres.py
 RUN chmod +x /wait_for_postgres.py
