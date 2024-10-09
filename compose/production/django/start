@@ -3,11 +3,6 @@
 set -o errexit
 set -o pipefail
 set -o nounset
-pwd
-ls -lah
-
-ls -lah /app
-ls -lah /app/api
 
 python manage.py collectstatic --noinput
 python manage.py migrate
