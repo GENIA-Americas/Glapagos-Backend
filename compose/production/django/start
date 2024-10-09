@@ -6,6 +6,11 @@ set -o nounset
 
 mkdir -p ./api/api/static
 
+pwd
+ls -lah
+
+ls -lah /app
+
 python api/manage.py collectstatic --noinput
 python api/manage.py migrate
 
