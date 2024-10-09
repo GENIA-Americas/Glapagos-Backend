@@ -1,4 +1,5 @@
 # Rest framework
+from django.utils.translation import gettext_lazy as _
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -9,31 +10,33 @@ from api.ai.serializers import ChatSerializer
 from api.datasets.models import Table
 
 # Permissions
-from api.ai.services import ChatAssistant 
+from api.ai.services import ChatAssistant
 from api.users.permissions import IsAdminPermission, CanCrudPermission
 
 
 class AiViewset(viewsets.ModelViewSet):
-    serializer_class = ChatSerializer 
+    serializer_class = ChatSerializer
     permission_classes = [IsAdminPermission | CanCrudPermission]
 
     @action(
-        detail=False,
-        methods=["post"],
-        permission_classes=[permissions.IsAuthenticated]
+        detail=False, methods=["post"], permission_classes=[permissions.IsAuthenticated]
     )
     def chat(self, request, *args, **kwargs):
-        serializer = ChatSerializer(
-            data=request.data, context=dict(request=request)
-        )
+        serializer = ChatSerializer(data=request.data, context=dict(request=request))
         serializer.is_valid()
-        msg = serializer.validated_data.get("msg", ""),
+        msg = (serializer.validated_data.get("msg", ""),)
 
         tables = Table.objects.filter(file__owner=request.user)
-        context = "" 
+        context = ""
         for i in tables:
             context += f"table_id = {i.path} \n"
 
         res = ChatAssistant.chat(msg[0], context)
-        return Response({"message": res}, status=status.HTTP_200_OK)
+        if res.__dict__.get("query", "") is not "":
+            return Response(dict(message=res.__dict__), status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {"detail": _("Error processing request"), "error": _("Unrelated topic")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 

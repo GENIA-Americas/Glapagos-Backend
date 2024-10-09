@@ -1,6 +1,11 @@
-from django.conf import settings
-import openai
 
+import openai
+from pydantic import BaseModel
+from django.conf import settings
+
+class QueryResponse(BaseModel):
+    explanation: str
+    query: str
 
 class ChatAssistant:
     @staticmethod
@@ -9,15 +14,14 @@ class ChatAssistant:
         prompt = """
             You are a biquery sql expert that especializes in making queries
             you will recieve a petition and you must respond with the appropiate
-            query base on the information that you have been provided
-            you can show the user the context information.
+            query base on the information that you have been provided.
 
-            Anything that is not related to making a queries you must respond
-            with "I'm sorry but i cannot help you with that" 
+            Anything that is not related to making a queries you must refuse 
+            the request" 
         """
 
         client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
-        completion = client.chat.completions.create(
+        completion = client.beta.chat.completions.parse(
             model="gpt-4o-mini",
             messages=[
                 {
@@ -33,7 +37,9 @@ class ChatAssistant:
                     "content": msg,
                 },
             ],
+            response_format=QueryResponse,
         )
 
-        return completion.choices[0].message.content
+        res = completion.choices[0].message.parsed
+        return res
 
