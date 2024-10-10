@@ -5,11 +5,8 @@ from django.conf import settings
 from api.users.models import User
 from api.datasets.models import File, Table
 from api.datasets.utils import generate_random_string, csv_parameters_detect
-from api.datasets.services.google_cloud_services import (
-    GCSUploadService,
-    JSONGCSUploadService,
-    BigQueryLoadService
-)
+from .big_query_service import BigQueryService
+from .google_cloud_storage_service import GCSService, JSONGCSService
 
 
 class FileServiceFactory:
@@ -51,11 +48,22 @@ class FileService(ABC):
 
 class StructuredFileService(FileService):
 
+    def __init__(self, user: User, **kwargs):
+        super().__init__(user, **kwargs)
+        self.autodetect = kwargs.get("autodetect", False)
+        self.schema = kwargs.get("schema")
+
     def create_table_obj(self, file_obj: File) -> Table:
+        dataset_name = settings.BQ_DATASET_ID
+        if not self.public:
+            dataset_name = self.user.service_account.dataset_name
         table = Table.objects.create(
             name=self.filename.split(".")[0],
-            dataset_name=settings.BQ_DATASET_ID,
-            file=file_obj
+            dataset_name=dataset_name,
+            file=file_obj,
+            owner=file_obj.owner,
+            public=self.public,
+            schema=self.schema
         )
         table.save()
         return table
@@ -67,8 +75,7 @@ class StructuredFileService(FileService):
 
 class TXTFileService(FileService):
     def process_file(self):
-        upload_service = GCSUploadService()
-        file_url = upload_service.upload(self.file, self.filename)
+        file_url = GCSService.upload_file(self.file, self.filename)
         return file_url
 
 
@@ -76,20 +83,17 @@ class CSVFileService(StructuredFileService):
     def __init__(self, user: User, **kwargs):
         super().__init__(user, **kwargs)
         self.skip_leading_rows = kwargs.get("skip_leading_rows", 1)
-        self.autodetect = kwargs.get("autodetect", False)
-        self.schema = kwargs.get("schema")
 
     def process_file(self):
-        upload_service = GCSUploadService()
-        file_url = upload_service.upload(self.file, self.filename)
+        file_url = GCSService.upload_file(self.file, self.filename)
         file_obj = self.create_file_object(file_url)
         table_obj = self.create_table_obj(file_obj)
         sample = self.file.read(4096).decode("utf-8")
         self.file.seek(0)
         format_params = csv_parameters_detect(sample)
 
-        big_query_service = BigQueryLoadService()
-        big_query_service.mount_table(
+        big_query_service = BigQueryService(user=self.user)
+        big_query_service.mount_table_from_gcs(
             table=table_obj,
             autodetect=self.autodetect,
             skip_leading_rows=self.skip_leading_rows,
@@ -101,10 +105,15 @@ class CSVFileService(StructuredFileService):
 
 class JSONFileService(StructuredFileService):
     def process_file(self):
-        upload_service = JSONGCSUploadService()
-        file_url = upload_service.upload(self.file, self.filename)
+        upload_service = JSONGCSService()
+        file_url = upload_service.upload_file(self.file, self.filename)
         file_obj = self.create_file_object(file_url)
         table_obj = self.create_table_obj(file_obj)
-        big_query_service = BigQueryLoadService()
-        big_query_service.mount_table(table=table_obj, autodetect=True, skip_leading_rows=0, schema=[])
+        big_query_service = BigQueryService(user=self.user)
+        big_query_service.mount_table_from_gcs(
+            table=table_obj,
+            autodetect=True,
+            skip_leading_rows=0,
+            schema=[]
+        )
         return file_url

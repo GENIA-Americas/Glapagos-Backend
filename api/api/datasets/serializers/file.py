@@ -14,6 +14,7 @@ from api.datasets.utils import is_valid_column_name, create_dataframe_from_csv
 class SearchQuerySerializer(serializers.Serializer):
     query = serializers.CharField()
 
+
 class FilePreviewSerializer(serializers.Serializer):
     preview = serializers.CharField()
     skip_leading_rows = serializers.IntegerField()
@@ -62,7 +63,7 @@ class FileUploadSerializer(serializers.Serializer):
             invalid_columns_str = ', '.join(invalid_columns)
             raise serializers.ValidationError({"detail": _("Invalid column names:") + invalid_columns_str})
 
-        return value
+        return value_obj
 
     def csv_validate(self, attrs):
         file = attrs.get('file')
@@ -83,7 +84,6 @@ class FileUploadSerializer(serializers.Serializer):
                 })
 
         if schema:
-            schema = json.loads(schema[0])
             if len(schema) != len(df.columns):
                 raise serializers.ValidationError({"detail": _(
                     "The number of columns in the schema does not match the number of columns in the CSV file."

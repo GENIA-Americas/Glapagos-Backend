@@ -5,9 +5,8 @@ from rest_framework import status, permissions, mixins, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from api.datasets.services.google_cloud_services import search_query
 from api.datasets.models import File
-from api.datasets.services.file import FileServiceFactory
+from api.datasets.services import BigQueryService, FileServiceFactory
 from api.datasets.serializers import (
     FileSerializer,
     FileUploadSerializer,
@@ -39,7 +38,7 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         methods=["post"],
         name="upload_file",
         url_path="upload_file",
-        permission_classes=[],
+        permission_classes=[permissions.IsAuthenticated],
     )
     def upload_file(self, request, *args, **kwargs):
         serializer = FileUploadSerializer(data=request.data)
@@ -69,7 +68,7 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         serializer = FilePreviewSerializer(data=request.data)
         if serializer.is_valid():
             try:
-                preview = serializer.validated_data['preview']
+                preview = serializer.validated_data["preview"]
                 skip_leading_rows = serializer.validated_data['skip_leading_rows']
 
                 bigquery_format = prepare_csv_data_format(data=preview, skip_leading_rows=skip_leading_rows)
@@ -97,9 +96,9 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
 
         if serializer.is_valid():
             try:
-                result = search_query(
-                    request.user,
-                    serializer.validated_data.get("query", ""),
+                bigquery_service = BigQueryService(user=request.user)
+                result = bigquery_service.query(
+                    query=serializer.validated_data.get("query", ""),
                     limit=int(request.query_params.get("limit", 20)),
                     offset=int(request.query_params.get("offset", 0)),
                 )

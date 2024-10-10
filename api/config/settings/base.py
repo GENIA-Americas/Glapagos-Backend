@@ -87,7 +87,7 @@ LOCAL_APPS = [
     'api.events.apps.EventsAppConfig',
     'api.datasets.apps.DatasetsConfig',
     'api.contacts.apps.ContactsConfig',
-    'api.ai.apps.AiAppConfig',
+    # 'api.ai.apps.AiAppConfig',
 ]
 
 INSTALLED_APPS = THIRD_PARTY_APPS + DJANGO_APPS + LOCAL_APPS
@@ -194,6 +194,7 @@ CMS_ADMIN_URL = 'cms-admin/'
 
 # Django REST Framework
 REST_FRAMEWORK = {
+    'EXCEPTION_HANDLER': 'api.utils.custom_exception_handler.custom_exception_handler',
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
@@ -322,4 +323,3 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-
