@@ -18,12 +18,19 @@ class TableSerializer(serializers.ModelSerializer):
 
 class OptionSerializer(serializers.Serializer):
     convert_to = serializers.CharField(required=False)
+    text_case = serializers.CharField(required=False)
 
     def validate_convert_to(self, value):
-        data_types = ["INT64", "FLOAT64", "DATETIME"]
-        if value not in data_types:
+        data_types = ["INT64", "FLOAT64", "DATETIME", "DATE", "STRING"]
+        if value.upper() not in data_types:
             raise serializers.ValidationError({"detail": _("Invalid format to convert")})
-        return value
+        return value.upper()
+
+    def validate_text_case(self, value):
+        valid_cases = ["LOWER", "UPPER"]
+        if value.upper() not in valid_cases:
+            raise serializers.ValidationError({"detail": _("Invalid format to convert")})
+        return value.upper()
 
 
 class SingleTransformSerializer(serializers.Serializer):
@@ -39,6 +46,13 @@ class SingleTransformSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 _("'{option}' is a mandatory field for {transformation} transformation").format(
                     option='convert_to', transformation=transformation
+                )
+            )
+        elif transformation == TransformationOption.STANDARDIZING_TEXT.value and (
+                not options or not options.get("text_case")):
+            raise serializers.ValidationError(
+                _("'{option}' is a mandatory field for {transformation} transformation").format(
+                    option='text_case', transformation=transformation
                 )
             )
         return attrs

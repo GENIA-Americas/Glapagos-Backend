@@ -3,8 +3,10 @@ from typing import List, Dict
 
 from google.cloud import bigquery
 from google.oauth2 import service_account
+from google.api_core.exceptions import GoogleAPIError
 from django.conf import settings
 
+from api.datasets.exceptions import QueryFailedException
 from api.datasets.models import Table
 from api.users.models import User
 
@@ -47,6 +49,25 @@ class BigQueryService:
                 )
             )
         return bigquery_schema
+
+    def get_schema(self, dataset: str, table: str) -> List:
+        query = f"""SELECT column_name, data_type, is_nullable 
+                    FROM `{self.project_id}.{dataset}.INFORMATION_SCHEMA.COLUMNS` 
+                    WHERE table_name = '{table}';"""
+        schema = []
+        try:
+            bigquery_schema = self.query(query)
+            if not bigquery_schema:
+                return schema
+            for field in bigquery_schema:
+                schema.append({
+                    "column_name": field.column_name,
+                    "data_type": field.data_type,
+                    "mode": "NULLABLE" if field.is_nullable else "REQUIRED",
+                })
+        except GoogleAPIError as exp:
+            print(str(exp))
+        return schema
 
     def get_dataset_reference(self, dataset: str) -> bigquery.DatasetReference:
         dataset_ref = bigquery.DatasetReference(
@@ -114,3 +135,6 @@ class BigQueryService:
 
         load_job.result()
         table.update_table_stats(table_ref)
+        if not table.schema:
+            table.schema = self.get_schema(dataset=table.dataset_name, table=table.name)
+            table.save()
