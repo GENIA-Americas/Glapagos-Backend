@@ -12,8 +12,8 @@ class TableSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Table
-        fields = ['id', 'name', 'created', 'modified', 'dataset_name', 'data_expiration',
-                  'number_of_rows', 'total_logical_bytes', 'reference_name', 'path', 'file', 'owner']
+        fields = ['id', 'name', 'created', 'modified', 'dataset_name', 'number_of_rows',
+                  'total_logical_bytes', 'reference_name', 'path', 'file', 'owner']
 
 
 class OptionSerializer(serializers.Serializer):
