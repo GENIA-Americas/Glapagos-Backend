@@ -5,6 +5,7 @@ from google.cloud import bigquery
 from google.oauth2 import service_account
 from google.api_core.exceptions import GoogleAPIError
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 
 from api.datasets.exceptions import QueryFailedException
 from api.datasets.models import Table
@@ -90,20 +91,26 @@ class BigQueryService:
     def query(self, query: str, limit: int | None = None, offset: int | None = None,
               job_config: bigquery.QueryJobConfig = None):
         assert self.user, "User must be set to send a query"
-        job = self.client.query(query, job_config=job_config)
-        result = job.result()
+        try:
+            job = self.client.query(query, job_config=job_config)
+            result = job.result()
 
-        if limit is not None and offset is not None:
-            assert (
-                    type(offset) is int and type(limit) is int
-            ), "limit and offset must be integers"
+            if limit is not None and offset is not None:
+                assert (
+                        type(offset) is int and type(limit) is int
+                ), "limit and offset must be integers"
 
-            assert job.destination is not None, "Job destination should be defined"
+                assert job.destination is not None, "Job destination should be defined"
 
-            destination = self.client.get_table(job.destination)
-            result = self.client.list_rows(destination, start_index=offset, max_results=limit)
+                destination = self.client.get_table(job.destination)
+                result = self.client.list_rows(destination, start_index=offset, max_results=limit)
 
-        return result
+            return result
+        except GoogleAPIError as exp:
+            raise QueryFailedException(
+                detail=_("Error while executing query"),
+                error=str(exp)
+            )
 
     def mount_table_from_gcs(
             self,

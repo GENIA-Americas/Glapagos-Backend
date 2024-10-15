@@ -14,3 +14,9 @@ class TransformationFailedException(GenericAPIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = _("Transformation failed")
     default_code = "transformation_failed"
+
+
+class ChartLimitExceededException(GenericAPIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = _("Chart limit exceeded: The selected field contains too many distinct categories.")
+    default_code = "chart_limit_exceeded"
