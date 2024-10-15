@@ -1,5 +1,4 @@
 # Rest framework
-from django.utils.translation import gettext_lazy as _
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -32,11 +31,5 @@ class AiViewset(viewsets.ViewSet):
             context += f"table_id = {i.path} \n"
 
         res = ChatAssistant.chat(msg[0], context)
-        if res.__dict__.get("query", "") is not "":
-            return Response(dict(message=res.__dict__), status=status.HTTP_200_OK)
-        else:
-            return Response(
-                {"detail": _("Error processing request"), "error": _("Unrelated topic")},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        return Response(dict(message=res.__dict__), status=status.HTTP_200_OK)
 

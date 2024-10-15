@@ -1,11 +1,15 @@
-
 import openai
+
 from pydantic import BaseModel
+from django.utils.translation import gettext_lazy as _
 from django.conf import settings
+from .exceptions import UnrelatedTopicException
+
 
 class QueryResponse(BaseModel):
     explanation: str
     query: str
+
 
 class ChatAssistant:
     @staticmethod
@@ -24,13 +28,10 @@ class ChatAssistant:
         completion = client.beta.chat.completions.parse(
             model="gpt-4o-mini",
             messages=[
+                {"role": "system", "content": prompt},
                 {
-                    "role": "system", 
-                    "content": prompt
-                },
-                {
-                    "role": "system", 
-                    "content": f"this is the context information that you have: {context}"
+                    "role": "system",
+                    "content": f"this is the context information that you have: {context}",
                 },
                 {
                     "role": "user",
@@ -41,5 +42,8 @@ class ChatAssistant:
         )
 
         res = completion.choices[0].message.parsed
-        return res
 
+        if res.__dict__.get("query", "") != "":
+            return res
+
+        raise UnrelatedTopicException(error=_("Error processing the request"))
