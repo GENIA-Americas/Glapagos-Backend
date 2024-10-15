@@ -48,6 +48,11 @@ class FileService(ABC):
 
 class StructuredFileService(FileService):
 
+    def __init__(self, user: User, **kwargs):
+        super().__init__(user, **kwargs)
+        self.autodetect = kwargs.get("autodetect", False)
+        self.schema = kwargs.get("schema")
+
     def create_table_obj(self, file_obj: File) -> Table:
         dataset_name = settings.BQ_DATASET_ID
         if not self.public:
@@ -57,7 +62,8 @@ class StructuredFileService(FileService):
             dataset_name=dataset_name,
             file=file_obj,
             owner=file_obj.owner,
-            public=self.public
+            public=self.public,
+            schema=self.schema
         )
         table.save()
         return table
@@ -77,8 +83,6 @@ class CSVFileService(StructuredFileService):
     def __init__(self, user: User, **kwargs):
         super().__init__(user, **kwargs)
         self.skip_leading_rows = kwargs.get("skip_leading_rows", 1)
-        self.autodetect = kwargs.get("autodetect", False)
-        self.schema = kwargs.get("schema")
 
     def process_file(self):
         file_url = GCSService.upload_file(self.file, self.filename)
