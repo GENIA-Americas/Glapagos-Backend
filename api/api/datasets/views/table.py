@@ -48,7 +48,7 @@ class PublicTableListView(mixins.ListModelMixin, GenericViewSet):
     search_fields = ['name']
 
     def get_queryset(self):
-        return Table.objects.filter(file__public=True, mounted=True)
+        return Table.objects.filter(public=True, mounted=True)
 
 
 class PrivateTableListView(mixins.ListModelMixin, GenericViewSet):
@@ -58,4 +58,14 @@ class PrivateTableListView(mixins.ListModelMixin, GenericViewSet):
     search_fields = ['name']
 
     def get_queryset(self):
-        return Table.objects.filter(file__public=False, mounted=True, file__owner=self.request.user)
+        return Table.objects.filter(public=False, mounted=True, owner=self.request.user)
+
+
+class TransformedTableListView(mixins.ListModelMixin, GenericViewSet):
+    serializer_class = TableSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
+
+    def get_queryset(self):
+        return Table.objects.filter(is_transformed=True, mounted=True, owner=self.request.user)

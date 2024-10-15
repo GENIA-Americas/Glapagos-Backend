@@ -51,6 +51,12 @@ class Table(BaseModel):
         self.total_logical_bytes = table_bq.num_bytes
         self.save()
 
+    def get_column_type(self, column_name: str):
+        for item in self.schema:
+            if item['column_name'] != column_name:
+                continue
+            return item['data_type']
+
     def __str__(self):
         return f"{self.path}"
 

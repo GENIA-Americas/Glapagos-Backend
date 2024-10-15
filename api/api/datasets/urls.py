@@ -6,7 +6,9 @@ from rest_framework.routers import DefaultRouter
 
 # Views
 from api.datasets.views.file import FileViewSet
-from api.datasets.views.table import TableViewSet, PrivateTableListView, PublicTableListView
+from api.datasets.views.table import (
+    TableViewSet, PrivateTableListView, PublicTableListView, TransformedTableListView
+)
 
 router = DefaultRouter()
 
@@ -14,6 +16,7 @@ router.register(r'datasets', FileViewSet, basename='datasets')
 router.register(r'table', TableViewSet, basename='datasets')
 router.register(r'table/public', PublicTableListView, basename='datasets')
 router.register(r'table/private', PrivateTableListView, basename='datasets')
+router.register(r'table/transformed', TransformedTableListView, basename='datasets')
 
 urlpatterns = [
     path('', include(router.urls)),

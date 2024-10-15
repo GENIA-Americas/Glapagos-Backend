@@ -13,3 +13,4 @@ class TransformationOption(Enum):
     MISSING_VALUES = "MissingValues"
     DATA_TYPE_CONVERSION = "DataTypeConversion"
     REMOVE_DUPLICATES = "RemoveDuplicates"
+    STANDARDIZING_TEXT = "StandardizingText"

@@ -11,18 +11,18 @@ from api.datasets.models import Table
 
 # Permissions
 from api.ai.services import ChatAssistant
-from api.users.permissions import IsAdminPermission, CanCrudPermission
 
-
-class AiViewset(viewsets.ModelViewSet):
-    serializer_class = ChatSerializer
-    permission_classes = [IsAdminPermission | CanCrudPermission]
+class AiViewset(viewsets.ViewSet):
+    serializer_class = ChatSerializer 
 
     @action(
         detail=False, methods=["post"], permission_classes=[permissions.IsAuthenticated]
     )
     def chat(self, request, *args, **kwargs):
-        serializer = ChatSerializer(data=request.data, context=dict(request=request))
+        serializer = ChatSerializer(
+            data=request.data, context=dict(request=request)
+        )
+
         serializer.is_valid()
         msg = (serializer.validated_data.get("msg", ""),)
 

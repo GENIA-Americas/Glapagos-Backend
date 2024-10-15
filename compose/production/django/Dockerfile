@@ -1,6 +1,7 @@
 FROM alpine:3.16
 
 ENV PYTHONUNBUFFERED 1
+ENV PORT 8000
 
 RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
 RUN python3 -m ensurepip
@@ -14,7 +15,6 @@ RUN apk --no-cache add bash mc \
             ttf-freefont \
             ttf-liberation \
         && rm -rf /var/cache/apk/*
-
 
 RUN apk update \
   # psycopg2 dependencies
@@ -34,20 +34,23 @@ RUN apk add python3-dev
 RUN apk add postgresql-client
 RUN apk add libmagic
 
-COPY ./requirements /requirements
-RUN pip install -r /requirements/production.txt
+WORKDIR /app
+COPY /api /app
+COPY /requirements /app/requirements
+
+RUN pip install -r /app/requirements/production.txt
+
+RUN mkdir -p /app/api/static
 
 COPY ./compose/production/django/wait_for_postgres.py /wait_for_postgres.py
-# RUN chmod +x /wait_for_postgres.py
+RUN chmod +x /wait_for_postgres.py
 
-COPY ./compose/local/django/start /start
-RUN sed -i 's/\r//' /start
+COPY ./compose/production/django/start /start
 RUN chmod +x /start
 
-COPY ./compose/local/django/celery/beat/start /start-celerybeat
-RUN sed -i 's/\r$//g' /start-celerybeat
+COPY ./compose/production/django/celery/beat/start /start-celerybeat
 RUN chmod +x /start-celerybeat
 
-WORKDIR /app
+EXPOSE $PORT
 
-# ENTRYPOINT ["/start"]
+ENTRYPOINT ["/start"]
