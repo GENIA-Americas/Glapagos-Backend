@@ -5,9 +5,15 @@ from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 from django.utils.translation import gettext_lazy as _
 
-from api.datasets.serializers import TableSerializer, TableTransformSerializer, ChartSerializer
+from api.datasets.serializers import (
+    TableSerializer,
+    TableTransformSerializer,
+    ChartSerializer,
+    TableSchemaSerializer
+)
 from api.datasets.services import ChartService, apply_transformations, chart_select
 from api.datasets.models import File, Table
+from api.datasets.permissions import IsTableAllowed
 
 
 class TableViewSet(mixins.ListModelMixin, GenericViewSet):
@@ -20,12 +26,14 @@ class TableViewSet(mixins.ListModelMixin, GenericViewSet):
         return Table.objects.filter(mounted=True, file__owner=self.request.user)
 
     @action(detail=True, methods=['post'], name='transform', url_path='transform',
-            permission_classes=[permissions.IsAuthenticated], serializer_class=TableTransformSerializer)
+            permission_classes=[permissions.IsAuthenticated, IsTableAllowed], serializer_class=TableTransformSerializer)
     def transform(self, request, pk, **kwargs):
         user = request.user
         table = Table.objects.filter(pk=pk).first()
         if not table:
             raise NotFound(detail=_(f"Table not found."))
+
+        self.check_object_permissions(request, table)
 
         serializer = self.get_serializer(data=request.data, context={"table": table, "user": user})
         serializer.is_valid(raise_exception=True)
@@ -41,12 +49,14 @@ class TableViewSet(mixins.ListModelMixin, GenericViewSet):
         }, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], name='chart', url_path='chart',
-            permission_classes=[permissions.IsAuthenticated], serializer_class=ChartSerializer)
-    def transform(self, request, pk, **kwargs):
+            permission_classes=[permissions.IsAuthenticated, IsTableAllowed], serializer_class=ChartSerializer)
+    def chart(self, request, pk, **kwargs):
         user = request.user
         table = Table.objects.filter(pk=pk).first()
         if not table:
             raise NotFound(detail=_(f"Table not found."))
+
+        self.check_object_permissions(request, table)
 
         serializer = self.get_serializer(data=request.data, context={"table": table, "user": user})
         serializer.is_valid(raise_exception=True)
@@ -59,6 +69,30 @@ class TableViewSet(mixins.ListModelMixin, GenericViewSet):
         results = service.process()
 
         return Response(data=results, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], name='schema', url_path='schema',
+            permission_classes=[permissions.IsAuthenticated, IsTableAllowed], serializer_class=TableSchemaSerializer)
+    def get_schema(self, request, pk, **kwargs):
+        table = Table.objects.filter(pk=pk).first()
+        if not table:
+            raise NotFound(detail=_(f"Table not found."))
+
+        self.check_object_permissions(request, table)
+
+        serializer = self.get_serializer(data=request.data, context={"table": table})
+        serializer.is_valid(raise_exception=True)
+
+        schema = []
+        field = serializer.validated_data.get('field')
+        if field:
+            schema.append({
+                'column_name': field,
+                'data_type': table.get_column_type(field)
+            })
+        else:
+            schema = table.schema
+
+        return Response(data=schema, status=status.HTTP_200_OK)
 
 
 class PublicTableListView(mixins.ListModelMixin, GenericViewSet):
