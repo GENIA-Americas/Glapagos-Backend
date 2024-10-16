@@ -317,9 +317,6 @@ BQ_PROJECT_ID = os.getenv('BQ_PROJECT_ID')
 BQ_DATASET_ID = os.getenv('BQ_DATASET_ID')
 ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    "https://a8c7-181-29-196-144.ngrok-free.app"
-]
+CORS_ALLOW_ALL_ORIGINS = True
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
