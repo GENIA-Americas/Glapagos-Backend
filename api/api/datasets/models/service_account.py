@@ -1,3 +1,4 @@
+import secured_fields
 from django.db import models
 
 # Models
@@ -7,7 +8,7 @@ from utils.models import BaseModel
 
 class ServiceAccountKey(BaseModel):
     name = models.CharField(max_length=255)
-    private_key_data = models.TextField()
+    private_key_data = secured_fields.EncryptedTextField()
     private_key_type = models.CharField(max_length=255)
     valid_after_time = models.CharField(max_length=255)
     valid_before_time = models.CharField(max_length=255)
