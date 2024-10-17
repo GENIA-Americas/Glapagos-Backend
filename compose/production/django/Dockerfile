@@ -16,7 +16,6 @@ RUN apk --no-cache add bash mc \
             ttf-liberation \
         && rm -rf /var/cache/apk/*
 
-
 RUN apk update \
   # psycopg2 dependencies
   && apk add --virtual build-deps gcc musl-dev \
@@ -35,22 +34,23 @@ RUN apk add python3-dev
 RUN apk add postgresql-client
 RUN apk add libmagic
 
-COPY ./requirements /requirements
-RUN pip install -r /requirements/production.txt
+WORKDIR /app
+COPY /api /app
+COPY /requirements /app/requirements
+
+RUN pip install -r /app/requirements/production.txt
+
+RUN mkdir -p /app/api/static
 
 COPY ./compose/production/django/wait_for_postgres.py /wait_for_postgres.py
-# RUN chmod +x /wait_for_postgres.py
+RUN chmod +x /wait_for_postgres.py
 
 COPY ./compose/production/django/start /start
-RUN sed -i 's/\r//' /start
 RUN chmod +x /start
 
 COPY ./compose/production/django/celery/beat/start /start-celerybeat
-RUN sed -i 's/\r$//g' /start-celerybeat
 RUN chmod +x /start-celerybeat
 
 EXPOSE $PORT
-
-WORKDIR /app
 
 ENTRYPOINT ["/start"]

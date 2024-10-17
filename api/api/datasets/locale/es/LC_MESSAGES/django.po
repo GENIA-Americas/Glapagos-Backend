@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-20 20:17+0000\n"
+"POT-Creation-Date: 2024-10-08 21:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,27 +18,35 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: api/datasets/serializers/file.py:20
+#: api/datasets/exceptions.py:31
+msgid "Transformation failed"
+msgstr "Transformación fallida"
+
+#: api/datasets/models/table.py:43
+msgid "A 'Table' object cannot have itself as its parent."
+msgstr "Un objeto 'Tabla' no puede ser su propio padre."
+
+#: api/datasets/serializers/file.py:26
 msgid "File content must have at least two lines."
 msgstr "El archivo debe contener al menos dos líneas"
 
-#: api/datasets/serializers/file.py:34
+#: api/datasets/serializers/file.py:41
 msgid "You must remove the blank rows at the end of the file."
 msgstr "Debe eliminar las filas en blanco al final del archivo."
 
-#: api/datasets/serializers/file.py:44
+#: api/datasets/serializers/file.py:51
 msgid "Invalid JSON format in schema."
 msgstr "Formato JSON inválido en la definición del esquema"
 
-#: api/datasets/serializers/file.py:57
+#: api/datasets/serializers/file.py:64
 msgid "Invalid column names:"
 msgstr "Nombres de columnas inválidos"
 
-#: api/datasets/serializers/file.py:69
+#: api/datasets/serializers/file.py:76
 msgid "Error reading CSV file"
 msgstr "Error leyendo el archivo CSV"
 
-#: api/datasets/serializers/file.py:72
+#: api/datasets/serializers/file.py:79
 msgid ""
 "Column names must start with a letter and can only contain alphanumeric "
 "characters. Modify the column names in the source file or in the schema."
@@ -47,11 +55,11 @@ msgstr ""
 "contener caracteres alfanuméricos. Modifique el nombre de las columnas en el "
 "archivo de orígen o en el esquema"
 
-#: api/datasets/serializers/file.py:76
+#: api/datasets/serializers/file.py:83
 msgid "Invalid column names in CSV:"
 msgstr "Nombres de columnas inválidos en el CSV:"
 
-#: api/datasets/serializers/file.py:83
+#: api/datasets/serializers/file.py:89
 msgid ""
 "The number of columns in the schema does not match the number of columns in "
 "the CSV file."
@@ -59,50 +67,100 @@ msgstr ""
 "La cantidad de columnas en el esquema no coincide con la cantidad de "
 "columnas en el archivo CSV"
 
-#: api/datasets/serializers/file.py:94
+#: api/datasets/serializers/file.py:100
 msgid "You must indicate in the schema that the column can accept null values."
 msgstr "Debe marcar en el esquema que la columna puede aceptar valores nulos."
 
-#: api/datasets/serializers/file.py:96
+#: api/datasets/serializers/file.py:102
 msgid "Column is required but contains null values:"
 msgstr "La columna está marcada como requerida pero contiene valores nulos:"
 
-#: api/datasets/serializers/file.py:102
+#: api/datasets/serializers/file.py:108
 msgid "Column should be of type"
 msgstr "La columna debe ser de tipo"
 
-#: api/datasets/serializers/file.py:103
+#: api/datasets/serializers/file.py:109
 msgid ""
 "You must ensure that all rows are of this data type or modify the schema."
 msgstr ""
 "Debe asegurarse que todas las filas sean de este tipo de datos o modificar "
 "el esquema."
 
-#: api/datasets/serializers/file.py:124
+#: api/datasets/serializers/file.py:131
 msgid "Only CSV, TXT, and JSON files are allowed."
 msgstr "Solo se permiten archivos CSV, TXT y JSON"
 
-#: api/datasets/serializers/file.py:131
+#: api/datasets/serializers/file.py:140
 msgid "The filetype does not match with the extension"
 msgstr "El tipo de archivo no coincide con la extensión"
 
-#: api/datasets/serializers/file.py:135
+#: api/datasets/serializers/file.py:145
 msgid "Missing or incomplete parameters for CSV files."
 msgstr "Parámetros faltantes o incompletos para el archivo CSV"
 
-#: api/datasets/serializers/file.py:140
+#: api/datasets/serializers/file.py:150
 msgid ""
 "Unable to determine the file schema due to missing or incomplete parameters."
 msgstr ""
 "No es posible determinar el esquema debido a parámetros incompletos o "
 "faltantes."
 
-#: api/datasets/serializers/file.py:145
+#: api/datasets/serializers/file.py:155
 msgid ""
 "Schema autodetection cannot be used simultaneously with a provided schema."
 msgstr ""
 "No puede utilizarse la autodetección del esquema con su definición manual."
 
-#: api/datasets/views/file.py:44 api/datasets/views/file.py:60
+#: api/datasets/serializers/table.py:25
+#, fuzzy
+#| msgid "Invalid JSON format in schema."
+msgid "Invalid format to convert"
+msgstr "Formato JSON inválido en la definición del esquema"
+
+#: api/datasets/serializers/table.py:40
+#, python-brace-format
+msgid "'{option}' is a mandatory field for {transformation} transformation"
+msgstr "'{option}' es un campo obligatorio para la transformación {transformation}"
+
+#: api/datasets/serializers/table.py:63
+msgid ""
+"You do not have permission to transform this table because you are not the "
+"owner and the table is not public."
+msgstr "No tiene permisos suficientes para transformar esta tabla porque no es el propietario y la tabla no es pública."
+
+#: api/datasets/serializers/table.py:67
+msgid ""
+"You do not have permission to modify the original table, and creating a new "
+"table has not been requested."
+msgstr "No tiene permisos para modificar el dataset original y no ha sido solicitada la creación de un nuevo dataset."
+
+#: api/datasets/serializers/table.py:72
+msgid ""
+"If you want to create a new table, you must specify its privacy setting."
+msgstr "Si desea crear una nueva table debe especificar su configuración de privacidad."
+
+#: api/datasets/services/transformation_service.py:49
+msgid "Transformation class not found."
+msgstr "La clase Transformation no se encuentra"
+
+#: api/datasets/services/transformation_service.py:60
+#, python-brace-format
+msgid "Error while applying transformation {transformation} over {field}"
+msgstr "Error aplicando la transformación {transformation} sobre {field}"
+
+#: api/datasets/services/transformation_service.py:179
+msgid "is a mandatory field"
+msgstr "es un campo obligatorio"
+
+#: api/datasets/views/file.py:54 api/datasets/views/file.py:78
+#: api/datasets/views/file.py:109
 msgid "Error processing request"
 msgstr "Error procesando request"
+
+#: api/datasets/views/table.py:28
+msgid "Table not found."
+msgstr "Tabla no encontrada"
+
+#: api/datasets/views/table.py:40
+msgid "Table transformed successfully: "
+msgstr "Tabla transformada satisfactoriamente: "

@@ -27,7 +27,7 @@ class AiViewset(viewsets.ViewSet):
         )
 
         serializer.is_valid()
-        msg = serializer.validated_data.get("msg", ""),
+        msg = serializer.validated_data.get("msg", "")
 
         tables = Table.objects.filter(file__owner=request.user)
         context = "" 

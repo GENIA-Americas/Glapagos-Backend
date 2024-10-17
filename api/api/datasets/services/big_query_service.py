@@ -3,8 +3,10 @@ from typing import List, Dict
 
 from google.cloud import bigquery
 from google.oauth2 import service_account
+from google.api_core.exceptions import GoogleAPIError
 from django.conf import settings
 
+from api.datasets.exceptions import QueryFailedException
 from api.datasets.models import Table
 from api.users.models import User
 
@@ -48,6 +50,25 @@ class BigQueryService:
             )
         return bigquery_schema
 
+    def get_schema(self, dataset: str, table: str) -> List:
+        query = f"""SELECT column_name, data_type, is_nullable 
+                    FROM `{self.project_id}.{dataset}.INFORMATION_SCHEMA.COLUMNS` 
+                    WHERE table_name = '{table}';"""
+        schema = []
+        try:
+            bigquery_schema = self.query(query)
+            if not bigquery_schema:
+                return schema
+            for field in bigquery_schema:
+                schema.append({
+                    "column_name": field.column_name,
+                    "data_type": field.data_type,
+                    "mode": "NULLABLE" if field.is_nullable else "REQUIRED",
+                })
+        except GoogleAPIError as exp:
+            print(str(exp))
+        return schema
+
     def get_dataset_reference(self, dataset: str) -> bigquery.DatasetReference:
         dataset_ref = bigquery.DatasetReference(
             self.project_id, dataset
@@ -59,14 +80,6 @@ class BigQueryService:
         dataset = self.client.get_dataset(dataset_ref)
         table_ref = dataset.table(table_name)
         return table_ref
-
-    def create_empty_table(self, table: Table):
-        table_ref = self.get_table_reference(dataset=table.dataset_name, table_name=table.name)
-        empty_table = bigquery.Table(table_ref)
-        empty_table = self.client.create_table(empty_table)
-        print(f"Table {empty_table.project}.{empty_table.dataset_id}.{empty_table.table_id} created without schema.")
-        table.mounted = True
-        table.save()
 
     def create_dataset(self, dataset_name: str):
         owner_client = self.create_bigquery_client(project_owner=True)
@@ -114,7 +127,6 @@ class BigQueryService:
         if skip_leading_rows:
             job_config.skip_leading_rows = skip_leading_rows
         if schema:
-            schema = json.loads(schema[0])
             bigquery_schema = BigQueryService.convert_schema_to_bigquery(schema)
             job_config.schema = bigquery_schema
 
@@ -123,3 +135,6 @@ class BigQueryService:
 
         load_job.result()
         table.update_table_stats(table_ref)
+        if not table.schema:
+            table.schema = self.get_schema(dataset=table.dataset_name, table=table.name)
+            table.save()
