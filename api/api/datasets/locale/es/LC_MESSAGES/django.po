@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-08 21:14+0000\n"
+"POT-Creation-Date: 2024-10-16 16:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,13 +18,52 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: api/datasets/exceptions.py:31
+#: api/datasets/exceptions.py:9
+msgid "Query execution failed"
+msgstr "La ejecución de la consulta falló."
+
+#: api/datasets/exceptions.py:15
 msgid "Transformation failed"
 msgstr "Transformación fallida"
+
+#: api/datasets/exceptions.py:21
+msgid ""
+"Chart limit exceeded: The selected field contains too many distinct "
+"categories."
+msgstr "Se excedió el límite del gráfico: El campo seleccionado contiene demasiadas categorías distintas y no es posible representarlas."
 
 #: api/datasets/models/table.py:43
 msgid "A 'Table' object cannot have itself as its parent."
 msgstr "Un objeto 'Tabla' no puede ser su propio padre."
+
+#: api/datasets/permissions.py:6
+#, fuzzy
+#| msgid ""
+#| "You do not have permission to transform this table because you are not "
+#| "the owner and the table is not public."
+msgid ""
+"You do not have permission to access this private resource. Only the owner "
+"can access it."
+msgstr ""
+"No tiene permisos suficientes para transformar esta tabla porque no es el "
+"propietario y la tabla no es pública."
+
+#: api/datasets/serializers/chart.py:22
+#, python-brace-format
+msgid "Column '{column}' not found in the table schema."
+msgstr "La columna '{column}' no se encontró en el esquema de la tabla."
+
+#: api/datasets/serializers/chart.py:32
+#, fuzzy
+#| msgid "File content must have at least two lines."
+msgid "Chart must have at least one coordinate."
+msgstr "El archivo debe contener al menos dos líneas"
+
+#: api/datasets/serializers/chart.py:39 api/datasets/serializers/chart.py:44
+#, fuzzy, python-brace-format
+#| msgid "Column should be of type"
+msgid "Column '{column}' should be a category of type string."
+msgstr "La columna debe ser de tipo"
 
 #: api/datasets/serializers/file.py:26
 msgid "File content must have at least two lines."
@@ -111,33 +150,49 @@ msgid ""
 msgstr ""
 "No puede utilizarse la autodetección del esquema con su definición manual."
 
-#: api/datasets/serializers/table.py:25
+#: api/datasets/serializers/table.py:26 api/datasets/serializers/table.py:32
 #, fuzzy
 #| msgid "Invalid JSON format in schema."
 msgid "Invalid format to convert"
 msgstr "Formato JSON inválido en la definición del esquema"
 
-#: api/datasets/serializers/table.py:40
+#: api/datasets/serializers/table.py:47 api/datasets/serializers/table.py:54
 #, python-brace-format
 msgid "'{option}' is a mandatory field for {transformation} transformation"
-msgstr "'{option}' es un campo obligatorio para la transformación {transformation}"
+msgstr ""
+"'{option}' es un campo obligatorio para la transformación {transformation}"
 
-#: api/datasets/serializers/table.py:63
+#: api/datasets/serializers/table.py:77
 msgid ""
 "You do not have permission to transform this table because you are not the "
 "owner and the table is not public."
-msgstr "No tiene permisos suficientes para transformar esta tabla porque no es el propietario y la tabla no es pública."
+msgstr ""
+"No tiene permisos suficientes para transformar esta tabla porque no es el "
+"propietario y la tabla no es pública."
 
-#: api/datasets/serializers/table.py:67
+#: api/datasets/serializers/table.py:81
 msgid ""
 "You do not have permission to modify the original table, and creating a new "
 "table has not been requested."
-msgstr "No tiene permisos para modificar el dataset original y no ha sido solicitada la creación de un nuevo dataset."
+msgstr ""
+"No tiene permisos para modificar el dataset original y no ha sido solicitada "
+"la creación de un nuevo dataset."
 
-#: api/datasets/serializers/table.py:72
+#: api/datasets/serializers/table.py:86
 msgid ""
 "If you want to create a new table, you must specify its privacy setting."
-msgstr "Si desea crear una nueva table debe especificar su configuración de privacidad."
+msgstr ""
+"Si desea crear una nueva table debe especificar su configuración de "
+"privacidad."
+
+#: api/datasets/serializers/table.py:102
+#, python-brace-format
+msgid "Field '{field}' does not exist in the dataset schema"
+msgstr "El campo '{field}' no existe en el esquema del dataset."
+
+#: api/datasets/services/big_query_service.py:111
+msgid "Error while executing query"
+msgstr "Error ejecutando la consulta."
 
 #: api/datasets/services/transformation_service.py:49
 msgid "Transformation class not found."
@@ -148,19 +203,33 @@ msgstr "La clase Transformation no se encuentra"
 msgid "Error while applying transformation {transformation} over {field}"
 msgstr "Error aplicando la transformación {transformation} sobre {field}"
 
-#: api/datasets/services/transformation_service.py:179
-msgid "is a mandatory field"
-msgstr "es un campo obligatorio"
+#: api/datasets/services/transformation_service.py:159
+msgid "No schema info for this dataset."
+msgstr "No hay información del esquema para este dataset."
+
+#: api/datasets/services/transformation_service.py:239
+#: api/datasets/services/transformation_service.py:368
+#, python-brace-format
+msgid "No data info for the field {field} in the schema."
+msgstr "No hay información para el campo {field} en el esquema."
+
+#: api/datasets/services/transformation_service.py:371
+msgid "Column must be of type string to apply text standardization."
+msgstr "La columna debe ser de tipo 'string' para aplicar una estandarización de texto."
 
 #: api/datasets/views/file.py:54 api/datasets/views/file.py:78
 #: api/datasets/views/file.py:109
 msgid "Error processing request"
 msgstr "Error procesando request"
 
-#: api/datasets/views/table.py:28
+#: api/datasets/views/table.py:34 api/datasets/views/table.py:57
+#: api/datasets/views/table.py:78
 msgid "Table not found."
 msgstr "Tabla no encontrada"
 
-#: api/datasets/views/table.py:40
+#: api/datasets/views/table.py:48
 msgid "Table transformed successfully: "
 msgstr "Tabla transformada satisfactoriamente: "
+
+#~ msgid "is a mandatory field"
+#~ msgstr "es un campo obligatorio"
