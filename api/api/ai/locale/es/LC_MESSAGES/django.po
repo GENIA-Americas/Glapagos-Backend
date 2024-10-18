@@ -17,9 +17,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
 #: api/ai/views.py:39
 msgid "Error processing request"
-msgstr ""
+msgstr "Error procesando la peticion"
 
 #: api/ai/views.py:39
 msgid "Unrelated topic"
