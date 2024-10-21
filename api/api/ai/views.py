@@ -9,17 +9,13 @@ from api.ai.serializers import ChatSerializer
 from api.datasets.models import Table
 
 # Permissions
-from api.ai.services import ChatAssistant 
-from api.users.permissions import IsAdminPermission, CanCrudPermission
-
+from api.ai.services import ChatAssistant
 
 class AiViewset(viewsets.ViewSet):
     serializer_class = ChatSerializer 
 
     @action(
-        detail=False,
-        methods=["post"],
-        permission_classes=[permissions.IsAuthenticated]
+        detail=False, methods=["post"], permission_classes=[permissions.IsAuthenticated]
     )
     def chat(self, request, *args, **kwargs):
         serializer = ChatSerializer(
@@ -30,10 +26,10 @@ class AiViewset(viewsets.ViewSet):
         msg = serializer.validated_data.get("msg", "")
 
         tables = Table.objects.filter(file__owner=request.user)
-        context = "" 
+        context = ""
         for i in tables:
             context += f"table_id = {i.path} \n"
 
         res = ChatAssistant.chat(msg[0], context)
-        return Response({"message": res}, status=status.HTTP_200_OK)
+        return Response(dict(message=res.__dict__), status=status.HTTP_200_OK)
 

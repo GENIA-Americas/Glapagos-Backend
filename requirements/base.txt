@@ -4,6 +4,7 @@ python-slugify
 jinja2
 
 openai
+pydantic
 
 # Django
 Django==3.2
