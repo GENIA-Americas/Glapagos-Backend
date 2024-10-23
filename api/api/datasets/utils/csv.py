@@ -7,18 +7,28 @@ from .bigquery import normalize_column_name
 
 
 def csv_parameters_detect(sample: str) -> Dict:
-    """Detects format parameters of a given csv
+    """Detects format parameters of a given CSV.
 
     Args:
         sample (str): CSV data sample
 
     Returns:
-        (Dict): CSV data params
-
+        (Dict): CSV data params or defaults if detection fails.
     """
     sniffer = csv.Sniffer()
 
-    dialect = sniffer.sniff(sample)
+    try:
+        dialect = sniffer.sniff(sample)
+    except csv.Error:
+        return {
+            'delimiter': ',',
+            'quotechar': '"',
+            'escapechar': None,
+            'doublequote': True,
+            'skipinitialspace': False,
+            'lineterminator': '\n',
+            'quoting': csv.QUOTE_MINIMAL,
+        }
 
     return {
         'delimiter': dialect.delimiter,
