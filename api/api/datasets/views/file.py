@@ -1,3 +1,4 @@
+
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
 from rest_framework.viewsets import GenericViewSet
@@ -5,6 +6,8 @@ from rest_framework import status, permissions, mixins, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
+from api.datasets.serializers.upload_providers import return_url_provider
+from api.datasets.serializers.file import FileUploadFieldSerializer, UrlPreviewSerializer
 from api.datasets.models import File
 from api.datasets.services import BigQueryService, FileServiceFactory
 from api.datasets.serializers import (
@@ -15,6 +18,7 @@ from api.datasets.serializers import (
 )
 from api.datasets.utils import prepare_csv_data_format
 from api.utils.pagination import StartEndPagination, SearchQueryPagination
+from api.datasets.enums import UploadType
 
 
 class FileViewSet(mixins.ListModelMixin, GenericViewSet):
@@ -33,6 +37,26 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         user = self.request.user
         return File.objects.filter(Q(public=True) | Q(owner=user))
 
+
+    @action(
+        detail=False,
+        methods=["post"],
+        name="url-preview",
+        url_path="url-preview",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def url_preview(self, request, *args, **kwargs):
+        serializer = UrlPreviewSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        url = serializer.validated_data.get("url", "")
+
+        provider = return_url_provider(url)
+        provider.validate(request.data)
+        provider.preview()
+        bigquery_format = prepare_csv_data_format(data=provider.preview_content, skip_leading_rows=1)
+
+        return Response(bigquery_format, status=status.HTTP_200_OK)
+
     @action(
         detail=False,
         methods=["post"],
@@ -41,21 +65,33 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         permission_classes=[permissions.IsAuthenticated],
     )
     def upload_file(self, request, *args, **kwargs):
-        serializer = FileUploadSerializer(data=request.data)
-        if serializer.is_valid():
-            file_service = FileServiceFactory.get_file_service(
-                user=request.user, **serializer.validated_data
-            )
-            try:
-                file_url = file_service.process_file()
-                return Response({"file_url": file_url}, status=status.HTTP_201_CREATED)
-            except Exception as exp:
-                return Response(
-                    {"detail": _("Error processing request"), "error": str(exp)},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+        serializer = FileUploadFieldSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if serializer.validated_data.get("upload_type", "") == UploadType.URL: 
+            url = serializer.validated_data.get("url", "")
+            provider = return_url_provider(url)
+            provider.validate(request.data)
+
+            request.data["file"] = provider.process()
+            request.data.pop("url", None)
+            request.data.pop("upload_type", None)
+
+        file_serializer = FileUploadSerializer(data=request.data)
+        file_serializer.is_valid(raise_exception=True)
+
+        file_service = FileServiceFactory.get_file_service(
+            user=request.user, **file_serializer.validated_data
+        )
+        try:
+            file_url = file_service.process_file()
+            return Response({"file_url": file_url}, status=status.HTTP_201_CREATED)
+        except Exception as exp:
+            return Response(
+                {"detail": _("Error processing request"), "error": str(exp)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
 
     @action(
         detail=False,
@@ -69,9 +105,11 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         if serializer.is_valid():
             try:
                 preview = serializer.validated_data["preview"]
-                skip_leading_rows = serializer.validated_data['skip_leading_rows']
+                skip_leading_rows = serializer.validated_data["skip_leading_rows"]
 
-                bigquery_format = prepare_csv_data_format(data=preview, skip_leading_rows=skip_leading_rows)
+                bigquery_format = prepare_csv_data_format(
+                    data=preview, skip_leading_rows=skip_leading_rows
+                )
                 return Response(bigquery_format, status=status.HTTP_200_OK)
             except Exception as exp:
                 return Response(

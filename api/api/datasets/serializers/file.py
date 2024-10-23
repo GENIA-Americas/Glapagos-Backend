@@ -7,13 +7,15 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from api.datasets.models import File
-from api.datasets.enums import FileType
-from api.datasets.utils import is_valid_column_name, create_dataframe_from_csv
+from api.datasets.enums import FileType, UploadType
+from api.datasets.utils import create_dataframe_from_csv, validate_csv_column_names
 
 
 class SearchQuerySerializer(serializers.Serializer):
     query = serializers.CharField()
 
+class UrlPreviewSerializer(serializers.Serializer):
+    url = serializers.URLField()
 
 class FilePreviewSerializer(serializers.Serializer):
     preview = serializers.CharField()
@@ -27,6 +29,14 @@ class FilePreviewSerializer(serializers.Serializer):
             )
         return value
 
+class FileUploadFieldSerializer(serializers.Serializer):
+    file = serializers.FileField(required=False)
+    public = serializers.BooleanField()
+    skip_leading_rows = serializers.IntegerField(min_value=0, required=False)
+    autodetect = serializers.BooleanField(required=False)
+    schema = serializers.ListField(required=False)
+    url = serializers.URLField(required=False)
+    upload_type = serializers.ChoiceField(choices=UploadType.choices)
 
 class FileUploadSerializer(serializers.Serializer):
     file = serializers.FileField()
@@ -76,12 +86,7 @@ class FileUploadSerializer(serializers.Serializer):
             raise serializers.ValidationError({"detail": _("Error reading CSV file")})
 
         if autodetect:
-            suffix_message = _("Column names must start with a letter and can only contain alphanumeric characters. Modify the column names in the source file or in the schema.")
-            invalid_columns = [col for col in df.columns if not is_valid_column_name(col)]
-            if invalid_columns:
-                raise serializers.ValidationError({
-                    "detail": _("Invalid column names in CSV:") + ', '.join(invalid_columns) + f". {suffix_message}"
-                })
+            validate_csv_column_names(df)
 
         if schema:
             if len(schema) != len(df.columns):

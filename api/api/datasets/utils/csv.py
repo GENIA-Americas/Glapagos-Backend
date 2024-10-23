@@ -1,9 +1,14 @@
 import csv
+import math
+import requests
 import pandas as pd
 from io import StringIO
 from typing import Dict, List
 
-from .bigquery import normalize_column_name
+from .bigquery import is_valid_column_name, normalize_column_name
+
+from django.utils.translation import gettext_lazy as _
+from api.datasets.exceptions import CsvPreviewFailed, InvalidCsvColumnException
 
 
 def csv_parameters_detect(sample: str) -> Dict:
@@ -185,3 +190,73 @@ def create_dataframe_from_csv(file, sample: str = None) -> pd.DataFrame:
     file.seek(0)
 
     return df, csv_params
+
+
+def get_preview_from_url_csv(urls: list[str], max_lines=20) -> StringIO:
+    """
+    Get's the preview from a csv file url or list of urls 
+    validating column names
+    
+    Returns:
+        A list containing the first n lines from all given urls
+    """
+    
+    assert len(urls) > 0, "It needs to be at least one url in the list"
+
+    lines = []
+    columns = pd.Index([]) 
+    preview = StringIO()
+    url_count = len(urls)
+    ml = math.ceil(max_lines/url_count)
+
+    for url in urls:
+        r = requests.get(url, stream=True)
+        
+        if r.status_code != 200:
+            raise CsvPreviewFailed(detail=_("Invalid url or file/folder doesn't not exist"))
+
+        line = 0
+        cols = StringIO()
+        for j in r.iter_lines():
+            if line != 0 or len(lines) == 0:
+                lines.append(j.decode() + "\r\n")
+
+            if line == 0:
+                cols.write(j.decode())
+
+            line += 1
+            if line == ml:
+                break
+
+        cols.seek(0)
+        df, csv_params = create_dataframe_from_csv(cols, sample=cols.getvalue())
+        validate_csv_column_names(df)
+
+        if columns.empty:
+            columns = df.columns
+
+        if not columns.equals(df.columns):
+            raise CsvPreviewFailed(
+                dict(detail=_("The tables need to have the same number of columns and column names"))
+            )
+
+        preview.writelines(lines)
+        preview.seek(0)
+    return preview 
+
+
+def validate_csv_column_names(df: pd.DataFrame, raise_exception=False) -> list:
+    """
+    Validates csv column names ensuring that it is compatible with 
+    google cloud directives
+    """
+
+    suffix_message = _("Column names must start with a letter and can only contain alphanumeric characters. Modify the column names in the source file or in the schema.")
+    invalid_columns = [col for col in df.columns if not is_valid_column_name(col)]
+    if invalid_columns and raise_exception:
+        raise InvalidCsvColumnException(
+            detail=_("Invalid column names in CSV:") + ', '.join(invalid_columns) + f". {suffix_message}"
+        )
+
+    return invalid_columns
+
