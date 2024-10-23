@@ -168,9 +168,7 @@ class SignUpEmailSerializer(serializers.Serializer):
     phone_number = serializers.RegexField(regex=r'^\d+$', max_length=16, error_messages={
         'invalid': _('The phone number must contain only digits.')
     })
-    organization = serializers.CharField(required=False, allow_blank=True, validators=[
-        RegexValidator(regex=r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$', message=_('Organization can only contain letters and spaces.'))
-    ])
+    organization = serializers.CharField(required=False, allow_blank=True)
     industry = serializers.ChoiceField(required=False, allow_blank=True, choices=Industry.choices)
 
     def validate_password(self, value):
