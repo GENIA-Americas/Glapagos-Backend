@@ -3,7 +3,7 @@ import re
 
 def is_valid_column_name(column_name):
     """Validates if the column name follows BigQuery's naming rules."""
-    if re.match(r'^[a-zA-Z_][a-zA-Z0-9_]{0,127}$', column_name):
+    if re.match(r'^[a-zA-Z_áéíóúÁÉÍÓÚñÑ][a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]{0,127}$', column_name):
         return True
     return False
 
@@ -25,7 +25,7 @@ def normalize_column_name(column_name):
     Returns:
         str: The normalized column name that adheres to BigQuery's naming conventions.
     """
-    normalized_name = re.sub(r'[^a-zA-Z0-9_]', '_', column_name)
+    normalized_name = re.sub(r'[^a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]', '_', column_name)
     if normalized_name and normalized_name[0].isdigit():
         normalized_name = '_' + normalized_name
     return normalized_name[:128]
