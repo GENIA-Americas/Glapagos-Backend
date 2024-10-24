@@ -9,6 +9,7 @@ from rest_framework import serializers
 from api.datasets.models import File
 from api.datasets.enums import FileType
 from api.datasets.utils import is_valid_column_name, create_dataframe_from_csv
+from api.datasets.exceptions import InvalidFileException
 
 
 class SearchQuerySerializer(serializers.Serializer):
@@ -36,11 +37,16 @@ class FileUploadSerializer(serializers.Serializer):
     schema = serializers.ListField(required=False)
 
     def validate_file(self, value):
-        content = value.read().decode('utf-8').splitlines()
+        try:
+            content = value.read().decode('utf-8').splitlines()
+        except UnicodeDecodeError as exp:
+            raise InvalidFileException(error=str(exp))
+
         if content[-1].strip() == '':
             raise serializers.ValidationError({"detail": _("You must remove the blank rows at the end of the file.")})
         value.seek(0)
         return value
+
 
     def validate_schema(self, value):
         value_obj = []
@@ -54,14 +60,16 @@ class FileUploadSerializer(serializers.Serializer):
         for item in value_obj:
             name = item.get('column_name')
 
-            if isinstance(name, str) and re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', name):
+            if isinstance(name, str) and is_valid_column_name(name):
                 continue
 
             invalid_columns.append(name)
 
         if invalid_columns:
             invalid_columns_str = ', '.join(invalid_columns)
-            raise serializers.ValidationError({"detail": _("Invalid column names:") + invalid_columns_str})
+            raise serializers.ValidationError({
+                "detail": _("Invalid column names: {invalid_columns}").format(invalid_columns=invalid_columns_str)
+            })
 
         return value_obj
 
@@ -70,10 +78,7 @@ class FileUploadSerializer(serializers.Serializer):
         schema = attrs.get('schema', [])
         autodetect = attrs.get('autodetect', False)
 
-        try:
-            df, csv_params = create_dataframe_from_csv(file)
-        except Exception:
-            raise serializers.ValidationError({"detail": _("Error reading CSV file")})
+        df, csv_params = create_dataframe_from_csv(file)
 
         if autodetect:
             suffix_message = _("Column names must start with a letter and can only contain alphanumeric characters. Modify the column names in the source file or in the schema.")
@@ -107,9 +112,7 @@ class FileUploadSerializer(serializers.Serializer):
 
             base_message = _("Column should be of type")
             suffix_message = _("You must ensure that all rows are of this data type or modify the schema.")
-            if expected_type == "STRING" and actual_type not in ["object", "string"]:
-                raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}. {suffix_message}"})
-            elif expected_type == "INT64" and actual_type not in ["int64"]:
+            if expected_type == "INT64" and actual_type not in ["int64"]:
                 raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}. {suffix_message}"})
             elif expected_type == "FLOAT64" and actual_type not in ["float64"]:
                 raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}. {suffix_message}"})

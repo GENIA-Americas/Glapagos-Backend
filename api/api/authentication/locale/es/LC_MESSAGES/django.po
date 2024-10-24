@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-16 16:15+0000\n"
+"POT-Creation-Date: 2024-10-24 16:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -66,7 +66,7 @@ msgid "user is invalid"
 msgstr "El nombre de usuario es inválido."
 
 #: api/authentication/serializers/signup.py:43
-#: api/authentication/serializers/signup.py:197
+#: api/authentication/serializers/signup.py:195
 msgid "user already exists."
 msgstr "El usuario ya existe."
 
@@ -86,7 +86,7 @@ msgstr ""
 "vuelva a intentar"
 
 #: api/authentication/serializers/signup.py:146
-#: api/authentication/serializers/signup.py:191
+#: api/authentication/serializers/signup.py:189
 msgid "passwords doesn't match."
 msgstr "Las contraseñas no coinciden."
 
@@ -106,9 +106,8 @@ msgstr "Código de país inválido"
 msgid "The phone number must contain only digits."
 msgstr "El número de teléfono solo puede contener dígitos"
 
-#: api/authentication/serializers/signup.py:172
-msgid "Organization can only contain letters and spaces."
-msgstr "La organización solo puede incluir letras y espacios"
+#~ msgid "Organization can only contain letters and spaces."
+#~ msgstr "La organización solo puede incluir letras y espacios"
 
 #~ msgid "Country can only contain letters and spaces."
 #~ msgstr "El país solo puede incluir letras y espacios"
