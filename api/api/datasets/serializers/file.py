@@ -1,5 +1,4 @@
 import json
-import re
 
 import magic
 import pandas as pd
@@ -17,16 +16,30 @@ class SearchQuerySerializer(serializers.Serializer):
 
 
 class FilePreviewSerializer(serializers.Serializer):
-    preview = serializers.CharField()
-    skip_leading_rows = serializers.IntegerField()
+    preview = serializers.JSONField()
+    skip_leading_rows = serializers.IntegerField(required=False, allow_null=True)
+    file_type = serializers.ChoiceField(choices=[(tag.value, tag.label) for tag in FileType])
 
-    def validate_preview(self, value):
-        lines = value.strip().split("\n")
-        if len(lines) < 2:
-            raise serializers.ValidationError(
-                _("File content must have at least two lines.")
-            )
-        return value
+    def validate(self, attrs):
+        file_type = attrs.get('file_type')
+        preview = attrs.get('preview')
+
+        if file_type in ['csv', 'txt']:
+            if not isinstance(preview, str):
+                raise serializers.ValidationError({
+                    'preview': _('The preview field must be a string for CSV or TXT files.')
+                })
+
+            lines = preview.strip().split("\n")
+            if len(lines) < 2:
+                raise serializers.ValidationError(
+                    _("File content must have at least two lines.")
+                )
+
+        elif file_type == 'json':
+            attrs['preview'] = json.dumps(preview)
+
+        return attrs
 
 
 class FileUploadSerializer(serializers.Serializer):
@@ -121,7 +134,8 @@ class FileUploadSerializer(serializers.Serializer):
             elif expected_type == "DATETIME":
                 if not pd.to_datetime(df[actual_column_name], errors='coerce').notnull().all():
                     raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}. {suffix_message}"})
-
+            if expected_type == "ARRAY" and actual_type not in ["object"]:
+                raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}. {suffix_message}"})
     def validate(self, attrs):
         attrs = super().validate(attrs)
         file = attrs["file"]

@@ -9,6 +9,9 @@ services:
     image: postgres:15
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - local_postgres_data:/var/lib/postgresql/data
+
 
   django: &django
     build:

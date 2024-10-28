@@ -1,25 +1,34 @@
 from abc import ABC, abstractmethod
+from typing import List
 
 from django.conf import settings
 
 from api.users.models import User
 from api.datasets.models import File, Table
-from api.datasets.utils import generate_random_string, csv_parameters_detect
+from api.datasets.utils import (generate_random_string, csv_parameters_detect,
+                                prepare_csv_data_format, prepare_json_data_format)
 from .big_query_service import BigQueryService
 from .google_cloud_storage_service import GCSService, JSONGCSService
 
 
 class FileServiceFactory:
     @staticmethod
-    def get_file_service(user: User, **kwargs):
+    def get_file_service(user: User=None, return_instance=True, **kwargs):
         extension = kwargs['extension']
+        class_ = None
 
         if extension.lower() == 'txt':
-            return TXTFileService(user, **kwargs)
+            class_ = TXTFileService
         elif extension.lower() == 'csv':
-            return CSVFileService(user, **kwargs)
+            class_ = CSVFileService
         elif extension.lower() == 'json':
-            return JSONFileService(user, **kwargs)
+            class_ = JSONFileService
+
+        if not return_instance:
+            return class_
+
+        if class_:
+            return class_(user, **kwargs)
 
 
 class FileService(ABC):
@@ -68,6 +77,11 @@ class StructuredFileService(FileService):
         table.save()
         return table
 
+    @staticmethod
+    @abstractmethod
+    def preview(data: str, skip_leading_rows: int) -> List:
+        ...
+
     @abstractmethod
     def process_file(self):
         ...
@@ -83,6 +97,10 @@ class CSVFileService(StructuredFileService):
     def __init__(self, user: User, **kwargs):
         super().__init__(user, **kwargs)
         self.skip_leading_rows = kwargs.get("skip_leading_rows", 1)
+
+    @staticmethod
+    def preview(data: str, skip_leading_rows: int) -> List:
+        return prepare_csv_data_format(data=data, skip_leading_rows=skip_leading_rows)
 
     def process_file(self):
         file_url = GCSService.upload_file(self.file, self.filename)
@@ -104,6 +122,11 @@ class CSVFileService(StructuredFileService):
 
 
 class JSONFileService(StructuredFileService):
+
+    @staticmethod
+    def preview(data: str, skip_leading_rows: int) -> List:
+        return prepare_json_data_format(data=data)
+
     def process_file(self):
         upload_service = JSONGCSService()
         file_url = upload_service.upload_file(self.file, self.filename)

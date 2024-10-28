@@ -1,3 +1,5 @@
+from typing import Type
+
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
 from rest_framework.viewsets import GenericViewSet
@@ -6,14 +8,13 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from api.datasets.models import File
-from api.datasets.services import BigQueryService, FileServiceFactory
+from api.datasets.services import BigQueryService, FileServiceFactory, StructuredFileService
 from api.datasets.serializers import (
     FileSerializer,
     FileUploadSerializer,
     FilePreviewSerializer,
     SearchQuerySerializer,
 )
-from api.datasets.utils import prepare_csv_data_format
 from api.utils.pagination import StartEndPagination, SearchQueryPagination
 
 
@@ -60,9 +61,13 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         serializer = FilePreviewSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         preview = serializer.validated_data["preview"]
-        skip_leading_rows = serializer.validated_data['skip_leading_rows']
+        skip_leading_rows = serializer.validated_data.get('skip_leading_rows')
+        file_type = serializer.validated_data['file_type']
 
-        bigquery_format = prepare_csv_data_format(data=preview, skip_leading_rows=skip_leading_rows)
+        FileService: Type[StructuredFileService] = FileServiceFactory.get_file_service(
+            return_instance=False, extension=file_type
+        )
+        bigquery_format = FileService.preview(data=preview, skip_leading_rows=skip_leading_rows)
         return Response(bigquery_format, status=status.HTTP_200_OK)
 
     @action(
