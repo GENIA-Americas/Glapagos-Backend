@@ -107,8 +107,10 @@ class BigQueryService:
 
             return result
         except GoogleAPIError as exp:
+            # remove the job id and location
+            message = exp.message.split("\n")[0]
             raise QueryFailedException(
-                detail=_("Error while executing query"),
+                detail=message,
                 error=str(exp)
             )
 
