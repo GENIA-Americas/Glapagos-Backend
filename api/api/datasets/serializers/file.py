@@ -13,7 +13,7 @@ from api.datasets.exceptions import InvalidFileException
 
 
 class SearchQuerySerializer(serializers.Serializer):
-    query = serializers.CharField()
+    query = serializers.CharField(allow_blank=False)
 
 
 class FilePreviewSerializer(serializers.Serializer):
