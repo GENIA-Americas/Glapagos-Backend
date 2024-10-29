@@ -1,21 +1,61 @@
 import json
 import re
-
 import magic
 import pandas as pd
-from django.utils.translation import gettext_lazy as _
-from rest_framework import serializers
 
+from rest_framework import serializers
+from django.conf import settings
+from django.utils.translation import gettext_lazy as _
+
+from api.datasets.services.upload_providers import return_url_provider
 from api.datasets.models import File
 from api.datasets.enums import FileType, UploadType
 from api.datasets.utils import create_dataframe_from_csv, validate_csv_column_names
 
 
+def validate_size(value: int):
+    """
+    Validates that the value isn't grater that 
+    the FILE_UPLOAD_LIMIT defined in settings.
+    raises a Validation error otherwise
+
+    this fuctions mustn't be use outside serializers or serializer fields
+    """
+    if value >= settings.FILE_UPLOAD_LIMIT: 
+        raise serializers.ValidationError(
+            dict(detail=_("The file size is too large"))
+        )
+
+def validate_mimes(value: str):
+    """
+    Validates that the mimetype corresponds to the allowed mimetypes.
+    raises a Validation error otherwise
+
+    this fuctions mustn't be use outside serializers or serializer fields
+    """
+    valid_mime_types = ["text/csv", "application/json", "text/plain"]
+    if value not in valid_mime_types:
+        raise serializers.ValidationError(
+            {"detail": _("The filetype does not match with the extension")}
+        )
+
+def validate_extension(value: str):
+    """
+    Validates that the extension corresponds to the allowed extensions.
+    raises a Validation error otherwise
+
+    this fuctions mustn't be use outside serializers or serializer fields
+    """
+    valid_extensions = ["csv", "txt", "json"]
+    if value not in valid_extensions:
+        raise serializers.ValidationError(
+            {"detail": _("Only CSV, TXT, and JSON files are allowed.")}
+        )
+
+
 class SearchQuerySerializer(serializers.Serializer):
     query = serializers.CharField()
 
-class UrlPreviewSerializer(serializers.Serializer):
-    url = serializers.URLField()
 
 class FilePreviewSerializer(serializers.Serializer):
     preview = serializers.CharField()
@@ -29,53 +69,77 @@ class FilePreviewSerializer(serializers.Serializer):
             )
         return value
 
-class FileUploadFieldSerializer(serializers.Serializer):
-    file = serializers.FileField(required=False)
-    public = serializers.BooleanField()
-    skip_leading_rows = serializers.IntegerField(min_value=0, required=False)
-    autodetect = serializers.BooleanField(required=False)
-    schema = serializers.ListField(required=False)
-    url = serializers.URLField(required=False)
-    upload_type = serializers.ChoiceField(choices=UploadType.choices)
 
-class FileUploadSerializer(serializers.Serializer):
-    file = serializers.FileField()
-    public = serializers.BooleanField()
-    skip_leading_rows = serializers.IntegerField(min_value=0, required=False)
-    autodetect = serializers.BooleanField(required=False)
-    schema = serializers.ListField(required=False)
+class ProviderUrlField(serializers.URLField):
+    def to_internal_value(self, data):
+        value = super().to_internal_value(data)
 
-    def validate_file(self, value):
-        content = value.read().decode('utf-8').splitlines()
-        if content[-1].strip() == '':
-            raise serializers.ValidationError({"detail": _("You must remove the blank rows at the end of the file.")})
-        value.seek(0)
+        url = data 
+        provider = return_url_provider(url)
+
+        if provider.service.is_folder(url):
+            files = provider.service.list_files(url)
+
+            extension = ""
+            for i in files:
+                name = i.get("name", "").split(".")[-1]
+                validate_extension(name)
+
+                if extension == "":
+                    extension = name
+
+                if extension != name:
+                    raise serializers.ValidationError(
+                        dict(detail=_("Invalid extension, all files should have the same file extension"))
+                    )
+
+            size = 0
+            for i in files:
+                size += int(i.get("size", 0))
+            validate_size(size)
+
+            mimetype = ""
+            for i in files:
+                mime =  i.get("mimeType", "")
+                if mimetype == "":
+                    mimetype = mime 
+
+                if mime != mimetype:
+                    raise serializers.ValidationError(
+                        dict(detail=_("Invalid mimetype, all files should have the same mimetype"))
+                    )
+            validate_mimes(mimetype)
+
+        else:
+
+            metadata = provider.service.get_file_metadata(url, ["size", "name", "mimeType"])
+            size = int(metadata.get("size", 0))
+            validate_size(size)
+            validate_mimes(metadata.get("mimeType", ""))
+
+            extension = metadata.get("name", "").split(".")[-1]
+            if extension not in FileType.values:
+                raise serializers.ValidationError(
+                    {"detail": _("Only CSV, TXT, and JSON files are allowed.")}
+                )
+
+        self.extension = extension
         return value
 
-    def validate_schema(self, value):
-        value_obj = []
-        if isinstance(value, list) and len(value) == 1:
-            try:
-                value_obj = json.loads(value[0])
-            except json.JSONDecodeError:
-                raise serializers.ValidationError({"detail": _("Invalid JSON format in schema.")})
 
-        invalid_columns = []
-        for item in value_obj:
-            name = item.get('column_name')
+class UrlPreviewSerializer(serializers.Serializer):
+    url = ProviderUrlField(allow_blank=False)
 
-            if isinstance(name, str) and re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', name):
-                continue
 
-            invalid_columns.append(name)
+class CSVSerializer(serializers.Serializer):
+    file = serializers.FileField()
+    schema = serializers.ListField(required=False)
+    autodetect = serializers.BooleanField(required=False)
+    skip_leading_rows = serializers.IntegerField(min_value=0, required=False)
 
-        if invalid_columns:
-            invalid_columns_str = ', '.join(invalid_columns)
-            raise serializers.ValidationError({"detail": _("Invalid column names:") + invalid_columns_str})
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
 
-        return value_obj
-
-    def csv_validate(self, attrs):
         file = attrs.get('file')
         schema = attrs.get('schema', [])
         autodetect = attrs.get('autodetect', False)
@@ -124,31 +188,54 @@ class FileUploadSerializer(serializers.Serializer):
                 if not pd.to_datetime(df[actual_column_name], errors='coerce').notnull().all():
                     raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}. {suffix_message}"})
 
+        return attrs
+
+
+class FileUploadSerializer(serializers.Serializer):
+    file = serializers.FileField(required=False)
+    public = serializers.BooleanField()
+    skip_leading_rows = serializers.IntegerField(min_value=0, required=False)
+    autodetect = serializers.BooleanField(required=False)
+    schema = serializers.ListField(required=False)
+
+    url = ProviderUrlField(required=False)
+    upload_type = serializers.ChoiceField(choices=UploadType.choices)
+
+    def validate_file(self, value):
+        content = value.read().decode('utf-8').splitlines()
+        if content[-1].strip() == '':
+            raise serializers.ValidationError({"detail": _("You must remove the blank rows at the end of the file.")})
+        value.seek(0)
+        return value
+
+    def validate_schema(self, value):
+        value_obj = []
+        if isinstance(value, list) and len(value) == 1:
+            try:
+                value_obj = json.loads(value[0])
+            except json.JSONDecodeError:
+                raise serializers.ValidationError({"detail": _("Invalid JSON format in schema.")})
+
+        invalid_columns = []
+        for item in value_obj:
+            name = item.get('column_name')
+
+            if isinstance(name, str) and re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', name):
+                continue
+
+            invalid_columns.append(name)
+
+        if invalid_columns:
+            invalid_columns_str = ', '.join(invalid_columns)
+            raise serializers.ValidationError({"detail": _("Invalid column names:") + invalid_columns_str})
+
+        return value_obj
+
     def validate(self, attrs):
         attrs = super().validate(attrs)
-        file = attrs["file"]
-        valid_extensions = ["csv", "txt", "json"]
-        valid_mime_types = ["text/csv", "application/json", "text/plain"]
 
-        extension = attrs["file"].name.lower().split(".")[-1]
-        if extension not in valid_extensions:
-            raise serializers.ValidationError(
-                {"detail": _("Only CSV, TXT, and JSON files are allowed.")}
-            )
-
-        mime = magic.Magic(mime=True)
-        mime_type = mime.from_buffer(file.read(4096))
-        file.seek(0)
-
-        if mime_type not in valid_mime_types:
-            raise serializers.ValidationError(
-                {"detail": _("The filetype does not match with the extension")}
-            )
-
-        if attrs.get('skip_leading_rows') is None:
-            raise serializers.ValidationError({"detail": _(
-                "Missing or incomplete parameters for CSV files."
-            )})
+        upload_type = attrs.get('upload_type')
+        extension = ""
 
         if not attrs.get('autodetect') and not attrs.get('schema'):
             raise serializers.ValidationError({"detail": _(
@@ -160,11 +247,45 @@ class FileUploadSerializer(serializers.Serializer):
                 "Schema autodetection cannot be used simultaneously with a provided schema."
             )})
 
-        attrs['extension'] = FileType(extension)
+        if attrs.get('upload_type') == UploadType.FILE and not attrs.get('file'):
+            raise serializers.ValidationError({"detail": _(
+                "File was not found for upload_type file"
+            )})
 
-        if extension == 'csv':
-            self.csv_validate(attrs)
+        if attrs.get('upload_type') == UploadType.URL and not attrs.get('url'):
+            raise serializers.ValidationError({"detail": _(
+                "Url was not found for upload_type url"
+            )})
 
+        if upload_type == UploadType.FILE:
+            file = attrs["file"]
+
+            extension = attrs["file"].name.lower().split(".")[-1]
+            validate_extension(extension)
+            attrs['extension'] = FileType(extension)
+
+            mime = magic.Magic(mime=True)
+            mime_type = mime.from_buffer(file.read(4096))
+            file.seek(0)
+            validate_mimes(mime_type)
+
+            if extension == 'csv':
+                csv_data = dict(
+                    file=attrs["file"], 
+                    schema=attrs.get("schema", []), 
+                    autodetect=attrs.get("autodetect", False), 
+                )
+                CSVSerializer(data=csv_data).is_valid(raise_exception=True)
+
+        elif upload_type == UploadType.URL:
+            extension = self.fields.get('url').extension
+
+        if attrs.get('skip_leading_rows') is None and extension == "csv":
+            raise serializers.ValidationError({"detail": _(
+                "Missing or incomplete parameters for CSV files."
+            )})
+
+        attrs["extension"] = extension
         return attrs
 
 

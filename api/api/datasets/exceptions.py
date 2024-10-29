@@ -3,6 +3,17 @@ from rest_framework import status
 
 from api.utils.exceptions import GenericAPIException
 
+class UrlFileNotExistException(GenericAPIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = _("Invalid url or file doesn't exist")
+    default_code = "file_not_exist"
+
+class UrlProviderException(GenericAPIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = _("Couln't identify provider in url, or maybe is not register in providers")
+    default_code = "invalid_provider_url"
+
+
 class InvalidCsvColumnException(GenericAPIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = _("Invalid Csv column names")

@@ -1,23 +1,29 @@
+<<<<<<< HEAD:api/api/datasets/services/provider_upload_service.py
 
 import boto3
 from botocore import UNSIGNED
 from botocore.client import Config
 
+=======
+from abc import ABC, abstractmethod
+>>>>>>> 0520d9894f5db3685f44844eee83c8c5f017d6f4:api/api/datasets/services/drive_service.py
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 
 from api.datasets.exceptions import UrlFolderNameExtractionException
 
 
-class ProviderService:
-    @staticmethod
-    def is_folder(url: str) -> bool:
+class ProviderService(ABC):
+    @classmethod
+    @abstractmethod
+    def is_folder(cls, url: str) -> bool:
         """
         Determines if a link contains a folder
         """
         ...
 
     @classmethod
+    @abstractmethod
     def list_files(cls, url: str) -> list:
         """List the files in a public folder"""
         ...
@@ -29,8 +35,8 @@ class GoogleDriveService(ProviderService):
         scopes=["https://www.googleapis.com/auth/drive"],
     )
 
-    @staticmethod
-    def is_folder(url: str) -> bool:
+    @classmethod
+    def is_folder(cls, url: str) -> bool:
         """
         Determines if a link contains a folder
         """
@@ -74,7 +80,7 @@ class GoogleDriveService(ProviderService):
             service.files()
             .list(
                 q=f"'{folder_name}' in parents and trashed=false",
-                fields="files(id, name, webViewLink, webContentLink, size)",
+                fields="files(id, name, webViewLink, webContentLink, size, mimeType)",
             )
             .execute()
         )
