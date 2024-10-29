@@ -19,6 +19,9 @@ def identify_url_provider(url: str) -> str:
     if url.find("drive.google.com") >= 0:
         return "google_drive"
 
+    if url.find("amazonaws.com") >= 0 and url.find("s3") >= 0:
+        return "s3"
+
     return "file"
 
 def return_url_provider(url: str):
@@ -28,7 +31,8 @@ def return_url_provider(url: str):
 
     # Register here your file providers
     providers = dict(
-        google_drive=GoogleDriveProvider()
+        google_drive=GoogleDriveProvider(),
+        s3=S3UploadProvider()
     )
 
     try:

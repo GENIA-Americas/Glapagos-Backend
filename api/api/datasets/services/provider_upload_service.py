@@ -1,3 +1,8 @@
+
+import boto3
+from botocore import UNSIGNED
+from botocore.client import Config
+
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 
@@ -93,3 +98,47 @@ class GoogleDriveService(ProviderService):
 
         meta = service.files().get(fileId=file_id, fields=",".join(fields)).execute()
         return meta
+
+class S3Service(ProviderService):
+    client = boto3.client("s3", config=Config(signature_version=UNSIGNED))
+
+    @classmethod
+    def is_folder(cls, url: str) -> bool:
+        return True
+
+    @classmethod
+    def get_folder_name(cls, url: str) -> str:
+        clean_url = url.replace("https://", "")
+        folder_name = clean_url.split("/")[-2]
+
+        if folder_name == "" or folder_name.find("/") != -1:
+            raise UrlFolderNameExtractionException(error=f"Name extracted incorrectly: {folder_name}") 
+
+        return folder_name + "/"
+    
+    @classmethod
+    def get_bucket_name(cls, url: str) -> str:
+        clean_url = url.replace("https://", "")
+        bucket_name = clean_url.split(".")[0]
+
+        return bucket_name
+    
+    @classmethod
+    def get_file_name(cls, url: str) -> str:
+        return ""
+
+    @classmethod
+    def list_files(cls, url: str) -> list:
+        bucket_name = cls.get_bucket_name(url)
+        folder_prefix = cls.get_folder_name(url)
+        print("listing folder", bucket_name, folder_prefix)
+        res = cls.client.list_objects_v2(Bucket=bucket_name, Prefix=folder_prefix)
+
+        if 'Contents' in res:
+            print(res['Contents'])
+        else:
+            print("No objects found in this folder.")
+
+        return res["Contents"]
+
+
