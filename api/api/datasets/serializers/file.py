@@ -7,7 +7,7 @@ from rest_framework import serializers
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
-from api.datasets.serializers.upload_providers import return_url_provider
+from api.datasets.services.upload_providers import return_url_provider
 from api.datasets.models import File
 from api.datasets.enums import FileType, UploadType
 from api.datasets.utils import create_dataframe_from_csv, validate_csv_column_names

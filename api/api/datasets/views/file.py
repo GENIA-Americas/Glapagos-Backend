@@ -6,7 +6,7 @@ from rest_framework import status, permissions, mixins, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from api.datasets.serializers.upload_providers import return_url_provider
+from api.datasets.services.upload_providers import return_url_provider
 from api.datasets.serializers.file import CSVSerializer, UrlPreviewSerializer
 from api.datasets.models import File
 from api.datasets.services import BigQueryService, FileServiceFactory
