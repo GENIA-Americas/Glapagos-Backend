@@ -192,7 +192,7 @@ def create_dataframe_from_csv(file, sample: str = None) -> pd.DataFrame:
     return df, csv_params
 
 
-def get_preview_from_url_csv(urls: list[str], max_lines=20) -> StringIO:
+def get_preview_from_url_csv(urls: list[str], max_lines: int = 20, skip_leading_rows: int = 1) -> StringIO:
     """
     Get's the preview from a csv file url or list of urls 
     validating column names
@@ -218,7 +218,7 @@ def get_preview_from_url_csv(urls: list[str], max_lines=20) -> StringIO:
         line = 0
         cols = StringIO()
         for j in r.iter_lines():
-            if line != 0 or len(lines) == 0:
+            if line not in range(skip_leading_rows) or len(lines) == 0:
                 lines.append(j.decode() + "\r\n")
 
             if line == 0:

@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from api.datasets.serializers.upload_providers import return_url_provider
-from api.datasets.serializers.file import FileUploadFieldSerializer, UrlPreviewSerializer
+from api.datasets.serializers.file import CSVSerializer, UrlPreviewSerializer
 from api.datasets.models import File
 from api.datasets.services import BigQueryService, FileServiceFactory
 from api.datasets.serializers import (
@@ -51,7 +51,6 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         url = serializer.validated_data.get("url", "")
 
         provider = return_url_provider(url)
-        provider.validate(request.data)
         provider.preview()
         bigquery_format = prepare_csv_data_format(data=provider.preview_content, skip_leading_rows=1)
 
@@ -65,23 +64,29 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         permission_classes=[permissions.IsAuthenticated],
     )
     def upload_file(self, request, *args, **kwargs):
-        serializer = FileUploadFieldSerializer(data=request.data)
+        serializer = FileUploadSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         if serializer.validated_data.get("upload_type", "") == UploadType.URL: 
             url = serializer.validated_data.get("url", "")
+            skip_leading_rows = serializer.validated_data.get("skip_leading_rows", 1)
+
             provider = return_url_provider(url)
-            provider.validate(request.data)
+            f = provider.process(skip_leading_rows)
 
-            request.data["file"] = provider.process()
-            request.data.pop("url", None)
-            request.data.pop("upload_type", None)
+            # validates the generated file
+            CSVSerializer(
+                data=dict(
+                    file=f,
+                    schema=serializer.validated_data.get("schemma", []),
+                    autodetect=serializer.validated_data.get("autodetect", False)
+                )
+            ).is_valid(raise_exception=True)
 
-        file_serializer = FileUploadSerializer(data=request.data)
-        file_serializer.is_valid(raise_exception=True)
+            serializer.validated_data["file"] = f 
 
         file_service = FileServiceFactory.get_file_service(
-            user=request.user, **file_serializer.validated_data
+            user=request.user, **serializer.validated_data
         )
         try:
             file_url = file_service.process_file()
