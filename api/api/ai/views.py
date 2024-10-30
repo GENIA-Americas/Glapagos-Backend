@@ -21,15 +21,12 @@ class AiViewset(viewsets.ViewSet):
         serializer = ChatSerializer(
             data=request.data, context=dict(request=request)
         )
+        serializer.is_valid(raise_exception=True)
 
-        serializer.is_valid()
         msg = serializer.validated_data.get("msg", "")
+        table = serializer.validated_data.get("table", "")
+        context = f"table_id = {table.path} \nbigquery table_schema = {table.schema}"
+        res = ChatAssistant.chat(msg, context)
 
-        tables = Table.objects.filter(file__owner=request.user)
-        context = ""
-        for i in tables:
-            context += f"table_id = {i.path} \n"
-
-        res = ChatAssistant.chat(msg[0], context)
         return Response(dict(message=res.__dict__), status=status.HTTP_200_OK)
 
