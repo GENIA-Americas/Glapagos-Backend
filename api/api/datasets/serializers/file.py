@@ -15,11 +15,11 @@ from api.datasets.utils import create_dataframe_from_csv, validate_csv_column_na
 
 def validate_size(value: int):
     """
-    Validates that the value isn't grater that 
+    Validates that the value isn't greater that 
     the FILE_UPLOAD_LIMIT defined in settings.
     raises a Validation error otherwise
 
-    this fuctions mustn't be use outside serializers or serializer fields
+    this functions mustn't be use outside serializers or serializer fields
     """
     if value >= settings.FILE_UPLOAD_LIMIT: 
         raise serializers.ValidationError(
@@ -31,7 +31,7 @@ def validate_mimes(value: str):
     Validates that the mimetype corresponds to the allowed mimetypes.
     raises a Validation error otherwise
 
-    this fuctions mustn't be use outside serializers or serializer fields
+    this functions mustn't be use outside serializers or serializer fields
     """
     valid_mime_types = ["text/csv", "application/json", "text/plain"]
     if value not in valid_mime_types:
@@ -44,7 +44,7 @@ def validate_extension(value: str):
     Validates that the extension corresponds to the allowed extensions.
     raises a Validation error otherwise
 
-    this fuctions mustn't be use outside serializers or serializer fields
+    this functions mustn't be use outside serializers or serializer fields
     """
     valid_extensions = ["csv", "txt", "json"]
     if value not in valid_extensions:

@@ -78,7 +78,7 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
             CSVSerializer(
                 data=dict(
                     file=f,
-                    schema=serializer.validated_data.get("schemma", []),
+                    schema=serializer.validated_data.get("schema", []),
                     autodetect=serializer.validated_data.get("autodetect", False)
                 )
             ).is_valid(raise_exception=True)
