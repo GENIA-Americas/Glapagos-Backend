@@ -88,15 +88,8 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         file_service = FileServiceFactory.get_file_service(
             user=request.user, **serializer.validated_data
         )
-        try:
-            file_url = file_service.process_file()
-            return Response({"file_url": file_url}, status=status.HTTP_201_CREATED)
-        except Exception as exp:
-            return Response(
-                {"detail": _("Error processing request"), "error": str(exp)},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
+        file_url = file_service.process_file()
+        return Response({"detail": _("File uploaded successfully"), "file_url": file_url}, status=status.HTTP_201_CREATED)
 
     @action(
         detail=False,
@@ -107,22 +100,12 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
     )
     def file_preview(self, request, *args, **kwargs):
         serializer = FilePreviewSerializer(data=request.data)
-        if serializer.is_valid():
-            try:
-                preview = serializer.validated_data["preview"]
-                skip_leading_rows = serializer.validated_data["skip_leading_rows"]
+        serializer.is_valid(raise_exception=True)
+        preview = serializer.validated_data["preview"]
+        skip_leading_rows = serializer.validated_data['skip_leading_rows']
 
-                bigquery_format = prepare_csv_data_format(
-                    data=preview, skip_leading_rows=skip_leading_rows
-                )
-                return Response(bigquery_format, status=status.HTTP_200_OK)
-            except Exception as exp:
-                return Response(
-                    {"detail": _("Error processing request"), "error": str(exp)},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        bigquery_format = prepare_csv_data_format(data=preview, skip_leading_rows=skip_leading_rows)
+        return Response(bigquery_format, status=status.HTTP_200_OK)
 
     @action(
         detail=False,

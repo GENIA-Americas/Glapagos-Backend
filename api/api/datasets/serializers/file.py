@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _
 from api.datasets.services.upload_providers import return_url_provider
 from api.datasets.models import File
 from api.datasets.enums import FileType, UploadType
-from api.datasets.utils import create_dataframe_from_csv, validate_csv_column_names
+from api.datasets.utils import create_dataframe_from_csv, validate_csv_column_names 
 
 
 def validate_size(value: int):
@@ -54,7 +54,7 @@ def validate_extension(value: str):
 
 
 class SearchQuerySerializer(serializers.Serializer):
-    query = serializers.CharField()
+    query = serializers.CharField(allow_blank=False)
 
 
 class FilePreviewSerializer(serializers.Serializer):
@@ -144,10 +144,7 @@ class CSVSerializer(serializers.Serializer):
         schema = attrs.get('schema', [])
         autodetect = attrs.get('autodetect', False)
 
-        try:
-            df, csv_params = create_dataframe_from_csv(file)
-        except Exception:
-            raise serializers.ValidationError({"detail": _("Error reading CSV file")})
+        df, csv_params = create_dataframe_from_csv(file)
 
         if autodetect:
             validate_csv_column_names(df)
@@ -176,9 +173,7 @@ class CSVSerializer(serializers.Serializer):
 
             base_message = _("Column should be of type")
             suffix_message = _("You must ensure that all rows are of this data type or modify the schema.")
-            if expected_type == "STRING" and actual_type not in ["object", "string"]:
-                raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}. {suffix_message}"})
-            elif expected_type == "INT64" and actual_type not in ["int64"]:
+            if expected_type == "INT64" and actual_type not in ["int64"]:
                 raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}. {suffix_message}"})
             elif expected_type == "FLOAT64" and actual_type not in ["float64"]:
                 raise serializers.ValidationError({"detail": f"{base_message} {expected_type}: {column_name}. {suffix_message}"})

@@ -79,6 +79,7 @@ THIRD_PARTY_APPS = [
     'django_rest_passwordreset',
     'corsheaders',
     'django_filters',
+    'secured_fields',
 ]
 
 LOCAL_APPS = [
@@ -322,3 +323,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 FILE_UPLOAD_LIMIT = 100_000_000
+
+SECURED_FIELDS_KEY = os.getenv('SECURED_FIELDS_KEY')
+SECURED_FIELDS_HASH_SALT = os.getenv('SECURED_FIELDS_HASH_SALT')

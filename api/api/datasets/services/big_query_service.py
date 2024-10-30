@@ -5,8 +5,9 @@ from google.cloud import bigquery
 from google.oauth2 import service_account
 from google.api_core.exceptions import GoogleAPIError
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 
-from api.datasets.exceptions import QueryFailedException
+from api.datasets.exceptions import QueryFailedException, BigQueryMountTableException
 from api.datasets.models import Table
 from api.users.models import User
 
@@ -90,20 +91,28 @@ class BigQueryService:
     def query(self, query: str, limit: int | None = None, offset: int | None = None,
               job_config: bigquery.QueryJobConfig = None):
         assert self.user, "User must be set to send a query"
-        job = self.client.query(query, job_config=job_config)
-        result = job.result()
+        try:
+            job = self.client.query(query, job_config=job_config)
+            result = job.result()
 
-        if limit is not None and offset is not None:
-            assert (
-                    type(offset) is int and type(limit) is int
-            ), "limit and offset must be integers"
+            if limit is not None and offset is not None:
+                assert (
+                        type(offset) is int and type(limit) is int
+                ), "limit and offset must be integers"
 
-            assert job.destination is not None, "Job destination should be defined"
+                assert job.destination is not None, "Job destination should be defined"
 
-            destination = self.client.get_table(job.destination)
-            result = self.client.list_rows(destination, start_index=offset, max_results=limit)
+                destination = self.client.get_table(job.destination)
+                result = self.client.list_rows(destination, start_index=offset, max_results=limit)
 
-        return result
+            return result
+        except GoogleAPIError as exp:
+            # remove the job id and location
+            message = exp.message.split("\n")[0]
+            raise QueryFailedException(
+                detail=message,
+                error=str(exp)
+            )
 
     def mount_table_from_gcs(
             self,
@@ -113,28 +122,31 @@ class BigQueryService:
             schema: List,
             format_params: Dict,
     ):
-        owner_client = self.create_bigquery_client(project_owner=True)
-        table_ref = self.get_table_reference(dataset=table.dataset_name, table_name=table.name)
-        extension = table.file.type
+        try:
+            owner_client = self.create_bigquery_client(project_owner=True)
+            table_ref = self.get_table_reference(dataset=table.dataset_name, table_name=table.name)
+            extension = table.file.type
 
-        job_config = bigquery.LoadJobConfig(
-            source_format=BigQueryService.get_source_format(extension),
-            autodetect=autodetect,
-            field_delimiter=format_params.get("delimiter", ","),
-            quote_character=format_params.get("quotechar", '"'),
-        )
+            job_config = bigquery.LoadJobConfig(
+                source_format=BigQueryService.get_source_format(extension),
+                autodetect=autodetect,
+                field_delimiter=format_params.get("delimiter", ","),
+                quote_character=format_params.get("quotechar", '"'),
+            )
 
-        if skip_leading_rows:
-            job_config.skip_leading_rows = skip_leading_rows
-        if schema:
-            bigquery_schema = BigQueryService.convert_schema_to_bigquery(schema)
-            job_config.schema = bigquery_schema
+            if skip_leading_rows:
+                job_config.skip_leading_rows = skip_leading_rows
+            if schema:
+                bigquery_schema = BigQueryService.convert_schema_to_bigquery(schema)
+                job_config.schema = bigquery_schema
 
-        gcs_uri = table.file.storage_url
-        load_job = owner_client.load_table_from_uri(gcs_uri, table_ref, job_config=job_config)
+            gcs_uri = table.file.storage_url
+            load_job = owner_client.load_table_from_uri(gcs_uri, table_ref, job_config=job_config)
 
-        load_job.result()
-        table.update_table_stats(table_ref)
-        if not table.schema:
-            table.schema = self.get_schema(dataset=table.dataset_name, table=table.name)
-            table.save()
+            load_job.result()
+            table.update_table_stats(table_ref)
+            if not table.schema:
+                table.schema = self.get_schema(dataset=table.dataset_name, table=table.name)
+                table.save()
+        except Exception as exp:
+            raise BigQueryMountTableException(error=str(exp))

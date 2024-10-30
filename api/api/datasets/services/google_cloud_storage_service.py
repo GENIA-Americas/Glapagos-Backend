@@ -4,19 +4,24 @@ from io import StringIO
 from google.cloud import storage
 from django.conf import settings
 
+from api.datasets.exceptions import UploadFailedException
+
 
 class GCSService:
 
     @classmethod
     def upload_file(cls, file, filename: str) -> str:
         """Upload file to Google Cloud Storage."""
-        client = storage.Client()
-        bucket_name = settings.GCS_BUCKET
-        bucket = client.get_bucket(bucket_name)
-        blob = bucket.blob(filename)
-        blob.upload_from_file(file, content_type=file.content_type)
-        file.seek(0)
-        return blob.public_url
+        try:
+            client = storage.Client()
+            bucket_name = settings.GCS_BUCKET
+            bucket = client.get_bucket(bucket_name)
+            blob = bucket.blob(filename)
+            blob.upload_from_file(file, content_type=file.content_type)
+            file.seek(0)
+            return blob.public_url
+        except Exception as exp:
+            raise UploadFailedException(error=str(exp))
 
 
 class JSONGCSService(GCSService):
