@@ -56,6 +56,7 @@ def create_dataframe_from_json(file) -> pd.DataFrame:
     """
     try:
         df = pd.read_json(file)
+        file.seek(0)
         return df
     except Exception as exp:
         raise InvalidFileException(error=str(exp))
