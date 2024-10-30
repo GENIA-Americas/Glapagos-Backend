@@ -16,7 +16,6 @@ class ChatSerializer(serializers.Serializer):
             name=value
         ).first()
 
-        print(table)
         if not table:
             raise serializers.ValidationError(_("Table name was not found"))
 
