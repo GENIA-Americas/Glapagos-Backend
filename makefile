@@ -59,6 +59,8 @@ tools:
 logs:
 	docker compose -f $(DOCKER_COMPOSE_FILE) logs -f -t
 
+translate:
+	docker compose -f $(DOCKER_COMPOSE_FILE) run --rm django django-admin makemessages --locale=es 
 	
 key:
 	docker compose -f $(DOCKER_COMPOSE_FILE) run --rm django python manage.py generate_key
