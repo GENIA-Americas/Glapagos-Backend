@@ -126,6 +126,22 @@ def detect_list(series):
     return None
 
 
+def detect_struct(series: pd.Series):
+    """
+    Detects if a pandas Series contains dictionary-like entries, suggesting a STRUCT type.
+
+    Args:
+        series (pd.Series): The pandas Series to be analyzed.
+
+    Returns:
+        str: 'STRUCT' if dictionary-like entries are found, otherwise None.
+    """
+    if all(isinstance(item, dict) for item in series.dropna()):
+        return 'RECORD'
+
+    return None
+
+
 def detect_object_type(series: pd.Series) -> str:
     """
     Determines the type of data in a pandas Series when the dtype is 'object'.
@@ -143,7 +159,8 @@ def detect_object_type(series: pd.Series) -> str:
     detection_functions = [
         detect_time,
         detect_datetime,
-        detect_list
+        detect_list,
+        detect_struct,
     ]
 
     for detect in detection_functions:

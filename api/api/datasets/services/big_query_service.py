@@ -37,18 +37,32 @@ class BigQueryService:
         }
         return formats.get(extension.lower(), bigquery.SourceFormat.CSV)
 
-    @staticmethod
-    def convert_schema_to_bigquery(schema: List) -> List[bigquery.SchemaField]:
+    @classmethod
+    def convert_schema_to_bigquery(cls, schema: List) -> List[bigquery.SchemaField]:
         bigquery_schema = []
 
         for field in schema:
-            bigquery_schema.append(
-                bigquery.SchemaField(
+            if field["data_type"].upper() == "ARRAY":
+                schema_field = bigquery.SchemaField(
                     name=field["column_name"],
                     field_type=field["data_type"],
-                    mode=field.get("mode", "NULLABLE"),
+                    mode=field.get("mode", "REPEATED"),
                 )
-            )
+            elif field["data_type"].upper() == "RECORD":
+                fields_schema = cls.convert_schema_to_bigquery(field["fields"])
+                schema_field = bigquery.SchemaField(
+                    name=field["column_name"],
+                    field_type=field["data_type"],
+                    mode=field.get("mode", "REPEATED"),
+                    fields=fields_schema
+                )
+            else:
+                schema_field = bigquery.SchemaField(
+                    name=field["column_name"],
+                    field_type=field["data_type"],
+                    mode=field.get("mode", "REPEATED"),
+                )
+            bigquery_schema.append(schema_field)
         return bigquery_schema
 
     def get_schema(self, dataset: str, table: str) -> List:
@@ -115,10 +129,10 @@ class BigQueryService:
     def mount_table_from_gcs(
             self,
             table: Table,
-            autodetect,
-            skip_leading_rows,
+            autodetect: bool,
+            skip_leading_rows: int,
             schema: List,
-            format_params: Dict,
+            format_params: Dict = None,
     ):
         try:
             owner_client = self.create_bigquery_client(project_owner=True)
@@ -128,9 +142,11 @@ class BigQueryService:
             job_config = bigquery.LoadJobConfig(
                 source_format=BigQueryService.get_source_format(extension),
                 autodetect=autodetect,
-                field_delimiter=format_params.get("delimiter", ","),
-                quote_character=format_params.get("quotechar", '"'),
             )
+
+            if format_params:
+                job_config.field_delimiter = format_params.get("delimiter", ",")
+                job_config.quote_character = format_params.get("quotechar", ",")
 
             if skip_leading_rows:
                 job_config.skip_leading_rows = skip_leading_rows
@@ -147,4 +163,5 @@ class BigQueryService:
                 table.schema = self.get_schema(dataset=table.dataset_name, table=table.name)
                 table.save()
         except Exception as exp:
+            raise exp
             raise BigQueryMountTableException(error=str(exp))

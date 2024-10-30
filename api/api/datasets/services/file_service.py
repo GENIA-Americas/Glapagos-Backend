@@ -135,8 +135,8 @@ class JSONFileService(StructuredFileService):
         big_query_service = BigQueryService(user=self.user)
         big_query_service.mount_table_from_gcs(
             table=table_obj,
-            autodetect=True,
+            autodetect=self.autodetect,
             skip_leading_rows=0,
-            schema=[]
+            schema=self.schema
         )
         return file_url

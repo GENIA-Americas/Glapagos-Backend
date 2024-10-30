@@ -91,6 +91,11 @@ class FileUploadSerializer(serializers.Serializer):
         schema = attrs.get('schema', [])
         autodetect = attrs.get('autodetect', False)
 
+        if attrs.get('skip_leading_rows') is None:
+            raise serializers.ValidationError({"detail": _(
+                "Missing or incomplete parameters for CSV files."
+            )})
+
         df, csv_params = create_dataframe_from_csv(file)
 
         if autodetect:
@@ -156,11 +161,6 @@ class FileUploadSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"detail": _("The filetype does not match with the extension")}
             )
-
-        if attrs.get('skip_leading_rows') is None:
-            raise serializers.ValidationError({"detail": _(
-                "Missing or incomplete parameters for CSV files."
-            )})
 
         if not attrs.get('autodetect') and not attrs.get('schema'):
             raise serializers.ValidationError({"detail": _(
