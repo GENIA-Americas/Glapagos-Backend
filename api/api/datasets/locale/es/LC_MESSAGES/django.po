@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-30 20:26+0000\n"
+"POT-Creation-Date: 2024-10-30 21:01+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,31 +18,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: api/datasets/exceptions.py:8
+#: api/datasets/exceptions.py:9
 msgid "Invalid url or file doesn't exist"
 msgstr "Url invalida o archivo inexistente"
 
-#: api/datasets/exceptions.py:13
+#: api/datasets/exceptions.py:15
 msgid "Couln't identify provider in url, or maybe is not register in providers"
 msgstr ""
 "No se pudo identificar el provider de la url o quiza no esta registrado en "
 "providers"
 
-#: api/datasets/exceptions.py:19
+#: api/datasets/exceptions.py:21
 #, fuzzy
 #| msgid "Invalid column names:"
 msgid "Invalid Csv column names"
 msgstr "Nombres de columnas inválidos"
 
-#: api/datasets/exceptions.py:25
+#: api/datasets/exceptions.py:27
 msgid "Csv request failed"
 msgstr "Peticion invalida csv"
 
-#: api/datasets/exceptions.py:31
+#: api/datasets/exceptions.py:33
 msgid "Url name extracted incorrectly"
 msgstr "Nombre desde url extraido incorrectamente"
 
-#: api/datasets/exceptions.py:38
+#: api/datasets/exceptions.py:40
 msgid ""
 "The file structure could not be determined. Please check if the file is "
 "corrupted."
@@ -50,23 +50,23 @@ msgstr ""
 "No se pudo determinar la estructura del archivo. Por favor, verifica si el "
 "archivo está corrupto."
 
-#: api/datasets/exceptions.py:45
+#: api/datasets/exceptions.py:47
 msgid "Upload failed"
 msgstr "Error en la carga del archivo."
 
-#: api/datasets/exceptions.py:51
+#: api/datasets/exceptions.py:53
 msgid "An error occurred while mounting data in BigQuery."
 msgstr "Ocurrió un error al montar los datos en BigQuery."
 
-#: api/datasets/exceptions.py:57
+#: api/datasets/exceptions.py:59
 msgid "Query execution failed"
 msgstr "Ejecución de query fallida"
 
-#: api/datasets/exceptions.py:63
+#: api/datasets/exceptions.py:65
 msgid "Transformation failed"
 msgstr "Transformación fallida"
 
-#: api/datasets/exceptions.py:69
+#: api/datasets/exceptions.py:71
 msgid ""
 "Chart limit exceeded: The selected field contains too many distinct "
 "categories."
@@ -272,6 +272,14 @@ msgstr "No hay informacion para el campo {field} en el esquema"
 msgid "Column must be of type string to apply text standardization."
 msgstr ""
 "La columna debe ser de tipo string para aplicar la estandarizacion de texto"
+
+#: api/datasets/services/upload_providers.py:20
+msgid "Provider in url not supported"
+msgstr "El proveedor de la url no esta soportado"
+
+#: api/datasets/services/upload_providers.py:36
+msgid "Provider not supported"
+msgstr "Proveedor no soportado"
 
 #: api/datasets/utils/csv.py:229
 msgid "Invalid url or file/folder doesn't not exist"

@@ -17,7 +17,7 @@ def identify_url_provider(url: str) -> str:
     if url.find("drive.google.com") >= 0:
         return "google_drive"
 
-    return "file"
+    raise UrlProviderException(error=_("Provider in url not supported"))
 
 def return_url_provider(url: str):
     """
@@ -29,10 +29,11 @@ def return_url_provider(url: str):
         google_drive=GoogleDriveProvider(url)
     )
 
-    try:
-        instance = providers[identify_url_provider(url)]
-    except Exception as e:
-        raise UrlProviderException(error=e)
+    provider = identify_url_provider(url)
+    instance = providers.get(provider, None)
+
+    if not instance:
+        raise UrlProviderException(error=_("Provider not supported"))
 
     return instance 
 
