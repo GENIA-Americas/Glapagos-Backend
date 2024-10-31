@@ -1,12 +1,9 @@
-<<<<<<< HEAD:api/api/datasets/services/provider_upload_service.py
+
+from abc import ABC, abstractmethod
 
 import boto3
 from botocore import UNSIGNED
 from botocore.client import Config
-
-=======
-from abc import ABC, abstractmethod
->>>>>>> 0520d9894f5db3685f44844eee83c8c5f017d6f4:api/api/datasets/services/drive_service.py
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 
@@ -28,6 +25,11 @@ class ProviderService(ABC):
         """List the files in a public folder"""
         ...
 
+    @classmethod
+    @abstractmethod
+    def get_file_metadata(cls, url: str) -> dict:
+        """Gets the file metadata"""
+        ...
 
 class GoogleDriveService(ProviderService):
     credentials = service_account.Credentials.from_service_account_file(
@@ -98,11 +100,11 @@ class GoogleDriveService(ProviderService):
         return f"https://drive.google.com/uc?export=download&id={file_id}"
 
     @classmethod
-    def get_file_metadata(cls, url: str, fields: list[str]) -> dict:
+    def get_file_metadata(cls, url: str) -> dict:
         service = build("drive", "v3", credentials=cls.credentials)
         file_id = cls.get_file_id(url)
 
-        meta = service.files().get(fileId=file_id, fields=",".join(fields)).execute()
+        meta = service.files().get(fileId=file_id, fields="name, size, mimeType").execute()
         return meta
 
 class S3Service(ProviderService):
@@ -110,6 +112,36 @@ class S3Service(ProviderService):
 
     @classmethod
     def is_folder(cls, url: str) -> bool:
+        """
+        Determines if a link contains a folder
+        """
+        url_clean = url.split("/")[-1]
+        if url_clean != "":
+            return False
+
+        return True
+
+    @classmethod
+    def is_file(cls, url: str) -> bool:
+        """
+        Determines if a link contains a file 
+        """
+        url_clean = url.split("/")[-1]
+        if url_clean == "":
+            return False
+
+        return True
+
+    @classmethod
+    def is_presign_url(cls, url: str) -> bool:
+        """
+        Determines if a link is a presign url by counting the
+        number of amazon headers that it has
+        """
+        count = url.count("X-Amz")
+        if count != 8 :
+            return False
+
         return True
 
     @classmethod
@@ -121,6 +153,24 @@ class S3Service(ProviderService):
             raise UrlFolderNameExtractionException(error=f"Name extracted incorrectly: {folder_name}") 
 
         return folder_name + "/"
+
+    @classmethod
+    def get_file_name(cls, url: str) -> str:
+        clean_url = url.replace("https://", "")
+        name = clean_url.split("/")[-1]
+
+        if name == "" :
+            raise UrlFolderNameExtractionException(error=f"Name extracted incorrectly: {name}") 
+
+        return name 
+
+    @classmethod
+    def get_object_key(cls, url: str) -> str:
+        object_key = url.split("amazonaws.com/")[-1]
+        if object_key == "":
+            raise UrlFolderNameExtractionException(error=f"Object key extracted incorrectly: {object_key}") 
+
+        return object_key 
     
     @classmethod
     def get_bucket_name(cls, url: str) -> str:
@@ -130,14 +180,9 @@ class S3Service(ProviderService):
         return bucket_name
     
     @classmethod
-    def get_file_name(cls, url: str) -> str:
-        return ""
-
-    @classmethod
     def list_files(cls, url: str) -> list:
         bucket_name = cls.get_bucket_name(url)
         folder_prefix = cls.get_folder_name(url)
-        print("listing folder", bucket_name, folder_prefix)
         res = cls.client.list_objects_v2(Bucket=bucket_name, Prefix=folder_prefix)
 
         if 'Contents' in res:
@@ -145,6 +190,39 @@ class S3Service(ProviderService):
         else:
             print("No objects found in this folder.")
 
-        return res["Contents"]
+        items = []
+        for i in res["Contents"]:
+            object_key = i.get("Key")
+            head_res = cls.client.head_object(Bucket=bucket_name, Key=object_key)
+            content_type = head_res.get("ContentType", "application/octet-stream")
 
+            name =i.get("Key").split("/")[-1]
+            if name: # removes the directory element
+                items.append(
+                    dict(
+                        name=name,
+                        size=i.get("Size"),
+                        mimeType=content_type,
+                        webContentLink=f"{url}{name}"
+                    )
+                ) 
 
+        return items 
+
+    @classmethod
+    def get_file_metadata(cls, url: str) -> dict:
+        bucket_name = cls.get_bucket_name(url)
+        object_key = cls.get_object_key(url) 
+
+        res = cls.client.head_object(Bucket=bucket_name, Key=object_key)
+        content_type = res.get("ContentType", "application/octet-stream")
+        size = res.get("ContentLength", 0)
+
+        item = dict(
+            name=object_key.split("/")[-1],
+            size=size,
+            mimeType=content_type
+        )
+
+        return item 
+ 
