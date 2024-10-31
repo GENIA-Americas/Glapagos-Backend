@@ -1,4 +1,5 @@
 import re
+import datetime
 import pandas as pd
 
 
@@ -127,6 +128,10 @@ def detect_element_type_in_array_bigquery(series):
         float: "FLOAT64",
         str: "STRING",
         bool: "BOOLEAN",
+        datetime.datetime: "DATETIME",
+        datetime.date: "DATE",
+        datetime.time: "TIME",
+        pd.Timestamp: "DATETIME",
     }
 
     non_empty_lists = [value for value in series if isinstance(value, list) and value]
@@ -136,7 +141,9 @@ def detect_element_type_in_array_bigquery(series):
 
     first_element_type = type(non_empty_lists[0][0])
 
-    if all(isinstance(item, (int, float)) for value in non_empty_lists for item in value):
+    if all(isinstance(item, int) for value in non_empty_lists for item in value):
+        return "INT64", mode
+    elif all(isinstance(item, (int, float)) for value in non_empty_lists for item in value):
         return "FLOAT64", mode
     elif all(isinstance(item, first_element_type) for value in non_empty_lists for item in value):
         return python_to_bigquery_type.get(first_element_type, "STRING"), mode

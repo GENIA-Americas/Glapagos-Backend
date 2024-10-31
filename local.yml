@@ -10,7 +10,6 @@ services:
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
 
-
   django: &django
     build:
       context: ./
