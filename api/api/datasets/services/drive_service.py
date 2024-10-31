@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
-from googleapiclient.discovery import build
+from django.conf import settings
 from google.oauth2 import service_account
+from googleapiclient.discovery import build
 
 from api.datasets.exceptions import UrlFolderNameExtractionException
 
@@ -23,7 +24,7 @@ class ProviderService(ABC):
 
 class GoogleDriveService(ProviderService):
     credentials = service_account.Credentials.from_service_account_file(
-        "/app/config/drive_key.json",
+        settings.GOOGLE_DRIVE_KEY,
         scopes=["https://www.googleapis.com/auth/drive"],
     )
 
