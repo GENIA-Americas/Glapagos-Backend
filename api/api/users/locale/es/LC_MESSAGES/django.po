@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-08 21:14+0000\n"
+"POT-Creation-Date: 2024-10-24 16:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -130,135 +130,155 @@ msgstr "Defensa y Seguridad"
 msgid "Professional Services"
 msgstr "Servicios Profesionales"
 
-#: api/users/enums.py:37
+#: api/users/enums.py:40
 msgid "Argentina"
 msgstr "Argentina"
 
-#: api/users/enums.py:38
+#: api/users/enums.py:41
 msgid "Bahamas"
 msgstr "Bahamas"
 
-#: api/users/enums.py:39
+#: api/users/enums.py:42
 msgid "Barbados"
 msgstr "Barbados"
 
-#: api/users/enums.py:40
-msgid "Belice"
+#: api/users/enums.py:43
+#, fuzzy
+#| msgid "Belice"
+msgid "Belize"
 msgstr "Belice"
 
-#: api/users/enums.py:41
+#: api/users/enums.py:44
 msgid "Bolivia"
 msgstr "Bolivia"
 
-#: api/users/enums.py:42
-msgid "Brasil"
-msgstr "Brasil"
+#: api/users/enums.py:45
+msgid "Brazil"
+msgstr ""
 
-#: api/users/enums.py:43
+#: api/users/enums.py:46
 msgid "Chile"
 msgstr "Chile"
 
-#: api/users/enums.py:44
+#: api/users/enums.py:47
 msgid "Colombia"
 msgstr "Colombia"
 
-#: api/users/enums.py:45
+#: api/users/enums.py:48
 msgid "Costa Rica"
 msgstr "Costa Rica"
 
-#: api/users/enums.py:46
+#: api/users/enums.py:49
 msgid "Cuba"
 msgstr "Cuba"
 
-#: api/users/enums.py:47
+#: api/users/enums.py:50
 msgid "Dominica"
 msgstr "Dominica"
 
-#: api/users/enums.py:48
+#: api/users/enums.py:51
 msgid "Ecuador"
 msgstr "Ecuador"
 
-#: api/users/enums.py:49
+#: api/users/enums.py:52
 msgid "El Salvador"
 msgstr "El Salvador"
 
-#: api/users/enums.py:50
-msgid "Granada"
+#: api/users/enums.py:53
+#, fuzzy
+#| msgid "Granada"
+msgid "Grenada"
 msgstr "Granada"
 
-#: api/users/enums.py:51
+#: api/users/enums.py:54
 msgid "Guatemala"
 msgstr "Guatemala"
 
-#: api/users/enums.py:52
+#: api/users/enums.py:55
 msgid "Guyana"
 msgstr "Guyana"
 
-#: api/users/enums.py:53
-msgid "Haití"
+#: api/users/enums.py:56
+#, fuzzy
+#| msgid "Haití"
+msgid "Haiti"
 msgstr "Haití"
 
-#: api/users/enums.py:54
+#: api/users/enums.py:57
 msgid "Honduras"
 msgstr "Honduras"
 
-#: api/users/enums.py:55
+#: api/users/enums.py:58
 msgid "Jamaica"
 msgstr "Jamaica"
 
-#: api/users/enums.py:56
-msgid "México"
+#: api/users/enums.py:59
+#, fuzzy
+#| msgid "México"
+msgid "Mexico"
 msgstr "México"
 
-#: api/users/enums.py:57
+#: api/users/enums.py:60
 msgid "Nicaragua"
 msgstr "Nicaragua"
 
-#: api/users/enums.py:58
-msgid "Panamá"
+#: api/users/enums.py:61
+#, fuzzy
+#| msgid "Panamá"
+msgid "Panama"
 msgstr "Panamá"
 
-#: api/users/enums.py:59
+#: api/users/enums.py:62
 msgid "Paraguay"
 msgstr "Paraguay"
 
-#: api/users/enums.py:60
-msgid "Perú"
-msgstr "Perú"
+#: api/users/enums.py:63
+msgid "Peru"
+msgstr ""
 
-#: api/users/enums.py:61
+#: api/users/enums.py:64
 msgid "Puerto Rico"
 msgstr "Puerto Rico"
 
-#: api/users/enums.py:62
-msgid "República Dominicana"
-msgstr "República Dominicana"
-
-#: api/users/enums.py:63
-msgid "San Cristóbal y Nieves"
-msgstr "San Cristóbal y Nieves"
-
-#: api/users/enums.py:64
-msgid "Santa Lucía"
-msgstr "Santa Lucía"
-
 #: api/users/enums.py:65
-msgid "San Vicente y las Granadinas"
-msgstr "San Vicente y las Granadinas"
+#, fuzzy
+#| msgid "Dominica"
+msgid "Dominican Republic"
+msgstr "Dominica"
 
 #: api/users/enums.py:66
-msgid "Surinam"
-msgstr "Surinam"
+msgid "Saint Kitts and Nevis"
+msgstr ""
 
 #: api/users/enums.py:67
-msgid "Trinidad y Tobago"
-msgstr "Trinidad y Tobago"
+#, fuzzy
+#| msgid "Santa Lucía"
+msgid "Saint Lucia"
+msgstr "Santa Lucía"
 
 #: api/users/enums.py:68
+#, fuzzy
+#| msgid "San Vicente y las Granadinas"
+msgid "Saint Vincent and the Grenadines"
+msgstr "San Vicente y las Granadinas"
+
+#: api/users/enums.py:69
+#, fuzzy
+#| msgid "Surinam"
+msgid "Suriname"
+msgstr "Surinam"
+
+#: api/users/enums.py:70
+#, fuzzy
+#| msgid "Trinidad y Tobago"
+msgid "Trinidad and Tobago"
+msgstr "Trinidad y Tobago"
+
+#: api/users/enums.py:71
 msgid "Uruguay"
 msgstr "Uruguay"
 
-#: api/users/enums.py:69
+#: api/users/enums.py:72
 msgid "Venezuela"
 msgstr "Venezuela"
 
@@ -285,3 +305,15 @@ msgstr "Soporte"
 #: api/users/roles.py:8
 msgid "Standard"
 msgstr "Estándar"
+
+#~ msgid "Brasil"
+#~ msgstr "Brasil"
+
+#~ msgid "Perú"
+#~ msgstr "Perú"
+
+#~ msgid "República Dominicana"
+#~ msgstr "República Dominicana"
+
+#~ msgid "San Cristóbal y Nieves"
+#~ msgstr "San Cristóbal y Nieves"

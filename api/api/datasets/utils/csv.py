@@ -4,26 +4,35 @@ import requests
 import pandas as pd
 from io import StringIO
 from typing import Dict, List
-
 from .bigquery import is_valid_column_name, normalize_column_name
 
 from django.utils.translation import gettext_lazy as _
-from api.datasets.exceptions import CsvPreviewFailed, InvalidCsvColumnException
+from api.datasets.exceptions import CsvPreviewFailed, InvalidCsvColumnException, InvalidFileException
 
 
 def csv_parameters_detect(sample: str) -> Dict:
-    """Detects format parameters of a given csv
+    """Detects format parameters of a given CSV.
 
     Args:
         sample (str): CSV data sample
 
     Returns:
-        (Dict): CSV data params
-
+        (Dict): CSV data params or defaults if detection fails.
     """
     sniffer = csv.Sniffer()
 
-    dialect = sniffer.sniff(sample)
+    try:
+        dialect = sniffer.sniff(sample)
+    except csv.Error:
+        return {
+            'delimiter': ',',
+            'quotechar': '"',
+            'escapechar': None,
+            'doublequote': True,
+            'skipinitialspace': False,
+            'lineterminator': '\n',
+            'quoting': csv.QUOTE_MINIMAL,
+        }
 
     return {
         'delimiter': dialect.delimiter,
@@ -175,21 +184,25 @@ def create_dataframe_from_csv(file, sample: str = None) -> pd.DataFrame:
             df (pd.DataFrame): The DataFrame created from the CSV file.
             csv_params (dict) A dictionary containing the detected CSV parameters
     """
-    if not sample:
-        sample = file.read(4096).decode('utf-8')
-    file.seek(0)
-    csv_params = csv_parameters_detect(sample)
 
-    df = pd.read_csv(
-        file,
-        sep=csv_params['delimiter'],
-        quotechar=csv_params['quotechar'],
-        escapechar=csv_params['escapechar'],
-        skipinitialspace=csv_params['skipinitialspace'],
-    )
-    file.seek(0)
+    try:
+        if not sample:
+            sample = file.read(4096).decode('utf-8')
+        file.seek(0)
+        csv_params = csv_parameters_detect(sample)
 
-    return df, csv_params
+        df = pd.read_csv(
+            file,
+            sep=csv_params['delimiter'],
+            quotechar=csv_params['quotechar'],
+            escapechar=csv_params['escapechar'],
+            skipinitialspace=csv_params['skipinitialspace'],
+        )
+        file.seek(0)
+
+        return df, csv_params
+    except Exception as exp:
+        raise InvalidFileException(error=str(exp))
 
 
 def get_preview_from_url_csv(urls: list[str], max_lines: int = 20, skip_leading_rows: int = 1) -> StringIO:
@@ -259,4 +272,3 @@ def validate_csv_column_names(df: pd.DataFrame, raise_exception=False) -> list:
         )
 
     return invalid_columns
-

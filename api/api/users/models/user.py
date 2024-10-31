@@ -125,7 +125,7 @@ class User(BaseModel, AbstractUser):
         return True
 
     def get_email_name(self):
-        return str(self.email).replace("@", "").replace(".", "")[:30]
+        return str(self.email).replace("@", "").replace(".", "").replace("_", "").replace("-", "")[:30]
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

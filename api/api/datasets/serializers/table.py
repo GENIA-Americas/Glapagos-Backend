@@ -87,3 +87,16 @@ class TableTransformSerializer(serializers.Serializer):
             )
 
         return attrs
+
+
+class TableSchemaSerializer(serializers.Serializer):
+    field = serializers.CharField(required=False, allow_blank=True)
+
+    def validate_field(self, value):
+        table = self.context.get('table')
+
+        for row in table.schema:
+            if row.get('column_name') == value:
+                return value
+
+        raise serializers.ValidationError(_("Field '{field}' does not exist in the dataset schema").format(field=value))

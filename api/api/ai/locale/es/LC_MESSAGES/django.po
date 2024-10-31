@@ -18,10 +18,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: config/settings/base.py:225
-msgid "Spanish"
-msgstr "Español"
+#: api/ai/exceptions.py:9
+msgid "Unrelated topic"
+msgstr "Tema no relacionado"
 
-#: config/settings/base.py:226
-msgid "English"
-msgstr "Inglés"
+#: api/ai/services.py:49
+#, fuzzy
+#| msgid "Error processing request"
+msgid "Error processing the request"
+msgstr "Error procesando la peticion"

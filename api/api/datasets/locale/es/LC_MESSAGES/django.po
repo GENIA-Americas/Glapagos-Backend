@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-23 23:21+0000\n"
+"POT-Creation-Date: 2024-10-30 21:01+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,53 +18,130 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: api/datasets/exceptions.py:8
+#: api/datasets/exceptions.py:9
+msgid "Invalid url or file doesn't exist"
+msgstr "Url invalida o archivo inexistente"
+
+#: api/datasets/exceptions.py:15
+msgid "Couln't identify provider in url, or maybe is not register in providers"
+msgstr ""
+"No se pudo identificar el provider de la url o quiza no esta registrado en "
+"providers"
+
+#: api/datasets/exceptions.py:21
 #, fuzzy
 #| msgid "Invalid column names:"
 msgid "Invalid Csv column names"
 msgstr "Nombres de columnas inválidos"
 
-#: api/datasets/exceptions.py:14
+#: api/datasets/exceptions.py:27
 msgid "Csv request failed"
 msgstr "Peticion invalida csv"
 
-#: api/datasets/exceptions.py:20
+#: api/datasets/exceptions.py:33
 msgid "Url name extracted incorrectly"
 msgstr "Nombre desde url extraido incorrectamente"
 
-#: api/datasets/exceptions.py:26
+#: api/datasets/exceptions.py:40
+msgid ""
+"The file structure could not be determined. Please check if the file is "
+"corrupted."
+msgstr ""
+"No se pudo determinar la estructura del archivo. Por favor, verifica si el "
+"archivo está corrupto."
+
+#: api/datasets/exceptions.py:47
+msgid "Upload failed"
+msgstr "Error en la carga del archivo."
+
+#: api/datasets/exceptions.py:53
+msgid "An error occurred while mounting data in BigQuery."
+msgstr "Ocurrió un error al montar los datos en BigQuery."
+
+#: api/datasets/exceptions.py:59
 msgid "Query execution failed"
 msgstr "Ejecución de query fallida"
 
-#: api/datasets/exceptions.py:32
+#: api/datasets/exceptions.py:65
 msgid "Transformation failed"
 msgstr "Transformación fallida"
+
+#: api/datasets/exceptions.py:71
+msgid ""
+"Chart limit exceeded: The selected field contains too many distinct "
+"categories."
+msgstr ""
+"Se excedió el límite del gráfico: El campo seleccionado contiene demasiadas "
+"categorías distintas y no es posible representarlas."
 
 #: api/datasets/models/table.py:43
 msgid "A 'Table' object cannot have itself as its parent."
 msgstr "Un objeto 'Tabla' no puede ser su propio padre."
 
-#: api/datasets/serializers/file.py:28
+#: api/datasets/permissions.py:6
+#, fuzzy
+#| msgid ""
+#| "You do not have permission to transform this table because you are not "
+#| "the owner and the table is not public."
+msgid ""
+"You do not have permission to access this private resource. Only the owner "
+"can access it."
+msgstr ""
+"No tiene permisos suficientes para transformar esta tabla porque no es el "
+"propietario y la tabla no es pública."
+
+#: api/datasets/serializers/chart.py:22
+#, python-brace-format
+msgid "Column '{column}' not found in the table schema."
+msgstr "La columna '{column}' no se encontró en el esquema de la tabla."
+
+#: api/datasets/serializers/chart.py:32
+#, fuzzy
+#| msgid "File content must have at least two lines."
+msgid "Chart must have at least one coordinate."
+msgstr "El archivo debe contener al menos dos líneas"
+
+#: api/datasets/serializers/chart.py:39 api/datasets/serializers/chart.py:44
+#, fuzzy, python-brace-format
+#| msgid "Column should be of type"
+msgid "Column '{column}' should be a category of type string."
+msgstr "La columna debe ser de tipo"
+
+#: api/datasets/serializers/file.py:26
+#, fuzzy
+#| msgid "The files size are too large"
+msgid "The file size is too large"
+msgstr "El tamaño de los archivos es demasiado grande"
+
+#: api/datasets/serializers/file.py:39
+msgid "The filetype does not match with the extension"
+msgstr "El tipo de archivo no coincide con la extensión"
+
+#: api/datasets/serializers/file.py:52 api/datasets/serializers/file.py:123
+msgid "Only CSV, TXT, and JSON files are allowed."
+msgstr "Solo se permiten archivos CSV, TXT y JSON"
+
+#: api/datasets/serializers/file.py:68
+#, fuzzy
+#| msgid "File content must have at least two lines."
 msgid "File content must have at least two lines."
 msgstr "El archivo debe contener al menos dos líneas"
 
-#: api/datasets/serializers/file.py:51
-msgid "You must remove the blank rows at the end of the file."
-msgstr "Debe eliminar las filas en blanco al final del archivo."
+#: api/datasets/serializers/file.py:93
+msgid "Invalid extension, all files should have the same file extension"
+msgstr ""
+"Extensión invalida, todos los archivos deberian tener la misma extension de "
+"archivo"
 
-#: api/datasets/serializers/file.py:61
-msgid "Invalid JSON format in schema."
-msgstr "Formato JSON inválido en la definición del esquema"
+#: api/datasets/serializers/file.py:109
+#, fuzzy
+#| msgid "Invalid extension, all files should have the same file extension"
+msgid "Invalid mimetype, all files should have the same mimetype"
+msgstr ""
+"Extensión invalida, todos los archivos deberian tener la misma extension de "
+"archivo"
 
-#: api/datasets/serializers/file.py:74
-msgid "Invalid column names:"
-msgstr "Nombres de columnas inválidos"
-
-#: api/datasets/serializers/file.py:86
-msgid "Error reading CSV file"
-msgstr "Error leyendo el archivo CSV"
-
-#: api/datasets/serializers/file.py:94
+#: api/datasets/serializers/file.py:155
 msgid ""
 "The number of columns in the schema does not match the number of columns in "
 "the CSV file."
@@ -72,49 +149,61 @@ msgstr ""
 "La cantidad de columnas en el esquema no coincide con la cantidad de "
 "columnas en el archivo CSV"
 
-#: api/datasets/serializers/file.py:105
+#: api/datasets/serializers/file.py:166
 msgid "You must indicate in the schema that the column can accept null values."
 msgstr "Debe marcar en el esquema que la columna puede aceptar valores nulos."
 
-#: api/datasets/serializers/file.py:107
+#: api/datasets/serializers/file.py:168
 msgid "Column is required but contains null values:"
 msgstr "La columna está marcada como requerida pero contiene valores nulos:"
 
-#: api/datasets/serializers/file.py:113
+#: api/datasets/serializers/file.py:174
 msgid "Column should be of type"
 msgstr "La columna debe ser de tipo"
 
-#: api/datasets/serializers/file.py:114
+#: api/datasets/serializers/file.py:175
 msgid ""
 "You must ensure that all rows are of this data type or modify the schema."
 msgstr ""
 "Debe asegurarse que todas las filas sean de este tipo de datos o modificar "
 "el esquema."
 
-#: api/datasets/serializers/file.py:136
-msgid "Only CSV, TXT, and JSON files are allowed."
-msgstr "Solo se permiten archivos CSV, TXT y JSON"
+#: api/datasets/serializers/file.py:202
+msgid "You must remove the blank rows at the end of the file."
+msgstr "Debe eliminar las filas en blanco al final del archivo."
 
-#: api/datasets/serializers/file.py:145
-msgid "The filetype does not match with the extension"
-msgstr "El tipo de archivo no coincide con la extensión"
+#: api/datasets/serializers/file.py:212
+msgid "Invalid JSON format in schema."
+msgstr "Formato JSON inválido en la definición del esquema"
 
-#: api/datasets/serializers/file.py:150
-msgid "Missing or incomplete parameters for CSV files."
-msgstr "Parámetros faltantes o incompletos para el archivo CSV"
+#: api/datasets/serializers/file.py:225
+msgid "Invalid column names:"
+msgstr "Nombres de columnas inválidos"
 
-#: api/datasets/serializers/file.py:155
+#: api/datasets/serializers/file.py:237
 msgid ""
 "Unable to determine the file schema due to missing or incomplete parameters."
 msgstr ""
 "No es posible determinar el esquema debido a parámetros incompletos o "
 "faltantes."
 
-#: api/datasets/serializers/file.py:160
+#: api/datasets/serializers/file.py:242
 msgid ""
 "Schema autodetection cannot be used simultaneously with a provided schema."
 msgstr ""
 "No puede utilizarse la autodetección del esquema con su definición manual."
+
+#: api/datasets/serializers/file.py:247
+msgid "File was not found for upload_type file"
+msgstr "Ningun archivo fue encontrado para el upload_type file"
+
+#: api/datasets/serializers/file.py:252
+msgid "Url was not found for upload_type url"
+msgstr "No se encontro url para el upload_type url"
+
+#: api/datasets/serializers/file.py:280
+msgid "Missing or incomplete parameters for CSV files."
+msgstr "Parámetros faltantes o incompletos para el archivo CSV"
 
 #: api/datasets/serializers/table.py:26 api/datasets/serializers/table.py:32
 #, fuzzy
@@ -137,12 +226,16 @@ msgstr ""
 "propietario y la tabla no es pública."
 
 #: api/datasets/serializers/table.py:81
+#, fuzzy
+#| msgid ""
+#| "You do not have permission to transform this table because you are not "
+#| "the owner and the table is not public."
 msgid ""
 "You do not have permission to modify the original table, and creating a new "
 "table has not been requested."
 msgstr ""
-"No tiene permisos para modificar el dataset original y no ha sido solicitada "
-"la creación de un nuevo dataset."
+"No tiene permisos suficientes para transformar esta tabla porque no es el "
+"propietario y la tabla no es pública."
 
 #: api/datasets/serializers/table.py:86
 msgid ""
@@ -151,25 +244,10 @@ msgstr ""
 "Si desea crear una nueva table debe especificar su configuración de "
 "privacidad."
 
-#: api/datasets/serializers/upload_providers.py:38
-msgid "Couln't identify provider in url, or maybe is not register in providers"
-msgstr "No se pudo identificar el provider de la url o quiza no esta registrado en providers"
-
-#: api/datasets/serializers/upload_providers.py:106
-msgid "Invalid url or file doesn't exist"
-msgstr "Url invalida o archivo inexistente"
-
-#: api/datasets/serializers/upload_providers.py:174
-msgid "Invalid extension, all files should have the same file extension"
-msgstr "Extensión invalida, todos los archivos deberian tener la misma extension de archivo"
-
-#: api/datasets/serializers/upload_providers.py:185
-msgid "The files size are too large"
-msgstr "El tamaño de los archivos es demasiado grande"
-
-#: api/datasets/serializers/upload_providers.py:200
-msgid "The file size is too large"
-msgstr "El tamaño del archivo es muy grande"
+#: api/datasets/serializers/table.py:102
+#, python-brace-format
+msgid "Field '{field}' does not exist in the dataset schema"
+msgstr "El campo '{field}' no existe en el esquema del dataset."
 
 #: api/datasets/services/transformation_service.py:49
 msgid "Transformation class not found."
@@ -192,17 +270,27 @@ msgstr "No hay informacion para el campo {field} en el esquema"
 
 #: api/datasets/services/transformation_service.py:371
 msgid "Column must be of type string to apply text standardization."
-msgstr "La columna debe ser de tipo string para aplicar la estandarizacion de texto"
+msgstr ""
+"La columna debe ser de tipo string para aplicar la estandarizacion de texto"
 
-#: api/datasets/utils/csv.py:216
+#: api/datasets/services/upload_providers.py:20
+msgid "Provider in url not supported"
+msgstr "El proveedor de la url no esta soportado"
+
+#: api/datasets/services/upload_providers.py:36
+msgid "Provider not supported"
+msgstr "Proveedor no soportado"
+
+#: api/datasets/utils/csv.py:229
 msgid "Invalid url or file/folder doesn't not exist"
 msgstr "Url invalida o archivo/carpeta no existe"
 
-#: api/datasets/utils/csv.py:240
+#: api/datasets/utils/csv.py:253
 msgid "The tables need to have the same number of columns and column names"
-msgstr "Las tablas deben tener el mismo numero de columnas y nombres de columnas"
+msgstr ""
+"Las tablas deben tener el mismo numero de columnas y nombres de columnas"
 
-#: api/datasets/utils/csv.py:254
+#: api/datasets/utils/csv.py:267
 msgid ""
 "Column names must start with a letter and can only contain alphanumeric "
 "characters. Modify the column names in the source file or in the schema."
@@ -211,22 +299,36 @@ msgstr ""
 "contener caracteres alfanuméricos. Modifique el nombre de las columnas en el "
 "archivo de orígen o en el esquema"
 
-#: api/datasets/utils/csv.py:258
+#: api/datasets/utils/csv.py:271
 msgid "Invalid column names in CSV:"
 msgstr "Nombres de columnas inválidos en el CSV:"
 
-#: api/datasets/views/file.py:91 api/datasets/views/file.py:116
-#: api/datasets/views/file.py:147
+#: api/datasets/views/file.py:92
+#, fuzzy
+#| msgid "Table transformed successfully: "
+msgid "File uploaded successfully"
+msgstr "Tabla transformada satisfactoriamente: "
+
+#: api/datasets/views/file.py:135
 msgid "Error processing request"
 msgstr "Error procesando request"
 
-#: api/datasets/views/table.py:28
+#: api/datasets/views/table.py:34 api/datasets/views/table.py:57
+#: api/datasets/views/table.py:78
 msgid "Table not found."
 msgstr "Tabla no encontrada"
 
-#: api/datasets/views/table.py:40
+#: api/datasets/views/table.py:48
 msgid "Table transformed successfully: "
 msgstr "Tabla transformada satisfactoriamente: "
 
-#~ msgid "is a mandatory field"
-#~ msgstr "es un campo obligatorio"
+#~ msgid "Error reading CSV file"
+#~ msgstr "Error leyendo el archivo CSV"
+
+#, fuzzy, python-brace-format
+#~| msgid "Invalid column names:"
+#~ msgid "Invalid column names: {invalid_columns}"
+#~ msgstr "Nombres de columnas inválidos"
+
+#~ msgid "Error while executing query"
+#~ msgstr "Error ejecutando la consulta."

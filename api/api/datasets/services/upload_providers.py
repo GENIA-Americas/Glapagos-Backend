@@ -20,7 +20,7 @@ def identify_url_provider(url: str) -> str:
     if url.find("amazonaws.com") >= 0 and url.find("s3") >= 0:
         return "s3"
 
-    return "file"
+    raise UrlProviderException(error=_("Provider in url not supported"))
 
 def return_url_provider(url: str):
     """
@@ -33,18 +33,17 @@ def return_url_provider(url: str):
         s3=S3Provider()
     )
 
-    try:
-        instance = providers[identify_url_provider(url)]
-    except Exception as e:
-        raise UrlProviderException(error=e)
+    provider = identify_url_provider(url)
+    instance = providers.get(provider, None)
+
+    if not instance:
+        raise UrlProviderException(error=_("Provider not supported"))
 
     return instance 
 
 
 class BaseUploadProvider(ABC):
     service: type 
-    preview_content: str
-    extension: str
 
     def process(self, url, skip_leading_rows: int) -> TemporaryUploadedFile:
         if self.service.is_folder(url):
@@ -109,16 +108,15 @@ class BaseUploadProvider(ABC):
         return preview
 
     def preview_file(self, url) -> str:
-        self.preview_content = get_preview_from_url_csv([url]).getvalue()
-        return self.preview_content
+        preview = get_preview_from_url_csv([url]).getvalue()
+        return preview 
     
     def preview_folder(self, url) -> str:
         files = self.service.list_files(url)
         urls = [u.get("webContentLink", "") for u in files]
         preview = get_preview_from_url_csv(urls)
 
-        self.preview_content = preview.getvalue()
-        return self.preview_content
+        return preview.getvalue() 
 
 
 class GoogleDriveProvider(BaseUploadProvider):
@@ -135,3 +133,5 @@ class GoogleDriveProvider(BaseUploadProvider):
 
 class S3Provider(BaseUploadProvider):
     service = S3Service 
+
+
