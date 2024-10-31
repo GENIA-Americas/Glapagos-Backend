@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 import boto3
 from botocore import UNSIGNED
 from botocore.client import Config
+from django.conf import settings
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 
@@ -33,7 +34,7 @@ class ProviderService(ABC):
 
 class GoogleDriveService(ProviderService):
     credentials = service_account.Credentials.from_service_account_file(
-        "/app/config/drive_key.json",
+        settings.GOOGLE_DRIVE_KEY,
         scopes=["https://www.googleapis.com/auth/drive"],
     )
 
