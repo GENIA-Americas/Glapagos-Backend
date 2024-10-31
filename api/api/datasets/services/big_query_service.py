@@ -159,5 +159,4 @@ class BigQueryService:
                 table.schema = self.get_schema(dataset=table.dataset_name, table=table.name)
                 table.save()
         except Exception as exp:
-            raise exp
             raise BigQueryMountTableException(error=str(exp))

@@ -279,28 +279,6 @@ class FileUploadSerializer(serializers.Serializer):
 
         return value_obj
 
-    # def _csv_validate(self, attrs):
-    #     file = attrs.get('file')
-    #     schema = attrs.get('schema', [])
-    #
-    #     if attrs.get('skip_leading_rows') is None:
-    #         raise serializers.ValidationError({"detail": _(
-    #             "Missing or incomplete parameters for CSV files."
-    #         )})
-    #
-    #     df, csv_params = create_dataframe_from_csv(file)
-    #     self._columns_validate(df, schema)
-    #
-    # def _json_validate(self, attrs):
-    #     file = attrs.get('file')
-    #     schema = attrs.get('schema', [])
-    #
-    #     df = create_dataframe_from_json(file)
-    #     self._columns_validate(df, schema)
-    #
-    #     return attrs
-
-
     def validate(self, attrs):
         attrs = super().validate(attrs)
         file_type = attrs.get('file_type')
