@@ -32,7 +32,7 @@ def normalize_column_name(column_name):
     return normalized_name[:128]
 
 
-def get_bigquery_datatype(column: pd.Series, pandas_type: str) -> str:
+def get_bigquery_datatype(column: pd.Series, pandas_type: str) -> tuple[str, str]:
     """
        Maps pandas data types to BigQuery data types.
 
@@ -60,10 +60,10 @@ def get_bigquery_datatype(column: pd.Series, pandas_type: str) -> str:
     }
 
     if pandas_type == 'object':
-        dtype = detect_object_type(column)
+        dtype, mode = detect_object_type(column)
         if dtype:
-            return dtype
-    return type_mapping.get(pandas_type.lower(), 'STRING')
+            return dtype, mode
+    return type_mapping.get(pandas_type.lower(), 'STRING'), "NULLABLE"
 
 
 def detect_datetime(series):
@@ -74,17 +74,18 @@ def detect_datetime(series):
            series (pd.Series): Pandas Series to check.
 
        Returns:
-           str: Detected data type ('DATETIME' or None).
+           tuple(str, str): Data type, mode
     """
+    mode = "NULLABLE"
     try:
         series = pd.to_datetime(series, errors='coerce')
 
         if series.notna().all():
-            return 'DATETIME'
+            return 'DATETIME', mode
     except Exception:
-        return None
+        return None, None
 
-    return None
+    return None, None
 
 
 def detect_time(series):
@@ -95,35 +96,52 @@ def detect_time(series):
         series (pd.Series): Pandas Series to check.
 
     Returns:
-        str: Detected data type ('TIME' or None).
+        tuple(str, str): Data type, mode
     """
+    mode = "NULLABLE"
     try:
         series = pd.to_datetime(series, format='%H:%M:%S', errors='coerce').dt.time
 
         if not series.isna().all():
             if series.notna().all():
-                return 'TIME'
+                return 'TIME', mode
     except Exception:
-        return None
+        return None, None
 
-    return None
+    return None, None
 
 
-def detect_list(series):
+def detect_element_type_in_array_bigquery(series):
     """
-    Attempts to detect if a series contains list values.
+    Detects the BigQuery-compatible data type of elements within lists in a Pandas series.
 
     Args:
         series (pd.Series): Pandas Series to check.
 
     Returns:
-        str: Detected data type ('ARRAY' or None).
+        tuple(str, str): Data type, mode
     """
-    # Check if all values in the series are lists
-    if all(isinstance(value, list) for value in series):
-        return 'ARRAY'
+    mode = "REPEATED"
+    python_to_bigquery_type = {
+        int: "INT64",
+        float: "FLOAT64",
+        str: "STRING",
+        bool: "BOOLEAN",
+    }
 
-    return None
+    non_empty_lists = [value for value in series if isinstance(value, list) and value]
+
+    if not non_empty_lists:
+        return None, None
+
+    first_element_type = type(non_empty_lists[0][0])
+
+    if all(isinstance(item, (int, float)) for value in non_empty_lists for item in value):
+        return "FLOAT64", mode
+    elif all(isinstance(item, first_element_type) for value in non_empty_lists for item in value):
+        return python_to_bigquery_type.get(first_element_type, "STRING"), mode
+
+    return None, None
 
 
 def detect_struct(series: pd.Series):
@@ -134,15 +152,16 @@ def detect_struct(series: pd.Series):
         series (pd.Series): The pandas Series to be analyzed.
 
     Returns:
-        str: 'STRUCT' if dictionary-like entries are found, otherwise None.
+         tuple(str, str): Data type, mode
     """
+    mode = "NULLABLE"
     if all(isinstance(item, dict) for item in series.dropna()):
-        return 'RECORD'
+        return 'RECORD', mode
 
-    return None
+    return None, None
 
 
-def detect_object_type(series: pd.Series) -> str:
+def detect_object_type(series: pd.Series) -> tuple[str, str]:
     """
     Determines the type of data in a pandas Series when the dtype is 'object'.
 
@@ -154,16 +173,18 @@ def detect_object_type(series: pd.Series) -> str:
         series (pd.Series): The pandas Series to be analyzed.
 
     Returns:
-        str: The detected data type ('TIME', 'DATETIME', 'ARRAY', or None).
+        tuple(str, str): Data type, mode.
     """
     detection_functions = [
         detect_time,
         detect_datetime,
-        detect_list,
+        detect_element_type_in_array_bigquery,
         detect_struct,
     ]
 
     for detect in detection_functions:
-        detected_type = detect(series)
+        detected_type, mode = detect(series)
         if detected_type:
-            return detected_type
+            return detected_type, mode
+
+    return None, None

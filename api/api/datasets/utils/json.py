@@ -24,11 +24,12 @@ def prepare_json_data_format(data: str, include_examples: bool = True) -> List:
         result = []
         for column in df.columns:
             pandas_type = str(df[column].dtype)
-            bigquery_type = get_bigquery_datatype(df[column], pandas_type)
+            bigquery_type, mode = get_bigquery_datatype(df[column], pandas_type)
 
             column_data = {
                 "column_name": normalize_column_name(column),
                 "data_type": bigquery_type,
+                "mode": mode,
             }
             if include_examples:
                 column_data["example_values"] = df[column].head(5).fillna("").tolist()
@@ -41,6 +42,7 @@ def prepare_json_data_format(data: str, include_examples: bool = True) -> List:
             result.append(column_data)
         return result
     except Exception as exp:
+        raise exp
         raise InvalidFileException(error=str(exp))
 
 

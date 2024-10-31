@@ -42,25 +42,19 @@ class BigQueryService:
         bigquery_schema = []
 
         for field in schema:
-            if field["data_type"].upper() == "ARRAY":
-                schema_field = bigquery.SchemaField(
-                    name=field["column_name"],
-                    field_type=field["data_type"],
-                    mode=field.get("mode", "REPEATED"),
-                )
-            elif field["data_type"].upper() == "RECORD":
+            if field["data_type"].upper() == "RECORD":
                 fields_schema = cls.convert_schema_to_bigquery(field["fields"])
                 schema_field = bigquery.SchemaField(
                     name=field["column_name"],
                     field_type=field["data_type"],
-                    mode=field.get("mode", "REPEATED"),
+                    mode=field.get("mode", "NULLABLE"),
                     fields=fields_schema
                 )
             else:
                 schema_field = bigquery.SchemaField(
                     name=field["column_name"],
                     field_type=field["data_type"],
-                    mode=field.get("mode", "REPEATED"),
+                    mode=field.get("mode", "NULLABLE"),
                 )
             bigquery_schema.append(schema_field)
         return bigquery_schema

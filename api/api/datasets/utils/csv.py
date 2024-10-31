@@ -65,11 +65,12 @@ def prepare_csv_data_format(data: str, skip_leading_rows: int) -> List:
     result = []
     for column in df.columns:
         pandas_type = str(df[column].dtype)
-        bigquery_type = get_bigquery_datatype(df[column], pandas_type)
+        bigquery_type, mode = get_bigquery_datatype(df[column], pandas_type)
 
         result.append({
             "column_name": normalize_column_name(column) if skip_leading_rows > 0 else None,
             "data_type": bigquery_type,
+            "mode": mode,
             "example_values": df[column][first_example_index:].head(5).fillna("").tolist()
         })
     return result
@@ -82,7 +83,6 @@ def create_dataframe_from_csv(file, sample: str = None) -> pd.DataFrame:
 
         Args:
             file : The file containing the CSV data.
-            skip_leading_rows (int): Number of rows to skip at the beginning of the file.
             sample : (str): A sample string from the file used to detect CSV parameters.
 
         Returns:
