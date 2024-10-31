@@ -2,6 +2,9 @@ from enum import Enum
 
 from django.db import models
 
+class UploadType(models.TextChoices):
+    FILE = 'file', 'FILE'
+    URL = 'url', 'URL'
 
 class FileType(models.TextChoices):
     CSV = 'csv', 'CSV'

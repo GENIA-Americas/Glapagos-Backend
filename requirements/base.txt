@@ -69,6 +69,7 @@ google-cloud-dataproc
 google-cloud-iam
 google-cloud-resource-manager
 grpc-google-iam-v1
+google-api-python-client
 
 # MIME TYPES
 python-magic
