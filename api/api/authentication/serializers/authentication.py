@@ -25,7 +25,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             raise exp
 
         if not self.user.can_auth():
-            raise serializers.ValidationError(dict(user=_("you can not log in")))
+            raise serializers.ValidationError(
+                dict(email=_("You could not log in because the registration process was not successfully completed."))
+            )
         refresh = self.get_token(self.user)
         data['refresh'] = str(refresh)
         data['access'] = str(refresh.access_token)
