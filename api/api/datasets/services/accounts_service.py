@@ -21,7 +21,7 @@ class GoogleServiceAccount:
         Attributes
         ----------
         account_id: str
-            should be 6 to 30 caracteres long and have to match this pattern
+            should be 6 to 30 characters long and have to match this pattern
             [a-zA-Z][a-zA-Z\\d\\-]*[a-zA-Z\\d]
         """
         client = iam_admin_v1.IAMClient()
