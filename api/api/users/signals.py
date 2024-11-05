@@ -22,7 +22,7 @@ def create_service_account(sender, instance, created, **kwargs):
     if created:
         # Create account service and key
         try:
-            account_name = f"{instance.get_email_name()}{generate_random_string(6-len(instance.get_email_name()))}"
+            account_name = f"{instance.get_email_name()}{generate_random_string(6)}"
             account = GoogleServiceAccount.create_account(account_name)
             key = GoogleServiceAccount.create_key(account.unique_id)
 
