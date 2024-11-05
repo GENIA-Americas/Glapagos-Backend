@@ -8,6 +8,7 @@ from django.conf import settings
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 
+from django.utils.translation import gettext_lazy as _
 from api.datasets.exceptions import UrlFolderNameExtractionException
 
 
@@ -186,10 +187,8 @@ class S3Service(ProviderService):
         folder_prefix = cls.get_folder_name(url)
         res = cls.client.list_objects_v2(Bucket=bucket_name, Prefix=folder_prefix)
 
-        if 'Contents' in res:
-            print(res['Contents'])
-        else:
-            print("No objects found in this folder.")
+        if 'Contents' not in res:
+            UrlFolderNameExtractionException(_("No objects found in this folder"))
 
         items = []
         for i in res["Contents"]:
