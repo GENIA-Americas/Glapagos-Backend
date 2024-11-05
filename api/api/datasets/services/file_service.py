@@ -1,3 +1,4 @@
+import os
 from abc import ABC, abstractmethod
 from typing import List
 
@@ -38,7 +39,9 @@ class FileService(ABC):
         self.extension = kwargs["extension"]
         self.public = kwargs["public"]
         self.user = user
-        self.filename = f"{generate_random_string(10)}_{kwargs['file'].name}"
+        file, extension = os.path.splitext(kwargs['file'].name)
+        bigquery_valid_filename = normalize_column_name(file)
+        self.filename = f"{generate_random_string(10)}_{bigquery_valid_filename}{extension}"
 
     def create_file_object(self, file_url: str):
         file_obj = File.objects.create(
@@ -68,7 +71,7 @@ class StructuredFileService(FileService):
         if not self.public:
             dataset_name = self.user.service_account.dataset_name
         table = Table.objects.create(
-            name=normalize_column_name(self.filename.split(".")[0]),
+            name=self.filename.split(".")[0],
             dataset_name=dataset_name,
             file=file_obj,
             owner=file_obj.owner,
