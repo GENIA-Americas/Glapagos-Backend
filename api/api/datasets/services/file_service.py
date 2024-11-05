@@ -6,7 +6,8 @@ from django.conf import settings
 from api.users.models import User
 from api.datasets.models import File, Table
 from api.datasets.utils import (generate_random_string, csv_parameters_detect,
-                                prepare_csv_data_format, prepare_json_data_format)
+                                prepare_csv_data_format, prepare_json_data_format,
+                                normalize_column_name)
 from .big_query_service import BigQueryService
 from .google_cloud_storage_service import GCSService, JSONGCSService
 
@@ -67,7 +68,7 @@ class StructuredFileService(FileService):
         if not self.public:
             dataset_name = self.user.service_account.dataset_name
         table = Table.objects.create(
-            name=self.filename.split(".")[0],
+            name=normalize_column_name(self.filename.split(".")[0]),
             dataset_name=dataset_name,
             file=file_obj,
             owner=file_obj.owner,

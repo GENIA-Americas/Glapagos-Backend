@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-24 16:50+0000\n"
+"POT-Creation-Date: 2024-11-05 20:13+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -50,11 +50,13 @@ msgstr "Formato de correo electrónico inválido"
 msgid "Invalid credentials"
 msgstr "Credenciales inválidas"
 
-#: api/authentication/serializers/authentication.py:28
-msgid "you can not log in"
-msgstr "No puede iniciar sesión"
+#: api/authentication/serializers/authentication.py:29
+msgid ""
+"You could not log in because the registration process was not successfully "
+"completed."
+msgstr "No pudiste iniciar sesión porque el proceso de registro no se completó exitosamente."
 
-#: api/authentication/serializers/authentication.py:49
+#: api/authentication/serializers/authentication.py:51
 #, fuzzy
 #| msgid "Token is invalid or has expired"
 msgid "invalid refresh token or has expired"
@@ -105,6 +107,9 @@ msgstr "Código de país inválido"
 #: api/authentication/serializers/signup.py:169
 msgid "The phone number must contain only digits."
 msgstr "El número de teléfono solo puede contener dígitos"
+
+#~ msgid "you can not log in"
+#~ msgstr "No puede iniciar sesión"
 
 #~ msgid "Organization can only contain letters and spaces."
 #~ msgstr "La organización solo puede incluir letras y espacios"

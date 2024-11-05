@@ -81,7 +81,6 @@ def _columns_validate(df: pd.DataFrame, schema: List = None):
             if mode != "REPEATED":
                 df_temp = df.dropna(subset=[actual_column_name])
                 actual_type = str(df_temp[actual_column_name].dtype)
-                print(actual_column_name, actual_type)
 
                 base_message = _("Column should be of type")
                 suffix_message = _("You must ensure that all rows are of this data type or modify the schema.")
@@ -250,7 +249,11 @@ class FileUploadSerializer(serializers.Serializer):
     upload_type = serializers.ChoiceField(choices=UploadType.choices)
 
     def validate_file(self, value):
-        content = value.read().decode('utf-8').splitlines()
+        try:
+            content = value.read().decode('utf-8').splitlines()
+        except UnicodeDecodeError as exp:
+            raise InvalidFileException(error=str(exp))
+
         if content[-1].strip() == '':
             raise serializers.ValidationError({"detail": _("You must remove the blank rows at the end of the file.")})
         value.seek(0)
@@ -268,14 +271,16 @@ class FileUploadSerializer(serializers.Serializer):
         for item in value_obj:
             name = item.get('column_name')
 
-            if isinstance(name, str) and re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', name):
+            if isinstance(name, str) and is_valid_column_name(name):
                 continue
 
             invalid_columns.append(name)
 
         if invalid_columns:
             invalid_columns_str = ', '.join(invalid_columns)
-            raise serializers.ValidationError({"detail": _("Invalid column names:") + invalid_columns_str})
+            raise serializers.ValidationError({
+                "detail": _("Invalid column names: {invalid_columns}").format(invalid_columns=invalid_columns_str)
+            })
 
         return value_obj
 
