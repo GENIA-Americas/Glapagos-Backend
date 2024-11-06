@@ -274,9 +274,17 @@ msgstr "El campo '{field}' no existe en el esquema del dataset."
 msgid "No objects found in this folder"
 msgstr "No se encontraron objetos en esta carpeta"
 
+#: api/datasets/services/provider_upload_service.py:191
+msgid "No objects found in this folder"
+msgstr "No se encontraron objetos en esta carpeta"
+
+#: api/datasets/services/provider_upload_service.py:225
+msgid "Invalid or forbidden url, check that your bucket has the correct permissions"
+msgstr "Url invalida o no permitida, reviza si tienes los permisos correctos para el bucket"
+
 #: api/datasets/services/transformation_service.py:49
-msgid "Transformation class not found."
-msgstr "La clase Transformation no se encuentra"
+msgid "Invalid or forbidden url, check that your bucket has the correct permissions"
+msgstr "Url invalida o no esta autorizada, reviza si tienes los permisos correctos en el bucket"
 
 #: api/datasets/services/transformation_service.py:60
 #, python-brace-format

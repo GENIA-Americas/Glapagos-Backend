@@ -9,7 +9,7 @@ from googleapiclient.discovery import build
 from google.oauth2 import service_account
 
 from django.utils.translation import gettext_lazy as _
-from api.datasets.exceptions import UrlFolderNameExtractionException
+from api.datasets.exceptions import UrlFolderNameExtractionException, UrlProviderException
 
 
 class ProviderService(ABC):
@@ -159,7 +159,7 @@ class S3Service(ProviderService):
     @classmethod
     def get_file_name(cls, url: str) -> str:
         clean_url = url.replace("https://", "")
-        name = clean_url.split("/")[-1]
+        name = clean_url.split("?")[0].split("/")[-1]
 
         if name == "" :
             raise UrlFolderNameExtractionException(error=f"Name extracted incorrectly: {name}") 
@@ -169,6 +169,9 @@ class S3Service(ProviderService):
     @classmethod
     def get_object_key(cls, url: str) -> str:
         object_key = url.split("amazonaws.com/")[-1]
+        if "?" in object_key:
+            object_key = object_key.split("?")[0]
+
         if object_key == "":
             raise UrlFolderNameExtractionException(error=f"Object key extracted incorrectly: {object_key}") 
 
@@ -214,7 +217,13 @@ class S3Service(ProviderService):
         bucket_name = cls.get_bucket_name(url)
         object_key = cls.get_object_key(url) 
 
-        res = cls.client.head_object(Bucket=bucket_name, Key=object_key)
+        try:
+            res = cls.client.head_object(Bucket=bucket_name, Key=object_key)
+        except Exception as e:
+            raise UrlProviderException(
+                _("Invalid or forbidden url, check that your bucket has the correct permissions")
+            )
+
         content_type = res.get("ContentType", "application/octet-stream")
         size = res.get("ContentLength", 0)
 

@@ -52,8 +52,8 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         url = serializer.validated_data.get("url", "")
 
         provider = return_url_provider(url)
-        provider.preview(url)
-        bigquery_format = prepare_csv_data_format(data=provider.preview_content, skip_leading_rows=1)
+        preview = provider.preview(url)
+        bigquery_format = prepare_csv_data_format(data=preview, skip_leading_rows=1)
 
         return Response(bigquery_format, status=status.HTTP_200_OK)
 
