@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
+
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-from api.datasets.exceptions import UrlFolderNameExtractionException
+from api.datasets.exceptions import UrlFolderNameExtractionException, UploadFailedException
 
 
 class ProviderService(ABC):
@@ -23,10 +25,14 @@ class ProviderService(ABC):
 
 
 class GoogleDriveService(ProviderService):
-    credentials = service_account.Credentials.from_service_account_file(
-        settings.GOOGLE_DRIVE_KEY,
-        scopes=["https://www.googleapis.com/auth/drive"],
-    )
+    try:
+        credentials = service_account.Credentials.from_service_account_file(
+            settings.GOOGLE_DRIVE_KEY,
+            scopes=["https://www.googleapis.com/auth/drive"],
+        )
+    except Exception as exp:
+        print(str(exp))
+
 
     @classmethod
     def is_folder(cls, url: str) -> bool:

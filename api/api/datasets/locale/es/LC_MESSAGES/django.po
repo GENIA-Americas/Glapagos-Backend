@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-05 20:13+0000\n"
+"POT-Creation-Date: 2024-11-06 16:22+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -271,6 +271,14 @@ msgstr ""
 #, python-brace-format
 msgid "Field '{field}' does not exist in the dataset schema"
 msgstr "El campo '{field}' no existe en el esquema del dataset."
+
+#: api/datasets/services/drive_service.py:34
+msgid "Google Drive key is missing"
+msgstr "No se encontró la clave de Google Drive"
+
+#: api/datasets/services/drive_service.py:36
+msgid "Error creating Google Drive credentials"
+msgstr "Error creando las credenciales de Google Drive"
 
 #: api/datasets/services/transformation_service.py:49
 msgid "Transformation class not found."
