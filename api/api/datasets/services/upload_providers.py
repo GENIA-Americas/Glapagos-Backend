@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from django.core.files.uploadedfile import TemporaryUploadedFile 
 
 from api.datasets.exceptions import UrlFileNotExistException, UrlProviderException
-from api.datasets.services.provider_upload_service import GoogleDriveService, S3Service
+from api.datasets.services.provider_upload_service import GoogleCloudService, GoogleDriveService, S3Service
 from api.datasets.utils.csv import get_preview_from_url_csv
 
 
@@ -20,6 +20,9 @@ def identify_url_provider(url: str) -> str:
     if url.find("amazonaws.com") >= 0 and url.find("s3") >= 0:
         return "s3"
 
+    if url.find("storage.googleapis.com") >= 0 or url.find("storage.cloud.google.com") >= 0:
+        return "google_cloud"
+
     raise UrlProviderException(error=_("Provider in url not supported"))
 
 def return_url_provider(url: str):
@@ -30,7 +33,8 @@ def return_url_provider(url: str):
     # Register here your file providers
     providers = dict(
         google_drive=GoogleDriveProvider(),
-        s3=S3Provider()
+        s3=S3Provider(),
+        google_cloud=GoogleCloudProvider()
     )
 
     provider = identify_url_provider(url)
@@ -134,4 +138,7 @@ class GoogleDriveProvider(BaseUploadProvider):
 class S3Provider(BaseUploadProvider):
     service = S3Service 
 
+
+class GoogleCloudProvider(BaseUploadProvider):
+    service = GoogleCloudService 
 
