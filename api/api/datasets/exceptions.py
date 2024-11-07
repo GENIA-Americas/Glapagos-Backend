@@ -26,6 +26,12 @@ class CsvPreviewFailed(GenericAPIException):
     default_code = "csv_request_failed"
 
 
+class JsonPreviewFailed(GenericAPIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = _("Json request failed")
+    default_code = "json_request_failed"
+
+
 class UrlFolderNameExtractionException(GenericAPIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = _("Url name extracted incorrectly")

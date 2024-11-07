@@ -1,10 +1,14 @@
 import json
+import requests
+import math
 
 import pandas as pd
 from io import StringIO
 from typing import Dict, List
 
-from api.datasets.exceptions import InvalidFileException
+from django.utils.translation import gettext_lazy as _
+
+from api.datasets.exceptions import InvalidFileException, JsonPreviewFailed
 from .bigquery import normalize_column_name, get_bigquery_datatype
 
 
@@ -61,3 +65,82 @@ def create_dataframe_from_json(file) -> pd.DataFrame:
         return df
     except Exception as exp:
         raise InvalidFileException(error=str(exp))
+
+
+def extract_json_from_url(urls: list[str] ):
+    pass
+
+def get_preview_from_url_json(urls: list[str], max_lines: int = 20 , **kwargs) -> StringIO:
+    """
+    Get's the preview from a json file url or list of urls
+    validating column names
+
+    Returns:
+        A list containing the first n lines from all given urls
+    """
+
+    assert len(urls) > 0, "It needs to be at least one url in the list"
+
+    preview = StringIO()
+    url_count = len(urls)
+    ml = math.ceil(max_lines/url_count)
+
+    columns = None 
+    items = []
+    item_count = 0
+
+    for url in urls:
+        r = requests.get(url, stream=True)
+
+        if r.status_code != 200:
+            raise JsonPreviewFailed(detail=_("Invalid url or file/folder doesn't not exist"))
+
+        open_brackets = 0
+        item = ""
+        save = False
+        complete_item = False
+        for chunck in r.iter_content(chunk_size=1024):
+            for c in chunck.decode():
+                if c == "{":
+                    save = True
+                    open_brackets += 1
+                elif c == "}": 
+                    open_brackets -= 1
+                    if open_brackets == 0:
+                        complete_item = True
+
+                if save:
+                    item += c
+
+                if complete_item:
+                    if item[0] in [",", "["]: 
+                        item = item[1:]
+
+                    load_item = json.loads(item)
+                    items.append(load_item)
+                    item_count += 1
+
+                    item = ""
+                    save = False
+                    complete_item = False
+
+                    if columns == None:
+                        columns = load_item.keys() 
+
+                    if columns != load_item.keys():
+                        raise JsonPreviewFailed(
+                            dict(detail=_("The tables need to have the same number of columns and column names"))
+                        )
+
+                if item_count == ml:
+                    break
+
+            if len(items) == max_lines:
+                break
+
+
+    preview.write(json.dumps(items))
+    preview.seek(0)
+
+    return preview
+

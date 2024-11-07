@@ -203,6 +203,7 @@ class ProviderUrlField(serializers.URLField):
 
 class UrlPreviewSerializer(serializers.Serializer):
     url = ProviderUrlField(allow_blank=False)
+    file_type = serializers.ChoiceField(choices=[(tag.value, tag.label) for tag in FileType])
 
 
 class CSVSerializer(serializers.Serializer):

@@ -4,9 +4,11 @@ import requests
 from django.utils.translation import gettext_lazy as _
 from django.core.files.uploadedfile import TemporaryUploadedFile 
 
+from api.datasets.utils.json import get_preview_from_url_json, prepare_json_data_format
+from api.datasets.enums import FileType
 from api.datasets.exceptions import UrlFileNotExistException, UrlProviderException
 from api.datasets.services.provider_upload_service import GoogleCloudService, GoogleDriveService, S3Service
-from api.datasets.utils.csv import get_preview_from_url_csv
+from api.datasets.utils.csv import get_preview_from_url_csv, prepare_csv_data_format
 
 
 def identify_url_provider(url: str) -> str:
@@ -49,14 +51,14 @@ def return_url_provider(url: str):
 class BaseUploadProvider(ABC):
     service: type 
 
-    def process(self, url, skip_leading_rows: int) -> TemporaryUploadedFile:
+    def process(self, url: str, skip_leading_rows: int) -> TemporaryUploadedFile:
         if self.service.is_folder(url):
             file = self.process_folder(url, skip_leading_rows)
         else:
             file = self.process_file(url, skip_leading_rows)
         return file
 
-    def process_file(self, url, skip_leading_rows: int) -> TemporaryUploadedFile:
+    def process_file(self, url: str, skip_leading_rows: int) -> TemporaryUploadedFile:
         r = requests.get(url, stream=True) 
         metadata = self.service.get_file_metadata(url)
 
@@ -76,7 +78,7 @@ class BaseUploadProvider(ABC):
         file.seek(0)
         return file
 
-    def process_folder(self, url, skip_leading_rows: int) -> TemporaryUploadedFile:
+    def process_folder(self, url: str, skip_leading_rows: int) -> TemporaryUploadedFile:
         files = self.service.list_files(url)
         size = 0
         for i in files:
@@ -104,35 +106,53 @@ class BaseUploadProvider(ABC):
         file.seek(0)
         return file
 
-    def preview(self, url) -> str:
+    def preview(self, url: str, file_type: FileType) -> list:
         if self.service.is_folder(url):
-            preview = self.preview_folder(url)
+            preview = self.preview_folder(url, file_type)
         else:
-            preview = self.preview_file(url)
+            preview = self.preview_file(url, file_type)
         return preview
 
-    def preview_file(self, url) -> str:
-        preview = get_preview_from_url_csv([url]).getvalue()
-        return preview 
+    def preview_file(self, url: str, file_type: FileType) -> list:
+        assert file_type not in FileType.choices, "file_type not supported"
+
+        bigquery_format = list() 
+        if file_type == FileType.CSV: 
+            preview = get_preview_from_url_csv([url]).getvalue()
+            bigquery_format = prepare_csv_data_format(data=preview, skip_leading_rows=1)
+        elif file_type == FileType.JSON:
+            preview = get_preview_from_url_json([url]).getvalue()
+            bigquery_format = prepare_json_data_format(data=preview)
+
+        return bigquery_format 
     
-    def preview_folder(self, url) -> str:
+    def preview_folder(self, url: str, file_type: FileType) -> list:
+        assert file_type not in FileType.choices, "file_type not supported"
+
         files = self.service.list_files(url)
         urls = [u.get("webContentLink", "") for u in files]
-        preview = get_preview_from_url_csv(urls)
 
-        return preview.getvalue() 
+        bigquery_format = list()
+        if file_type == FileType.CSV: 
+            preview = get_preview_from_url_csv(urls).getvalue()
+            bigquery_format = prepare_csv_data_format(data=preview, skip_leading_rows=1)
+        elif file_type == FileType.JSON:
+            preview = get_preview_from_url_json(urls).getvalue()
+            bigquery_format = prepare_json_data_format(data=preview)
+
+        return bigquery_format 
 
 
 class GoogleDriveProvider(BaseUploadProvider):
     service = GoogleDriveService
 
-    def process_file(self, url, skip_leading_rows: int) -> TemporaryUploadedFile:
+    def process_file(self, url: str, skip_leading_rows: int) -> TemporaryUploadedFile:
         d_url = self.service.convert_url(url)
         return super().process_file(d_url, skip_leading_rows)
 
-    def preview_file(self, url) -> str:
+    def preview_file(self, url: str, file_type: FileType) -> list:
         d_url = self.service.convert_url(url)
-        return super().preview_file(d_url) 
+        return super().preview_file(url, file_type)
 
 
 class S3Provider(BaseUploadProvider):

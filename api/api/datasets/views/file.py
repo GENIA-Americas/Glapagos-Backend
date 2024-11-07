@@ -7,8 +7,9 @@ from rest_framework import status, permissions, mixins, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
+from api.datasets.utils.json import get_preview_from_url_json, prepare_json_data_format
 from api.datasets.services.upload_providers import return_url_provider
-from api.datasets.serializers.file import CSVSerializer, JSONSerializer, UrlPreviewSerializer
+from api.datasets.serializers.file import UrlPreviewSerializer
 from api.datasets.models import File
 from api.datasets.services import BigQueryService, FileServiceFactory, StructuredFileService
 from api.datasets.serializers import (
@@ -19,7 +20,7 @@ from api.datasets.serializers import (
 )
 from api.datasets.utils import prepare_csv_data_format
 from api.utils.pagination import StartEndPagination, SearchQueryPagination
-from api.datasets.enums import UploadType
+from api.datasets.enums import FileType, UploadType
 
 
 class FileViewSet(mixins.ListModelMixin, GenericViewSet):
@@ -50,12 +51,12 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         serializer = UrlPreviewSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         url = serializer.validated_data.get("url", "")
+        file_type = serializer.validated_data.get("file_type", "")
 
         provider = return_url_provider(url)
-        preview = provider.preview(url)
-        bigquery_format = prepare_csv_data_format(data=preview, skip_leading_rows=1)
+        preview = provider.preview(url, file_type)
 
-        return Response(bigquery_format, status=status.HTTP_200_OK)
+        return Response(preview, status=status.HTTP_200_OK)
 
     @action(
         detail=False,
