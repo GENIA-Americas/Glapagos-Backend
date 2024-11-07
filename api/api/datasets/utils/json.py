@@ -1,4 +1,5 @@
 import json
+from django.core.files.uploadedfile import TemporaryUploadedFile
 import requests
 import math
 
@@ -67,23 +68,24 @@ def create_dataframe_from_json(file) -> pd.DataFrame:
         raise InvalidFileException(error=str(exp))
 
 
-def extract_json_from_url(urls: list[str] ):
-    pass
-
-def get_preview_from_url_json(urls: list[str], max_lines: int = 20 , **kwargs) -> StringIO:
+def get_content_from_url_json(
+        urls: list[str], 
+        max_lines: int | None  = 20,
+        **kwargs) -> str:
     """
     Get's the preview from a json file url or list of urls
-    validating column names
+    validating column names and joining the file contents
 
     Returns:
-        A list containing the first n lines from all given urls
+        A string containing the first n lines from all given urls
     """
 
     assert len(urls) > 0, "It needs to be at least one url in the list"
 
-    preview = StringIO()
+    ml = 0 
     url_count = len(urls)
-    ml = math.ceil(max_lines/url_count)
+    if max_lines:
+        ml = math.ceil(max_lines/url_count)
 
     columns = None 
     items = []
@@ -132,15 +134,11 @@ def get_preview_from_url_json(urls: list[str], max_lines: int = 20 , **kwargs) -
                             dict(detail=_("The tables need to have the same number of columns and column names"))
                         )
 
-                if item_count == ml:
+                if item_count == ml and max_lines:
                     break
 
-            if len(items) == max_lines:
+            if len(items) == max_lines and max_lines:
                 break
 
-
-    preview.write(json.dumps(items))
-    preview.seek(0)
-
-    return preview
+    return json.dumps(items)
 

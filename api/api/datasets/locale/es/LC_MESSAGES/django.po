@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-05 21:45+0000\n"
+"POT-Creation-Date: 2024-11-06 16:22+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -281,6 +281,14 @@ msgstr "No se encontraron objetos en esta carpeta"
 #: api/datasets/services/provider_upload_service.py:225
 msgid "Invalid or forbidden url, check that your bucket has the correct permissions"
 msgstr "Url invalida o no permitida, reviza si tienes los permisos correctos para el bucket"
+
+#: api/datasets/services/drive_service.py:34
+msgid "Google Drive key is missing"
+msgstr "No se encontró la clave de Google Drive"
+
+#: api/datasets/services/drive_service.py:36
+msgid "Error creating Google Drive credentials"
+msgstr "Error creando las credenciales de Google Drive"
 
 #: api/datasets/services/transformation_service.py:49
 msgid "Invalid or forbidden url, check that your bucket has the correct permissions"

@@ -4,11 +4,11 @@ import requests
 from django.utils.translation import gettext_lazy as _
 from django.core.files.uploadedfile import TemporaryUploadedFile 
 
-from api.datasets.utils.json import get_preview_from_url_json, prepare_json_data_format
+from api.datasets.utils.json import get_content_from_url_json, prepare_json_data_format
 from api.datasets.enums import FileType
 from api.datasets.exceptions import UrlFileNotExistException, UrlProviderException
 from api.datasets.services.provider_upload_service import GoogleCloudService, GoogleDriveService, S3Service
-from api.datasets.utils.csv import get_preview_from_url_csv, prepare_csv_data_format
+from api.datasets.utils.csv import get_content_from_url_csv, prepare_csv_data_format
 
 
 def identify_url_provider(url: str) -> str:
@@ -51,9 +51,9 @@ def return_url_provider(url: str):
 class BaseUploadProvider(ABC):
     service: type 
 
-    def process(self, url: str, skip_leading_rows: int) -> TemporaryUploadedFile:
+    def process(self, url: str, skip_leading_rows: int, file_type: FileType) -> TemporaryUploadedFile:
         if self.service.is_folder(url):
-            file = self.process_folder(url, skip_leading_rows)
+            file = self.process_folder(url, skip_leading_rows, file_type)
         else:
             file = self.process_file(url, skip_leading_rows)
         return file
@@ -78,7 +78,12 @@ class BaseUploadProvider(ABC):
         file.seek(0)
         return file
 
-    def process_folder(self, url: str, skip_leading_rows: int) -> TemporaryUploadedFile:
+    def process_folder(
+            self, 
+            url: str, 
+            skip_leading_rows: int, 
+            file_type: FileType) -> TemporaryUploadedFile:
+
         files = self.service.list_files(url)
         size = 0
         for i in files:
@@ -91,18 +96,16 @@ class BaseUploadProvider(ABC):
             charset=None
         )
 
-        column = False 
-        for i in files:
-            url = i.get("webContentLink", "")
-            f = requests.get(url, stream=True)
+        urls = [i.get("webContentLink", "") for i in files]
 
-            line = 0
-            for j in f.iter_lines():
-                if line not in range(skip_leading_rows) or not column:
-                    column = True
-                    file.write(j + "\r\n".encode("utf-8"))
-                line += 1
+        content = self.get_content_from_url(
+            urls, 
+            file_type, 
+            max_lines=None, 
+            skip_leading_rows=skip_leading_rows
+        ) 
             
+        file.write(content)
         file.seek(0)
         return file
 
@@ -116,31 +119,46 @@ class BaseUploadProvider(ABC):
     def preview_file(self, url: str, file_type: FileType) -> list:
         assert file_type not in FileType.choices, "file_type not supported"
 
-        bigquery_format = list() 
-        if file_type == FileType.CSV: 
-            preview = get_preview_from_url_csv([url]).getvalue()
-            bigquery_format = prepare_csv_data_format(data=preview, skip_leading_rows=1)
-        elif file_type == FileType.JSON:
-            preview = get_preview_from_url_json([url]).getvalue()
-            bigquery_format = prepare_json_data_format(data=preview)
+        bigquery_format = list()
+        preview = self.get_content_from_url([url], file_type, )
+        bigquery_format = self.prepare_data_format(preview, file_type)
 
         return bigquery_format 
     
     def preview_folder(self, url: str, file_type: FileType) -> list:
-        assert file_type not in FileType.choices, "file_type not supported"
 
         files = self.service.list_files(url)
         urls = [u.get("webContentLink", "") for u in files]
 
         bigquery_format = list()
-        if file_type == FileType.CSV: 
-            preview = get_preview_from_url_csv(urls).getvalue()
-            bigquery_format = prepare_csv_data_format(data=preview, skip_leading_rows=1)
-        elif file_type == FileType.JSON:
-            preview = get_preview_from_url_json(urls).getvalue()
-            bigquery_format = prepare_json_data_format(data=preview)
+        preview = self.get_content_from_url(urls, file_type, )
+        bigquery_format = self.prepare_data_format(preview, file_type)
 
         return bigquery_format 
+
+    def get_content_from_url(self, urls: list[str], file_type: FileType, **kwargs) -> str:
+        assert file_type not in FileType.choices, "file_type not supported"
+
+        content = ""
+        if file_type == FileType.CSV: 
+            content = get_content_from_url_csv(urls, skip_leading_rows=1, **kwargs)
+
+        elif file_type == FileType.JSON:
+            content = get_content_from_url_json(urls, **kwargs)
+
+        return content
+
+    def prepare_data_format(self, data: str, file_type: FileType, **kwargs) -> list:
+        assert file_type not in FileType.choices, "file_type not supported"
+
+        bigquery_format = []
+        if file_type == FileType.CSV: 
+            bigquery_format = prepare_csv_data_format(data=data, skip_leading_rows=1)
+
+        elif file_type == FileType.JSON:
+            bigquery_format = prepare_json_data_format(data=data)
+
+        return bigquery_format
 
 
 class GoogleDriveProvider(BaseUploadProvider):

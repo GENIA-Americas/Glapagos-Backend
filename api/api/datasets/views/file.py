@@ -7,7 +7,6 @@ from rest_framework import status, permissions, mixins, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from api.datasets.utils.json import get_preview_from_url_json, prepare_json_data_format
 from api.datasets.services.upload_providers import return_url_provider
 from api.datasets.serializers.file import UrlPreviewSerializer
 from api.datasets.models import File
@@ -72,10 +71,10 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         if serializer.validated_data.get("upload_type", "") == UploadType.URL:
             url = serializer.validated_data.get("url", "")
             skip_leading_rows = serializer.validated_data.get("skip_leading_rows", 1)
-            file_type = serializer.validated_data["file_type"]
+            file_type = serializer.validated_data.get("file_type", "")
 
             provider = return_url_provider(url)
-            f = provider.process(url, skip_leading_rows)
+            f = provider.process(url, skip_leading_rows, file_type)
 
             serializer_class_name = f"{file_type.upper()}Serializer"
             serializer_class = globals().get(serializer_class_name)
