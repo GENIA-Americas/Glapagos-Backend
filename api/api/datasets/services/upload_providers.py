@@ -22,7 +22,7 @@ def identify_url_provider(url: str) -> str:
     if url.find("amazonaws.com") >= 0 and url.find("s3") >= 0:
         return "s3"
 
-    if url.find("storage.googleapis.com") >= 0 or url.find("storage.cloud.google.com") >= 0:
+    if url.find("storage.googleapis.com") >= 0:
         return "google_cloud"
 
     raise UrlProviderException(error=_("Provider in url not supported"))
@@ -69,7 +69,7 @@ class BaseUploadProvider(ABC):
             charset=None
         )
 
-        if r.status_code == 200:
+        if r.status_code == 200 and r.headers.get("Content-type") in ["text/csv", "application/json"]:
             for chunk in r.iter_content(chunk_size=8192):
                 file.write(chunk)
         else:
