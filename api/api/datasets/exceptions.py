@@ -8,6 +8,7 @@ class UrlFileNotExistException(GenericAPIException):
     default_detail = _("Invalid url or file doesn't exist")
     default_code = "file_not_exist"
 
+
 class UrlProviderException(GenericAPIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = _("Couln't identify provider in url, or maybe is not register in providers")
@@ -18,6 +19,12 @@ class InvalidCsvColumnException(GenericAPIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = _("Invalid Csv column names")
     default_code = "invalid_csv_columns"
+
+
+class TextPreviewFailed(GenericAPIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = _("Text request failed")
+    default_code = "text_request_failed"
 
 
 class CsvPreviewFailed(GenericAPIException):

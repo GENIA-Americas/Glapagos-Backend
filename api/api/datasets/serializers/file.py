@@ -109,7 +109,7 @@ def _columns_validate(df: pd.DataFrame, schema: List = None):
         if invalid_columns:
             raise serializers.ValidationError({
                 "detail": _("Invalid column names in the file:") + ', '.join(
-                    invalid_columns) + f". {suffix_message}"
+                    invalid_columns[:20]) + f". {suffix_message}"
             })
 
 
@@ -237,6 +237,10 @@ class JSONSerializer(serializers.Serializer):
         df = create_dataframe_from_json(file)
         _columns_validate(df, schema)
         return attrs
+
+
+class TXTSerializer(serializers.Serializer):
+    file = serializers.FileField()
 
 
 class FileUploadSerializer(serializers.Serializer):

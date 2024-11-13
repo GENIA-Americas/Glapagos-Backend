@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from api.datasets.services.upload_providers import return_url_provider
-from api.datasets.serializers.file import UrlPreviewSerializer
+from api.datasets.serializers.file import JSONSerializer, CSVSerializer, UrlPreviewSerializer, TXTSerializer
 from api.datasets.models import File
 from api.datasets.services import BigQueryService, FileServiceFactory, StructuredFileService
 from api.datasets.serializers import (
@@ -17,9 +17,8 @@ from api.datasets.serializers import (
     FilePreviewSerializer,
     SearchQuerySerializer,
 )
-from api.datasets.utils import prepare_csv_data_format
 from api.utils.pagination import StartEndPagination, SearchQueryPagination
-from api.datasets.enums import FileType, UploadType
+from api.datasets.enums import UploadType
 
 
 class FileViewSet(mixins.ListModelMixin, GenericViewSet):

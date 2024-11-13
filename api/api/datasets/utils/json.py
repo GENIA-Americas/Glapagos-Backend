@@ -94,7 +94,7 @@ def get_content_from_url_json(
     for url in urls:
         r = requests.get(url, stream=True)
 
-        if r.status_code != 200 or r.headers.get("Content-Type") != "application/json":
+        if r.status_code != 200:
             raise JsonPreviewFailed(detail=_("Invalid url or file/folder doesn't not exist"))
 
         open_brackets = 0

@@ -10,7 +10,7 @@ from google.oauth2 import service_account
 from google.cloud import storage
 
 from django.utils.translation import gettext_lazy as _
-from api.datasets.exceptions import UrlFolderNameExtractionException, UrlProviderException
+from api.datasets.exceptions import UrlFileNotExistException, UrlFolderNameExtractionException, UrlProviderException
 
 
 class ProviderService(ABC):
@@ -61,7 +61,7 @@ class GoogleDriveService(ProviderService):
         folder_name = clean_url.split("?")[0]
 
         if folder_name == "" or folder_name.find("/") != -1:
-            raise UrlFolderNameExtractionException(error=f"Name extracted incorrectly: {folder_name}") 
+            raise UrlFolderNameExtractionException(detail=f"Name extracted incorrectly: {folder_name}") 
 
         return folder_name
 
@@ -70,8 +70,16 @@ class GoogleDriveService(ProviderService):
         """
         Extracts the file id form the given url
         """
-        clean_url = url.replace("https://drive.google.com/file/d/", "")
-        file_id = clean_url.split("/")[0]
+
+        if url.find("file") >= 0:
+            clean_url = url.replace("https://drive.google.com/file/d/", "")
+            file_id = clean_url.split("/")[0]
+        elif url.find("&id") >= 0: 
+            clean_url = url.replace("https://drive.google.com/uc?export=download&id=", "")
+            file_id = clean_url
+        else: 
+            raise UrlFileNotExistException(detail="File id could not be extracted correctly")
+
         return file_id
         
     @classmethod
