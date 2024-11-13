@@ -23,7 +23,7 @@ class FileServiceFactory:
             class_ = TXTFileService
         elif extension.lower() == 'csv':
             class_ = CSVFileService
-        elif extension.lower() == 'json':
+        elif extension.lower() in ['json', 'jsonl']:
             class_ = JSONFileService
 
         if not return_instance:

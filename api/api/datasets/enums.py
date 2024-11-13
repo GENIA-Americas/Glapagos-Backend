@@ -9,6 +9,7 @@ class UploadType(models.TextChoices):
 class FileType(models.TextChoices):
     CSV = 'csv', 'CSV'
     JSON = 'json', 'JSON'
+    JSONL = 'jsonl', 'JSONL'
     TXT = 'txt', 'TXT'
 
 
