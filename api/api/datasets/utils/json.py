@@ -60,9 +60,21 @@ def create_dataframe_from_json(file) -> pd.DataFrame:
         Returns:
             df (pd.DataFrame): The DataFrame created from the JSON file.
     """
+    content = file.read().decode('utf-8')
+    file.seek(0)
     try:
-        df = pd.read_json(file)
-        file.seek(0)
+        data = json.loads(content)
+        if isinstance(data, list):
+            df = pd.DataFrame(data)
+            return df
+        elif isinstance(data, dict):
+            df = pd.DataFrame([data])
+            return df
+    except Exception:
+        pass
+
+    try:
+        df = pd.read_json(content, lines=True)
         return df
     except Exception as exp:
         raise InvalidFileException(error=str(exp))

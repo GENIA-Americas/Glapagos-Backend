@@ -5,7 +5,6 @@ from google.cloud import bigquery
 from google.oauth2 import service_account
 from google.api_core.exceptions import GoogleAPIError
 from django.conf import settings
-from django.utils.translation import gettext_lazy as _
 
 from api.datasets.exceptions import QueryFailedException, BigQueryMountTableException
 from api.datasets.models import Table
@@ -34,6 +33,7 @@ class BigQueryService:
         formats = {
             "csv": bigquery.SourceFormat.CSV,
             "json": bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
+            "jsonl": bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
         }
         return formats.get(extension.lower(), bigquery.SourceFormat.CSV)
 
