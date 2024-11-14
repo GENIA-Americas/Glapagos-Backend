@@ -76,3 +76,7 @@ python-magic
 
 # Dataframes
 pandas
+
+#Notebooks
+google-cloud-notebooks
+

@@ -80,3 +80,7 @@ class Auth0CreateUserSerializer(serializers.ModelSerializer):
         )
         user = User.objects.create_user(**user_data)
         return user
+
+
+class AddGmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()

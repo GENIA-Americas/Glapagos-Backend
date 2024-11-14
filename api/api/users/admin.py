@@ -18,7 +18,7 @@ class CustomUserAdmin(UserAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         (_('Personal info'), {'fields': (
-            'first_name', 'last_name', 'email', 'organization', 'industry',
+            'first_name', 'last_name', 'email', 'gmail', 'organization', 'industry',
             'country_code', 'country', 'phone_number', 'setup_status', 'password_status')}),
         (_('Roles'), {'fields': ('role',)}),
         (_('Deleted'), {'fields': ('deleted',)}),

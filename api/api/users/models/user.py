@@ -62,6 +62,8 @@ class User(BaseModel, AbstractUser):
 
     email = models.EmailField(unique=True)
 
+    gmail = models.EmailField(null=True, blank=True)
+
     organization = models.CharField(max_length=255, null=True, blank=True)
 
     industry = models.CharField(choices=Industry.choices, max_length=255, null=True, blank=True)

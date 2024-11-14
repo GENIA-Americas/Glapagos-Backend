@@ -62,14 +62,13 @@ class GoogleServiceAccount:
 class GoogleRole:
 
     @staticmethod
-    def assign_user_rol(account_email: str):
+    def assign_user_rol(account_email: str, role: str, member_type: str):
         client = resourcemanager_v3.ProjectsClient()
 
         project_name = f"projects/{settings.BQ_PROJECT_ID}"
         policy = client.get_iam_policy(request={"resource": project_name})
 
-        role = "roles/bigquery.jobUser"
-        member = f"serviceAccount:{account_email}"
+        member = f"{member_type}:{account_email}"
 
         policy.bindings.append(policy_pb2.Binding(role=role, members=[member]))
         updated_policy = client.set_iam_policy(

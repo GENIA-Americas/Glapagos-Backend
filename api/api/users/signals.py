@@ -26,7 +26,7 @@ def create_service_account(sender, instance, created, **kwargs):
             account = GoogleServiceAccount.create_account(account_name)
             key = GoogleServiceAccount.create_key(account.unique_id)
 
-            GoogleRole.assign_user_rol(account.email)
+            GoogleRole.assign_user_rol(account.email, "roles/bigquery.jobUser", "serviceAccount")
 
             key_instance = ServiceAccountKey(
                 name=key.name,

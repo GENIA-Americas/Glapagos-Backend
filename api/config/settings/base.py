@@ -89,6 +89,7 @@ LOCAL_APPS = [
     'api.datasets.apps.DatasetsConfig',
     'api.contacts.apps.ContactsConfig',
     'api.ai.apps.AiAppConfig',
+    'api.notebooks.apps.NotebooksConfig',
 ]
 
 INSTALLED_APPS = THIRD_PARTY_APPS + DJANGO_APPS + LOCAL_APPS
