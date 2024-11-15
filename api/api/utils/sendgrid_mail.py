@@ -36,7 +36,7 @@ def send_private_data_mail(
 
     sender = SendgridSender()
     subject = "Private access data"
-    sender.send_mail(["fabian9433@gmail.com"], subject, html_content)
+    sender.send_mail(emails, subject, html_content)
 
 
 def get_template(filename: str):
