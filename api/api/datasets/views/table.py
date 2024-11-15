@@ -112,7 +112,7 @@ class PrivateTableListView(mixins.ListModelMixin, GenericViewSet):
     search_fields = ['name']
 
     def get_queryset(self):
-        return Table.objects.filter(public=False, mounted=True, owner=self.request.user)
+        return Table.objects.filter(public=False, mounted=True)
 
 
 class TransformedTableListView(mixins.ListModelMixin, GenericViewSet):

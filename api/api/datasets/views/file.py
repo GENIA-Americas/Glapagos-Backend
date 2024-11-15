@@ -7,9 +7,10 @@ from rest_framework import status, permissions, mixins, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
+from api.utils.sendgrid_mail import send_private_data_mail
 from api.datasets.services.upload_providers import return_url_provider
 from api.datasets.serializers.file import JSONSerializer, CSVSerializer, UrlPreviewSerializer, TXTSerializer
-from api.datasets.models import File
+from api.datasets.models import File, Table
 from api.datasets.services import BigQueryService, FileServiceFactory, StructuredFileService
 from api.datasets.serializers import (
     FileSerializer,
@@ -19,6 +20,7 @@ from api.datasets.serializers import (
 )
 from api.utils.pagination import StartEndPagination, SearchQueryPagination
 from api.datasets.enums import UploadType
+from api.datasets.serializers.email import PrivateDataAccess
 
 
 class FileViewSet(mixins.ListModelMixin, GenericViewSet):
@@ -37,6 +39,34 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         user = self.request.user
         return File.objects.filter(Q(public=True) | Q(owner=user))
 
+    @action(
+        detail=False,
+        methods=["get"],
+        name="authorize-data",
+        url_path="authorize-data",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def authorize_private_data(self, request, *args, **kwargs):
+        serializer = PrivateDataAccess(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        table = serializer.validated_data.pop("table", Table)
+        emails = [table.owner.email] 
+        user = request.user
+
+        context = {
+            **serializer.validated_data, 
+            "first_name": table.owner.first_name,
+            "email": user.email,
+            "phone_number": user.phone_number,
+            "industry": user.industry,
+        }
+
+        send_private_data_mail(
+            context,
+            emails
+        )
+        return Response(dict(detail=_("Email send succesfully")), status=status.HTTP_200_OK)
 
     @action(
         detail=False,

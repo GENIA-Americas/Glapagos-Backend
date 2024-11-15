@@ -189,6 +189,9 @@ X_FRAME_OPTIONS = 'DENY'
 EMAIL_BACKEND = env('DJANGO_EMAIL_BACKEND',
                     default='django.core.mail.backends.console.EmailBackend')
 
+SENDGRID_API_KEY = env("SENDGRID_API_KEY")
+SENDGRID_SENDER = env("SENDGRID_SENDER")
+
 # Admin
 ADMIN_URL = 'admin/'
 CMS_ADMIN_URL = 'cms-admin/'
