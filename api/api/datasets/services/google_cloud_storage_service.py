@@ -27,10 +27,15 @@ class GCSService:
 class JSONGCSService(GCSService):
 
     @staticmethod
-    def is_newline_delimited_json(content) -> bool:
+    def is_newline_delimited_json(content: str) -> bool:
         try:
-            for line in content.splitlines():
-                json.loads(line)
+            lines = content.splitlines()
+            if len(lines) <= 1:
+                return False
+            for line in lines:
+                line = line.strip()
+                if line:
+                    json.loads(line)
             return True
         except json.JSONDecodeError:
             return False
@@ -38,19 +43,24 @@ class JSONGCSService(GCSService):
     @classmethod
     def convert_to_newline_delimited_json(cls, file) -> None:
         content = file.read().decode("utf-8")
-
         if cls.is_newline_delimited_json(content):
             return
-
         data = json.loads(content)
+        output = StringIO()
         if isinstance(data, list) and all(isinstance(item, dict) for item in data):
-            output = StringIO()
             for item in data:
                 output.write(json.dumps(item) + "\n")
-            output.seek(0)
-            file.file = output
-            file.size = len(output.getvalue())
-            file.name = file.name
+
+        elif isinstance(data, dict):
+            output.write(json.dumps(data))
+
+        else:
+            return None
+
+        output.seek(0)
+        file.file = output
+        file.size = len(output.getvalue())
+        file.name = file.name
 
     @classmethod
     def upload_file(cls, file, filename: str) -> str:

@@ -1,5 +1,4 @@
 import json
-import re
 from typing import List
 
 import magic
@@ -51,7 +50,7 @@ def validate_extension(value: str):
 
     this functions mustn't be use outside serializers or serializer fields
     """
-    valid_extensions = ["csv", "txt", "json"]
+    valid_extensions = ["csv", "txt", "json", "jsonl"]
     if value not in valid_extensions:
         raise serializers.ValidationError(
             {"detail": _("Only CSV, TXT, and JSON files are allowed.")}
@@ -138,7 +137,7 @@ class FilePreviewSerializer(serializers.Serializer):
                     _("File content must have at least two lines.")
                 )
 
-        elif file_type == 'json':
+        elif file_type in ['json', 'jsonl']:
             attrs['preview'] = json.dumps(preview)
 
         return attrs
