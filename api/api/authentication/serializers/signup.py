@@ -1,63 +1,93 @@
 """Signup serializers"""
 
-from django.utils.translation import gettext_lazy as _
-from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
-
-
 # Rest framework
 from rest_framework import serializers
 
 # Models
 from api.users.models import User
-from api.users.enums import SetUpStatus, Industry, Country
+from api.users.enums import SetUpStatus
 from api.authentication.enums import ExternalTokenChannel, ExternalTokenType
 from api.authentication.models import ExternalToken
 
 from api.utils.serializers import ChoiceField
 
-class SignUpValidateCodeSerializer(serializers.Serializer):
-    """
-    Sign up validate code serializer
-    """
-    user_id = serializers.CharField(required=True, write_only=True)
-    token = serializers.CharField(required=True, write_only=True)
 
+class SignUpRequestCodeSerializer(serializers.Serializer):
+    """
+    Sign up form serializer
+    """
+
+    email = serializers.CharField(required=True, write_only=True)
+    password = serializers.CharField(required=True, write_only=True)
+    channel = ChoiceField(choices=ExternalTokenChannel.choices)
+
+    status = serializers.CharField(read_only=True)
+    resend = serializers.BooleanField(read_only=True)
 
     def validate(self, attrs):
         """ Validate sign up form"""
         attrs = super().validate(attrs)
-        user_id = attrs['user_id']
+        email = attrs['email']
+
+        user_queryset = User.objects.filter(email=email)
+        if user_queryset:
+            user = user_queryset.first()
+            if user.setup_status != SetUpStatus.SIGN_UP_VALIDATION:
+                raise serializers.ValidationError(
+                    {"detail": "user already exists."})
+
+            attrs['user_id'] = user.id
+            attrs['resend'] = True
+        else:
+            attrs['user_id'] = None
+            attrs['resend'] = False
+        return attrs
+
+
+class SignUpValidateCodeSerializer(serializers.Serializer):
+    """
+    Sign up validate code serializer
+    """
+    email = serializers.CharField(required=True, write_only=True)
+    token = serializers.CharField(required=True, write_only=True)
+
+    # TODO: key from settings
+    ACCESS = serializers.CharField(read_only=True)
+    REFRESH = serializers.CharField(read_only=True)
+
+    def validate(self, attrs):
+        """ Validate sign up form"""
+        attrs = super().validate(attrs)
+        email = attrs['email']
         token = attrs.pop('token')
 
         user_queryset = User.objects.filter(
-            pk=user_id, setup_status=SetUpStatus.SIGN_UP_VALIDATION)
+            email=email, setup_status=SetUpStatus.SIGN_UP_VALIDATION)
         if not user_queryset:
             raise serializers.ValidationError(
-                {"detail": _("user is invalid")})
+                {"detail": "user is invalid"})
 
         user = user_queryset.first()
         if user.setup_status != SetUpStatus.SIGN_UP_VALIDATION:
             raise serializers.ValidationError(
-                {"detail": _("user already exists.")})
+                {"detail": "user already exists."})
 
         attrs['user'] = user
 
         token_queryset = ExternalToken.get_valid_tokens(
-            field=dict(user__id=user_id), token_type=ExternalTokenType.VALIDATE_ACCOUNT)
+            field=dict(user__email=email), token_type=ExternalTokenType.VALIDATE_ACCOUNT)
         if not token_queryset:
             raise serializers.ValidationError(
-                {"token": _("Token is invalid or has expired")})
+                {"token": "Token is invalid or has expired"})
 
         expected_token = token_queryset.first()
         if expected_token.is_expired:
             raise serializers.ValidationError(
-                {"token": _("Token is invalid or has expired")})
+                {"token": "Token is invalid or has expired"})
 
         if expected_token.token != token:
             raise serializers.ValidationError(
-                {"token": _("Token is invalid or has expired")})
+                {"token": "Token is invalid or has expired"})
 
         return attrs
 
@@ -67,9 +97,9 @@ class ForgotPasswordRequestCodeSerializer(serializers.Serializer):
     Forgot Password form serializer
     """
 
-    email = serializers.EmailField(required=True, write_only=True)
+    email = serializers.CharField(required=True, write_only=True)
     channel = ChoiceField(choices=ExternalTokenChannel.choices,
-                          default=ExternalTokenChannel.CONSOLE)
+                          default=ExternalTokenChannel.EMAIL)
 
     status = serializers.CharField(read_only=True)
     resend = serializers.BooleanField(read_only=True)
@@ -81,7 +111,7 @@ class ForgotPasswordRequestCodeSerializer(serializers.Serializer):
 
         if "@auto_generated.email" in email:
             raise serializers.ValidationError(
-                _("This email is autogenerated, update your email and try again"))
+                "This email is autogenerated, update your email and try again")
 
         user_queryset = User.objects.filter(email=email)
         if user_queryset:
@@ -100,97 +130,39 @@ class ForgotPasswordValidateCodeSerializer(serializers.Serializer):
     Forgot Password validate code serializer
     """
 
-    user_id = serializers.CharField(required=True, write_only=True)
+    email = serializers.CharField(required=True, write_only=True)
     token = serializers.CharField(required=True, write_only=True)
-    password = serializers.CharField(required=True, write_only=True)
-    repeat = serializers.CharField(required=True, write_only=True)
 
-    def validate_password(self, value):
-        try:
-            validate_password(value)
-        except ValidationError as e:
-            raise serializers.ValidationError(e.messages)
-        return value
+    # TODO: key from settings
+    ACCESS = serializers.CharField(read_only=True)
+    REFRESH = serializers.CharField(read_only=True)
 
     def validate(self, attrs):
         """ Validate Forgot Password form"""
         attrs = super().validate(attrs)
-        user_id = attrs['user_id']
+        email = attrs['email']
         token = attrs.pop('token')
-        password = attrs['password']
-        repeat = attrs['repeat']
 
-        user_queryset = User.objects.filter(pk=user_id)
+        user_queryset = User.objects.filter(email=email)
         if not user_queryset:
-            raise serializers.ValidationError({"email": _("user is invalid")})
+            raise serializers.ValidationError({"email": "user is invalid"})
 
         user = user_queryset.first()
         attrs['user'] = user
 
         token_queryset = ExternalToken.get_valid_tokens(
-            field=dict(user__pk=user_id), token_type=ExternalTokenType.RECOVER_ACCOUNT)
+            field=dict(user__email=email), token_type=ExternalTokenType.RECOVER_ACCOUNT)
         if not token_queryset:
             raise serializers.ValidationError(
-                {"token": _("Token is invalid or has expired")})
+                {"token": "Token is invalid or has expired"})
 
         expected_token = token_queryset.first()
         if expected_token.is_expired:
             raise serializers.ValidationError(
-                {"token": _("Token is invalid or has expired")})
+                {"token": "Token is invalid or has expired"})
 
         if expected_token.token != token:
             raise serializers.ValidationError(
-                {"token": _("Token is invalid or has expired")})
+                {"token": "Token is invalid or has expired"})
 
-        if password != repeat:
-            raise serializers.ValidationError({"detail": _("passwords doesn't match.")})
-
-        return attrs
-
-class SignUpEmailSerializer(serializers.Serializer):
-    """
-    Sign up form serializer
-    """
-
-    email = serializers.EmailField()
-    password = serializers.CharField(write_only=True)
-    repeat = serializers.CharField(write_only=True)
-    first_name = serializers.CharField(validators=[
-        RegexValidator(regex=r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$', message=_('First name can only contain letters and spaces.'))
-    ])
-    last_name = serializers.CharField(validators=[
-        RegexValidator(regex=r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$', message=_('Last name can only contain letters and spaces.'))
-    ])
-    country = serializers.ChoiceField(required=False, allow_blank=True, choices=Country.choices)
-    country_code = serializers.RegexField(regex=r'^\+?[0-9]{1,3}([- ]?[0-9]{1,3})?$', max_length=10, error_messages={
-        'invalid': _('Invalid country code.')
-    })
-    phone_number = serializers.RegexField(regex=r'^\d+$', max_length=16, error_messages={
-        'invalid': _('The phone number must contain only digits.')
-    })
-    organization = serializers.CharField(required=False, allow_blank=True)
-    industry = serializers.ChoiceField(required=False, allow_blank=True, choices=Industry.choices)
-
-    def validate_password(self, value):
-        try:
-            validate_password(value)
-        except ValidationError as e:
-            raise serializers.ValidationError(e.messages)
-        return value
-
-    def validate(self, attrs):
-        """ Validate sign up form"""
-        attrs = super().validate(attrs)
-        email = attrs['email']
-        password = attrs['password']
-        repeat = attrs['repeat']
-
-        if password != repeat:
-            raise serializers.ValidationError({"detail": _("passwords doesn't match.")})
-
-        attrs.pop('repeat')
-
-        user_queryset = User.objects.filter(email=email)
-        if user_queryset:
-            raise serializers.ValidationError({"detail": _("user already exists.")})
         return attrs

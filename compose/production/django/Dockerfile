@@ -1,56 +1,32 @@
-FROM alpine:3.16
+FROM python:3.7-alpine
 
 ENV PYTHONUNBUFFERED 1
-ENV PORT 8000
-
-RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
-RUN python3 -m ensurepip
-RUN pip3 install --no-cache --upgrade pip setuptools
-
-RUN apk --no-cache add bash mc \
-            util-linux \
-            ttf-droid-nonlatin \
-            ttf-droid \
-            ttf-dejavu \
-            ttf-freefont \
-            ttf-liberation \
-        && rm -rf /var/cache/apk/*
 
 RUN apk update \
   # psycopg2 dependencies
-  && apk add --virtual build-deps gcc musl-dev \
-  # Pillow dependencies
-  && apk add jpeg-dev zlib-dev freetype-dev lcms2-dev openjpeg-dev tiff-dev tk-dev tcl-dev \
+  && apk add --virtual build-deps gcc python3-dev musl-dev libxslt-dev \
+  && apk add postgresql-dev \
+  && apk add postgresql-client \
   # CFFI dependencies
   && apk add libffi-dev py-cffi \
-  && apk add cargo \
   # Translations dependencies
   && apk add gettext \
-  && apk add g++ gcc libxslt-dev
-  # https://docs.djangoproject.com/en/dev/ref/django-admin/#dbshell
+  # Pillow dependencies
+  && apk add jpeg-dev zlib-dev libjpeg
 
 # Requirements are installed here to ensure they will be cached.
 RUN apk add python3-dev
-RUN apk add postgresql-client
-RUN apk add libmagic
 
-WORKDIR /app
-COPY /api /app
-COPY /requirements /app/requirements
-
-RUN pip install -r /app/requirements/production.txt
-
-RUN mkdir -p /app/api/static
-
-COPY ./compose/production/django/wait_for_postgres.py /wait_for_postgres.py
-RUN chmod +x /wait_for_postgres.py
+COPY ./requirements /requirements
+RUN pip install -r /requirements/production.txt
 
 COPY ./compose/production/django/start /start
+RUN sed -i 's/\r//' /start
 RUN chmod +x /start
 
-COPY ./compose/production/django/celery/beat/start /start-celerybeat
-RUN chmod +x /start-celerybeat
+COPY ./api ./app
 
-EXPOSE $PORT
+WORKDIR /app
+RUN mkdir -p ./api/static
 
 ENTRYPOINT ["/start"]

@@ -8,11 +8,6 @@ APP_NAME = '{{app_name}}'
 
 API_URI = 'api/v1'
 
-SITE_SCHEME = os.getenv('SITE_SCHEME')
-SITE_DOMAIN = os.getenv('SITE_DOMAIN')
-FRONTEND_LOGIN_URL = os.getenv('FRONTEND_LOGIN_URL')
-FRONTEND_RECOVER_URL = os.getenv('FRONTEND_RECOVER_URL')
-
 ROOT_DIR = environ.Path(__file__) - 3
 APPS_DIR = ROOT_DIR.path('api')
 
@@ -23,15 +18,11 @@ DEBUG = env.bool('DJANGO_DEBUG', False)
 
 # Language and timezone
 TIME_ZONE = 'America/New_York'
-LANGUAGE_CODE = 'es'
+LANGUAGE_CODE = 'en-en'
 SITE_ID = 1
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-
-LOCALE_PATHS = [
-    f"{ROOT_DIR}/locale",
-]
 
 # DATABASES
 DATABASES = {
@@ -79,16 +70,13 @@ THIRD_PARTY_APPS = [
     'django_rest_passwordreset',
     'corsheaders',
     'django_filters',
-    'secured_fields',
 ]
 
 LOCAL_APPS = [
     'api.users.apps.UsersAppConfig',
     'api.authentication.apps.AuthenticationAppConfig',
+    'api.cms.apps.CMSAppConfig',
     'api.events.apps.EventsAppConfig',
-    'api.datasets.apps.DatasetsConfig',
-    'api.contacts.apps.ContactsConfig',
-    'api.ai.apps.AiAppConfig',
 ]
 
 INSTALLED_APPS = THIRD_PARTY_APPS + DJANGO_APPS + LOCAL_APPS
@@ -119,14 +107,11 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+
 ]
 
 # Middlewares
 MIDDLEWARE = [
-    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -134,7 +119,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware'
 ]
 
 # Static files
@@ -195,7 +180,6 @@ CMS_ADMIN_URL = 'cms-admin/'
 
 # Django REST Framework
 REST_FRAMEWORK = {
-    'EXCEPTION_HANDLER': 'api.utils.custom_exception_handler.custom_exception_handler',
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
@@ -204,7 +188,7 @@ REST_FRAMEWORK = {
         "api.utils.auth0.validator.DoubleAuthentication",
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': 12,
 }
 
 # AUTOFIELD
@@ -225,7 +209,7 @@ LANGUAGES = (
     ('es', gettext('Spanish')),
     ('en', gettext('English')),
 )
-MODELTRANSLATION_DEFAULT_LANGUAGE = 'es'
+MODELTRANSLATION_DEFAULT_LANGUAGE = 'en'
 
 # MODELTRANSLATION_TRANSLATION_FILES = (
 #    'cms.translation',
@@ -260,7 +244,7 @@ AUTHENTICATION_EXTERNAL_MESSAGE_PROVIDERS = [
     {'name': 'email', "has_title": True}
 ]
 AUTHENTICATION_EXTERNAL_MESSAGE_FORMAT_DEFAULT = os.getenv(
-    'AUTHENTICATION_EXTERNAL_MESSAGE_FORMAT_CONSOLE', 'Activatiiiiion URL: {url}')
+    'AUTHENTICATION_EXTERNAL_MESSAGE_FORMAT_CONSOLE', 'This is your token for {app_name}: {token}')
 AUTHENTICATION_EXTERNAL_TOKEN_MESSAGE_FORMATS = {
     provider["name"]: {
         'validate_account': os.getenv(f'AUTHENTICATION_EXTERNAL_MESSAGE_FORMAT_{provider["name"].upper()}_VALIDATE_ACCOUNT', AUTHENTICATION_EXTERNAL_MESSAGE_FORMAT_DEFAULT),
@@ -312,18 +296,3 @@ SWAGGER_SETTINGS = {
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 TWILIO_FROM_PHONE_NUMBER = os.getenv('TWILIO_FROM_PHONE_NUMBER')
-
-GCS_BUCKET = os.getenv('GCS_BUCKET')
-BQ_PROJECT_ID = os.getenv('BQ_PROJECT_ID')
-BQ_DATASET_ID = os.getenv('BQ_DATASET_ID')
-ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
-
-CORS_ALLOW_ALL_ORIGINS = True
-
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-GOOGLE_DRIVE_KEY = os.getenv('GOOGLE_DRIVE_KEY')
-
-FILE_UPLOAD_LIMIT = 100_000_000
-
-SECURED_FIELDS_KEY = os.getenv('SECURED_FIELDS_KEY')
-SECURED_FIELDS_HASH_SALT = os.getenv('SECURED_FIELDS_HASH_SALT')

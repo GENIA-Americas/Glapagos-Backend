@@ -2,7 +2,7 @@
 
 -r ./base.txt
 
-gunicorn
+#gunicorn
 Twisted[tls,http2]
 daphne
 sentry-sdk
