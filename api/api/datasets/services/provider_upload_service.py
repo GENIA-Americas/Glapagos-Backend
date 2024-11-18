@@ -7,6 +7,7 @@ from botocore.client import Config
 from django.conf import settings
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
+from google.cloud import storage
 
 from django.utils.translation import gettext_lazy as _
 from api.datasets.exceptions import UrlFolderNameExtractionException, UrlProviderException
@@ -34,10 +35,14 @@ class ProviderService(ABC):
         ...
 
 class GoogleDriveService(ProviderService):
-    credentials = service_account.Credentials.from_service_account_file(
-        settings.GOOGLE_DRIVE_KEY,
-        scopes=["https://www.googleapis.com/auth/drive"],
-    )
+    try:
+        credentials = service_account.Credentials.from_service_account_file(
+            settings.GOOGLE_DRIVE_KEY,
+            scopes=["https://www.googleapis.com/auth/drive"],
+        )
+    except Exception as e:
+        print("Google credentials from google drive were not loaded")
+        
 
     @classmethod
     def is_folder(cls, url: str) -> bool:
@@ -237,6 +242,123 @@ class S3Service(ProviderService):
             name=object_key.split("/")[-1],
             size=size,
             mimeType=content_type
+        )
+
+        return item 
+ 
+class GoogleCloudService(ProviderService):
+    client = storage.Client.create_anonymous_client() 
+
+    @classmethod
+    def is_folder(cls, url: str) -> bool:
+        """
+        Determines if a link contains a folder
+        """
+        url_clean = url.split("/")[-1]
+        if url_clean != "":
+            return False
+
+        return True
+
+    @classmethod
+    def is_file(cls, url: str) -> bool:
+        """
+        Determines if a link contains a file 
+        """
+        url_clean = url.split("/")[-1]
+        if url_clean == "":
+            return False
+
+        return True
+
+    @classmethod
+    def clean_url(cls, url: str) -> str:
+        clean_url = url.replace("https://storage.googleapis.com/", "")
+        clean_url = clean_url.replace("https://storage.cloud.google.com/", "")
+        return clean_url
+
+    @classmethod
+    def get_folder_name(cls, url: str) -> str:
+        clean_url = cls.clean_url(url) 
+        folder_name = clean_url.split("/")[-2]
+
+        if folder_name == "" or folder_name.find("/") != -1:
+            raise UrlFolderNameExtractionException(error=f"Name extracted incorrectly: {folder_name}") 
+
+        return folder_name + "/"
+
+    @classmethod
+    def get_file_name(cls, url: str) -> str:
+        clean_url = cls.clean_url(url) 
+        name = clean_url.split("?")[0].split("/")[-1]
+
+        if name == "" :
+            raise UrlFolderNameExtractionException(error=f"Name extracted incorrectly: {name}") 
+
+        return name 
+
+    @classmethod
+    def get_bucket_name(cls, url: str) -> str:
+        clean_url = cls.clean_url(url).split("?")[0]
+        bucket_name = clean_url.split("/")[0]
+
+        return bucket_name
+
+    @classmethod
+    def get_object_key(cls, url: str) -> str:
+        clean_url = cls.clean_url(url).split("?")[0]
+
+        if len(clean_url.split("/")) < 2:
+            raise UrlFolderNameExtractionException() 
+
+        el = clean_url.split("/")[1:]
+        object_key = "/".join(el)
+
+        return object_key 
+    
+    @classmethod
+    def list_files(cls, url: str) -> list:
+        bucket_name = cls.get_bucket_name(url)
+        folder_prefix = cls.get_folder_name(url)
+
+        blobs = cls.client.list_blobs(bucket_name, prefix=folder_prefix)
+
+        items = list()
+        for blob in blobs:
+            if blob.name != folder_prefix:
+                item = dict(
+                    name=blob.name,
+                    size=blob.size,
+                    mimeType=blob.content_type,
+                    webContentLink=blob.media_link
+                )
+                items.append(item)
+
+        return items 
+
+    @classmethod
+    def get_file_metadata(cls, url: str) -> dict:
+        bucket_name = cls.get_bucket_name(url)
+        object_key = cls.get_object_key(url) 
+
+        res = None
+        try:
+            bucket = cls.client.bucket(bucket_name)
+            res = bucket.get_blob(object_key)
+        except Exception as e:
+            raise UrlProviderException(
+                _("Invalid or forbidden url, check that your bucket has the correct permissions")
+            )
+
+        if res == None:
+            raise UrlProviderException(
+                _("Invalid or forbidden url, check that your bucket has the correct permissions")
+            )
+
+        item = dict(
+            name=res.name,
+            size=res.size,
+            mimeType=res.content_type
         )
 
         return item 

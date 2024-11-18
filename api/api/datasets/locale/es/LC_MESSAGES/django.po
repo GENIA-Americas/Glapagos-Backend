@@ -279,6 +279,14 @@ msgstr "No se encontraron objetos en esta carpeta"
 msgid "Invalid or forbidden url, check that your bucket has the correct permissions"
 msgstr "Url invalida o no permitida, reviza si tienes los permisos correctos para el bucket"
 
+#: api/datasets/services/drive_service.py:34
+msgid "Google Drive key is missing"
+msgstr "No se encontró la clave de Google Drive"
+
+#: api/datasets/services/drive_service.py:36
+msgid "Error creating Google Drive credentials"
+msgstr "Error creando las credenciales de Google Drive"
+
 #: api/datasets/services/transformation_service.py:49
 msgid "Invalid or forbidden url, check that your bucket has the correct permissions"
 msgstr "Url invalida o no esta autorizada, reviza si tienes los permisos correctos en el bucket"
