@@ -112,7 +112,7 @@ def get_content_from_url_json(
     for url in urls:
         r = requests.get(url, stream=True)
 
-        if r.status_code != 200:
+        if r.status_code != 200 or r.headers.get("Content-Type", "") != "application/octet-stream":
             raise JsonPreviewFailed(detail=_("Invalid url or file/folder doesn't not exist"))
 
         open_brackets = 0
@@ -136,6 +136,7 @@ def get_content_from_url_json(
                     if item[0] in [",", "["]: 
                         item = item[1:]
 
+                    print("item ", item, "\n")
                     load_item = json.loads(item)
                     items.append(load_item)
                     item_count += 1
