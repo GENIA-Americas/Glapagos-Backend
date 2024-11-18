@@ -136,7 +136,6 @@ def get_content_from_url_json(
                     if item[0] in [",", "["]: 
                         item = item[1:]
 
-                    print("item ", item, "\n")
                     load_item = json.loads(item)
                     items.append(load_item)
                     item_count += 1
