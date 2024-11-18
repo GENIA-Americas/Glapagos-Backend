@@ -137,7 +137,7 @@ def get_content_from_url_csv(
     for url in urls:
         r = requests.get(url, stream=True)
 
-        if r.status_code != 200 or r.headers.get("Content-Type") != "text/csv":
+        if r.status_code != 200:
             raise CsvPreviewFailed(detail=_("Invalid url or file/folder doesn't not exist"))
 
         line = 0

@@ -1,14 +1,15 @@
-from abc import ABC, abstractmethod
+from abc import ABC 
 import requests
 
 from django.utils.translation import gettext_lazy as _
 from django.core.files.uploadedfile import TemporaryUploadedFile 
 
-from api.datasets.utils.json import get_content_from_url_json, prepare_json_data_format
 from api.datasets.enums import FileType
-from api.datasets.exceptions import UrlFileNotExistException, UrlProviderException
+from api.datasets.exceptions import UploadFailedException, UrlFileNotExistException, UrlProviderException
 from api.datasets.services.provider_upload_service import GoogleCloudService, GoogleDriveService, S3Service
+from api.datasets.utils.json import get_content_from_url_json, prepare_json_data_format
 from api.datasets.utils.csv import get_content_from_url_csv, prepare_csv_data_format
+from api.datasets.utils.text import get_content_from_url_text 
 
 
 def identify_url_provider(url: str) -> str:
@@ -69,7 +70,8 @@ class BaseUploadProvider(ABC):
             charset=None
         )
 
-        if r.status_code == 200 and r.headers.get("Content-type") in ["text/csv", "application/json"]:
+        if r.status_code == 200 and metadata.get("mimeType") in [
+            "text/csv", "application/json", "text/plain"]:
             for chunk in r.iter_content(chunk_size=8192):
                 file.write(chunk)
         else:
@@ -146,6 +148,9 @@ class BaseUploadProvider(ABC):
         elif file_type == FileType.JSON:
             content = get_content_from_url_json(urls, **kwargs)
 
+        elif file_type == FileType.TXT:
+            content = get_content_from_url_text(urls, **kwargs)
+
         return content
 
     def prepare_data_format(self, data: str, file_type: FileType, **kwargs) -> list:
@@ -157,6 +162,9 @@ class BaseUploadProvider(ABC):
 
         elif file_type == FileType.JSON:
             bigquery_format = prepare_json_data_format(data=data)
+
+        elif file_type == FileType.TXT:
+            raise UploadFailedException("txt format is not supported")
 
         return bigquery_format
 
