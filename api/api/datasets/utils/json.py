@@ -53,7 +53,6 @@ def prepare_json_data_format(data: str, include_examples: bool = True) -> List:
             result.append(column_data)
         return result
     except Exception as exp:
-        raise exp
         raise InvalidFileException(error=str(exp))
 
 

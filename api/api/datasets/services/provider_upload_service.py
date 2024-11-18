@@ -35,10 +35,14 @@ class ProviderService(ABC):
         ...
 
 class GoogleDriveService(ProviderService):
-    credentials = service_account.Credentials.from_service_account_file(
-        settings.GOOGLE_DRIVE_KEY,
-        scopes=["https://www.googleapis.com/auth/drive"],
-    )
+    try:
+        credentials = service_account.Credentials.from_service_account_file(
+            settings.GOOGLE_DRIVE_KEY,
+            scopes=["https://www.googleapis.com/auth/drive"],
+        )
+    except Exception as e:
+        print("Google credentials from google drive were not loaded")
+        
 
     @classmethod
     def is_folder(cls, url: str) -> bool:
@@ -197,10 +201,16 @@ class S3Service(ProviderService):
     def list_files(cls, url: str) -> list:
         bucket_name = cls.get_bucket_name(url)
         folder_prefix = cls.get_folder_name(url)
-        res = cls.client.list_objects_v2(Bucket=bucket_name, Prefix=folder_prefix)
+
+        res = dict() 
+        try:
+            res = cls.client.list_objects_v2(Bucket=bucket_name, Prefix=folder_prefix)
+        except Exception as e:
+            raise UrlFolderNameExtractionException(
+                _("Access denied when requesting resources, check your bucket permissions"))
 
         if 'Contents' not in res:
-            UrlFolderNameExtractionException(_("No objects found in this folder"))
+            raise UrlFolderNameExtractionException(_("No objects found in this folder"))
 
         items = []
         for i in res["Contents"]:

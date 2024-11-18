@@ -271,9 +271,6 @@ msgid "Field '{field}' does not exist in the dataset schema"
 msgstr "El campo '{field}' no existe en el esquema del dataset."
 
 #: api/datasets/services/provider_upload_service.py:191
-msgid "No objects found in this folder"
-msgstr "No se encontraron objetos en esta carpeta"
-
 #: api/datasets/services/provider_upload_service.py:191
 msgid "No objects found in this folder"
 msgstr "No se encontraron objetos en esta carpeta"
