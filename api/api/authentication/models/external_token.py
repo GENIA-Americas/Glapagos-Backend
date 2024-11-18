@@ -1,6 +1,6 @@
 # Utilities
 from api.authentication.services.external_token.token import random_token
-from api.authentication.services.external_token.channels import send_by_channel
+from api.authentication.services.external_token.channels import send_token
 from django.utils.timezone import now
 from api.authentication.enums import ExternalTokenChannel, ExternalTokenType
 from django.conf import settings
@@ -10,7 +10,6 @@ from api.utils.models import BaseModel
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.urls import reverse
 
 
 class ExternalToken(BaseModel):
@@ -44,14 +43,13 @@ class ExternalToken(BaseModel):
 
     def get_message_details(self):
         if self.channel_verbose.lower() not in settings.AUTHENTICATION_EXTERNAL_TOKEN_MESSAGE_FORMATS:
-            message = self.activation_url
+            message = self.token
         else:
             format_values = {
-                "app_name": settings.APP_NAME, "url": self.activation_url}
-            if self.type_verbose.lower() == 'recover_account':
-                format_values["url"] = self.reset_password_url
+                "app_name": settings.APP_NAME, "token": self.token}
             if self.channel_verbose.lower() == 'email':
                 format_values["email"] = self.user.email
+
             message = settings.AUTHENTICATION_EXTERNAL_TOKEN_MESSAGE_FORMATS[self.channel_verbose.lower()][
                 self.type_verbose.lower()].format(**format_values)
 
@@ -93,21 +91,12 @@ class ExternalToken(BaseModel):
     def is_expired(self):
         return self.expires_at < now()
 
-    @property
-    def activation_url(self):
-        return f"{settings.SITE_SCHEME}://{settings.SITE_DOMAIN}{reverse('auth-sign-up-validate', kwargs={'user_id': self.user.id, 'token': self.token})}"
-
-    @property
-    def reset_password_url(self):
-        return f"{settings.FRONTEND_RECOVER_URL}/{self.user.id}/{self.token}"
-
 
 @receiver(post_save, sender=ExternalToken)
 def auth_token_created(sender, instance: ExternalToken, *args, **kwargs):
     try:
         channel_token_message, channel_token_title = instance.get_message_details()
-        send_by_channel(instance.channel_verbose, instance.user.preferred_language_code,
-                        email=instance.user.email, phone_number=instance.user.phone_number,
-                        channel_token_message=channel_token_message, channel_token_title=channel_token_title)
+        send_token(instance.type_verbose, instance.channel_verbose,
+                   instance.user.preferred_language_code, email=instance.user.email, phone_number=instance.user.phone_number, channel_token_message=channel_token_message, channel_token_title=channel_token_title)
     except Exception as e:
         raise e

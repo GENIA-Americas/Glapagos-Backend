@@ -4,10 +4,20 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+until cd /app
+do
+    echo "Waiting for server volume..."
+done
+
+#until ./manage.py migrate
+#do
+#    echo "Waiting for db to be ready..."
+#    sleep 2
+#done
+
 python manage.py collectstatic --noinput
 python manage.py migrate
 
-echo "Starting gunicorn!"
-gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 0
-
-#daphne config.asgi:application -b 0.0.0.0 -p 8000
+#gunicorn config.wsgi --bind 0.0.0.0:8000 --workers 1
+echo "Starting daphne!"
+daphne config.asgi:application -b 0.0.0.0 -p 8000

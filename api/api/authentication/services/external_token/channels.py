@@ -10,7 +10,8 @@ CHANNELS = {
 }
 
 
-def send_by_channel(channel, token='', phone_number=None, email=None, channel_token_message=None, channel_token_title=None, language_code="en_US"):
+def send_token(token_type, channel, token='', phone_number=None, email=None, channel_token_message=None, channel_token_title=None, language_code="en_US"):
+    token_type = token_type.lower()
     channel = channel.lower()
     if channel not in CHANNELS:
         raise Exception(f'channel "{channel}" not supported')

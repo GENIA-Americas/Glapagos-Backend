@@ -3,6 +3,9 @@
 # Debugging
 ipdb==0.13.9
 
+# Tools
+django-extensions
+
 # Testing
 mypy
 pytest
