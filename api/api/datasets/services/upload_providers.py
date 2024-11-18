@@ -178,7 +178,7 @@ class GoogleDriveProvider(BaseUploadProvider):
 
     def preview_file(self, url: str, file_type: FileType) -> list:
         d_url = self.service.convert_url(url)
-        return super().preview_file(url, file_type)
+        return super().preview_file(d_url, file_type)
 
 
 class S3Provider(BaseUploadProvider):
