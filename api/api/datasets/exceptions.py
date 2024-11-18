@@ -81,3 +81,10 @@ class ChartLimitExceededException(GenericAPIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = _("Chart limit exceeded: The selected field contains too many distinct categories.")
     default_code = "chart_limit_exceeded"
+
+
+class EmailException(GenericAPIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = _("An error has occurred sending the email")
+    default_code = "email_not_sent"
+

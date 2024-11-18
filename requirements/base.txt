@@ -6,6 +6,9 @@ jinja2
 openai
 pydantic
 
+# Mail
+sendgrid
+
 # Django
 Django==3.2
 django-cors-headers==3.7.0
