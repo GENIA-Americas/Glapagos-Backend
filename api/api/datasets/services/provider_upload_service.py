@@ -35,10 +35,14 @@ class ProviderService(ABC):
         ...
 
 class GoogleDriveService(ProviderService):
-    credentials = service_account.Credentials.from_service_account_file(
-        settings.GOOGLE_DRIVE_KEY,
-        scopes=["https://www.googleapis.com/auth/drive"],
-    )
+    try:
+        credentials = service_account.Credentials.from_service_account_file(
+            settings.GOOGLE_DRIVE_KEY,
+            scopes=["https://www.googleapis.com/auth/drive"],
+        )
+    except Exception as e:
+        print("Google credentials from google drive were not loaded")
+        
 
     @classmethod
     def is_folder(cls, url: str) -> bool:
