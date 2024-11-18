@@ -185,7 +185,7 @@ class ProviderUrlField(serializers.URLField):
 
         else:
 
-            metadata = provider.service.get_file_metadata(url, ["size", "name", "mimeType"])
+            metadata = provider.service.get_file_metadata(url)
             size = int(metadata.get("size", 0))
             validate_size(size)
             validate_mimes(metadata.get("mimeType", ""))

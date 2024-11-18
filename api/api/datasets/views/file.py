@@ -52,8 +52,8 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         url = serializer.validated_data.get("url", "")
 
         provider = return_url_provider(url)
-        provider.preview()
-        bigquery_format = prepare_csv_data_format(data=provider.preview_content, skip_leading_rows=1)
+        preview = provider.preview(url)
+        bigquery_format = prepare_csv_data_format(data=preview, skip_leading_rows=1)
 
         return Response(bigquery_format, status=status.HTTP_200_OK)
 
@@ -74,7 +74,7 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
             file_type = serializer.validated_data["file_type"]
 
             provider = return_url_provider(url)
-            f = provider.process(skip_leading_rows)
+            f = provider.process(url, skip_leading_rows)
 
             serializer_class_name = f"{file_type.upper()}Serializer"
             serializer_class = globals().get(serializer_class_name)
@@ -87,8 +87,8 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
                     autodetect=serializer.validated_data.get("autodetect", False)
                 )
             ).is_valid(raise_exception=True)
+            serializer.validated_data["file"] = f 
 
-            serializer.validated_data["file"] = f
 
         file_service = FileServiceFactory.get_file_service(
             user=request.user, **serializer.validated_data
