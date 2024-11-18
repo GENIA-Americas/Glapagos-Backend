@@ -41,7 +41,7 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
 
     @action(
         detail=False,
-        methods=["get"],
+        methods=["post"],
         name="authorize-data",
         url_path="authorize-data",
         permission_classes=[permissions.IsAuthenticated],
