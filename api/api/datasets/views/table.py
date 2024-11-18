@@ -25,6 +25,11 @@ class TableViewSet(mixins.ListModelMixin, GenericViewSet):
     def get_queryset(self):
         return Table.objects.filter(mounted=True, file__owner=self.request.user)
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
     @action(detail=True, methods=['post'], name='transform', url_path='transform',
             permission_classes=[permissions.IsAuthenticated, IsTableAllowed], serializer_class=TableTransformSerializer)
     def transform(self, request, pk, **kwargs):
@@ -104,6 +109,11 @@ class PublicTableListView(mixins.ListModelMixin, GenericViewSet):
     def get_queryset(self):
         return Table.objects.filter(public=True, mounted=True)
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
 
 class PrivateTableListView(mixins.ListModelMixin, GenericViewSet):
     serializer_class = TableSerializer
@@ -113,6 +123,11 @@ class PrivateTableListView(mixins.ListModelMixin, GenericViewSet):
 
     def get_queryset(self):
         return Table.objects.filter(public=False, mounted=True)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 
 class TransformedTableListView(mixins.ListModelMixin, GenericViewSet):
