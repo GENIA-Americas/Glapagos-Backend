@@ -13,7 +13,7 @@ class TableSerializer(serializers.ModelSerializer):
     class Meta:
         model = Table
         fields = ['id', 'name', 'created', 'modified', 'dataset_name', 'number_of_rows',
-                  'total_logical_bytes', 'reference_name', 'path', 'file', 'owner']
+                  'total_logical_bytes', 'reference_name', 'path', 'file', 'owner', 'public']
 
 
 class OptionSerializer(serializers.Serializer):
