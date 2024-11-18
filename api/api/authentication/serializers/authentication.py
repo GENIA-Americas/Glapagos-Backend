@@ -4,14 +4,30 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework import serializers
+from rest_framework.exceptions import AuthenticationFailed
 from django.conf import settings
+from django.core.validators import validate_email
+from django.utils.translation import gettext_lazy as _
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        data = super().validate(attrs)
+        email = attrs.get('email')
+        try:
+            validate_email(email)
+        except Exception:
+            raise AuthenticationFailed(_('Invalid email format'))
+
+        try:
+            data = super().validate(attrs)
+        except AuthenticationFailed as exp:
+            exp.detail = _("Invalid credentials")
+            raise exp
+
         if not self.user.can_auth():
-            raise serializers.ValidationError(dict(user="you can not log in"))
+            raise serializers.ValidationError(
+                dict(email=_("You could not log in because the registration process was not successfully completed."))
+            )
         refresh = self.get_token(self.user)
         data['refresh'] = str(refresh)
         data['access'] = str(refresh.access_token)
@@ -32,5 +48,5 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
             data = super().validate(attrs)
         except TokenError:
             raise serializers.ValidationError(
-                dict(refresh="invalid refresh token or has expired"))
+                dict(refresh=_("invalid refresh token or has expired")))
         return data

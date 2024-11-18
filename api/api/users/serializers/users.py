@@ -3,27 +3,25 @@
 # Rest Framework
 from rest_framework import serializers
 
-# Django
-from django.contrib.auth.models import Group
-
 # Models
 from api.users.models import User
 from api.users.enums import SetUpStatus, PasswordStatus
 
 # Serializers
 
-
 class UserSerializer(serializers.ModelSerializer):
+    industry = serializers.CharField(source='get_industry_display', read_only=True)
 
     class Meta:
         model = User
         fields = [
-            'id', 'email', 'username', 'first_name', 'last_name',
-            'dob', 'phone_number', 'public', 'password'
+            'id', 'email', 'username', 'first_name', 'last_name', 'organization', 'industry',
+            'country', 'country_code', 'phone_number', 'password'
         ]
         extra_kwargs = {
             'password': {'write_only': True},
-            'phone_number': {'required': False}
+            'organization': {'required': False},
+            'country': {'required': False},
         }
 
     def update(self, instance, validated_data):
@@ -35,7 +33,7 @@ class UserSerializer(serializers.ModelSerializer):
             if instance.password and instance.username and instance.phone_number:
                 instance.setup_status = SetUpStatus.VALIDATED
 
-        if instance.first_sign_up == True:
+        if instance.first_sign_up:
             instance.first_sign_up = False
 
         return super().update(instance, validated_data)

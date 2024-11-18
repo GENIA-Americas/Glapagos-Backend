@@ -43,7 +43,6 @@ class Auth0JWTBearerTokenAuthentication(TokenAuthentication):
         return (self.lookup_user(key, token), token)
 
     def decode_token(self, token: str) -> dict:
-        print(token, "token")
         signing_key = self.get_jwks_client().get_signing_key_from_jwt(token)
         return jwt.decode(
             jwt=token,

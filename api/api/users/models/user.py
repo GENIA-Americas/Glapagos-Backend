@@ -7,7 +7,7 @@ from django.contrib.auth.models import BaseUserManager, AbstractUser
 # Utilities
 from api.utils.models import BaseModel
 from api.users.roles import UserRoles
-from api.users.enums import SetUpStatus, PasswordStatus
+from api.users.enums import SetUpStatus, PasswordStatus, Industry, Country
 from django.utils.translation import gettext_lazy as _
 import uuid
 
@@ -25,6 +25,7 @@ class UserManager(BaseUserManager):
         else:
             user.set_password(password)
         user.save()
+
         return user
 
     def create_superuser(self, email, password, **extra_fields):
@@ -55,23 +56,29 @@ class User(BaseModel, AbstractUser):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    first_name = models.CharField(max_length=152, blank=True)
+    first_name = models.CharField(max_length=152)
 
-    last_name = models.CharField(max_length=152, blank=True)
+    last_name = models.CharField(max_length=152)
 
     email = models.EmailField(unique=True)
 
-    dob = models.DateField(null=True)
+    organization = models.CharField(max_length=255, null=True, blank=True)
 
-    phone_number = models.CharField(max_length=16, null=True)
+    industry = models.CharField(choices=Industry.choices, max_length=255, null=True, blank=True)
+
+    country = models.CharField(choices=Country.choices, max_length=255, null=True, blank=True)
+
+    country_code = models.CharField(max_length=5)
+
+    phone_number = models.CharField(max_length=16)
 
     setup_status = models.IntegerField(
         choices=SetUpStatus.choices, default=SetUpStatus.SIGN_UP_VALIDATION)
 
     password_status = models.IntegerField(
-        choices=PasswordStatus.choices, default=PasswordStatus.CHANGE)
+        choices=PasswordStatus.choices, default=PasswordStatus.ACTIVE)
 
-    preferred_language_code = models.CharField(max_length=16, default='en_US')
+    preferred_language_code = models.CharField(max_length=16, default='es_ES')
 
     role = models.CharField(choices=UserRoles.choices,
                             max_length=5, blank=True, null=True)
@@ -116,6 +123,9 @@ class User(BaseModel, AbstractUser):
                   "password_status", self.password_status)
             return False
         return True
+
+    def get_email_name(self):
+        return str(self.email).replace("@", "").replace(".", "").replace("_", "").replace("-", "")[:30]
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

@@ -17,10 +17,11 @@ class CustomUserAdmin(UserAdmin):
 
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        (_('Personal info'), {'fields': ('first_name',
-         'last_name', 'email', 'dob', 'phone_number')}),
-        (_('Roles'), {'fields': ('role', )}),
-        (_('Deleted'), {'fields': ('deleted', )}),
+        (_('Personal info'), {'fields': (
+            'first_name', 'last_name', 'email', 'organization', 'industry',
+            'country_code', 'country', 'phone_number', 'setup_status', 'password_status')}),
+        (_('Roles'), {'fields': ('role',)}),
+        (_('Deleted'), {'fields': ('deleted',)}),
         (_('Permissions'), {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
         }),

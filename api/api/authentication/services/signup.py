@@ -39,16 +39,15 @@ def signup_request_code(
     resend,
     channel,
     user_id,
+    **kwargs,
 ):
     if not resend:
-        user_id = create_user(email=email)
+        password = kwargs.pop('password')
+        user_id = create_user(email=email, username=email, password=password, **kwargs)
     else:
         destroy_token_by(email=email)
     create_token(user_id=user_id, channel=channel)
-    return {
-        'channel': channel,
-        'resend': resend,
-    }
+    return user_id
 
 
 def signup_validated(
@@ -90,9 +89,11 @@ def forgot_password_request_code(
 
 def forgot_password_validated(
     user: User,
+    password: str,
 ):
     ExternalToken.objects.filter(
         user=user, type=ExternalTokenType.RECOVER_ACCOUNT).delete()
-    user.password_status = PasswordStatus.CHANGE
+    user.password_status = PasswordStatus.ACTIVE
+    user.set_password(password)
     user.save()
     return True
