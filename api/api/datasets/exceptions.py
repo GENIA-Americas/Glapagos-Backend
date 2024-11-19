@@ -68,3 +68,9 @@ class ChartLimitExceededException(GenericAPIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = _("Chart limit exceeded: The selected field contains too many distinct categories.")
     default_code = "chart_limit_exceeded"
+
+
+class SchemaUpdateException(GenericAPIException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    default_detail = _("Schema cannot be updated.")
+    default_code = "schema_update_failed"

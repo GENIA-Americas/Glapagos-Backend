@@ -37,6 +37,7 @@ def apply_transformations(
         Raises:
             ValueError: If the transformation class is not found.
     """
+    bigquery_service = BigQueryService(user=user)
     for item in transformations:
         field = item["field"]
         transformation = item["transformation"]
@@ -56,13 +57,14 @@ def apply_transformations(
             table = obj.execute()
             create_table = False
         except GoogleAPIError as exp:
+            table.update_schema(bigquery_service, force=True)
             raise TransformationFailedException(
                 detail=_("Error while applying transformation {transformation} over {field}").format(
                     transformation=transformation, field=field
                 ),
                 error=str(exp)
             )
-
+    table.update_schema(bigquery_service, force=True)
     return table
 
 
@@ -127,11 +129,6 @@ class Transformation(ABC):
             return f"{'_'.join(split_name[:-1])}_copy_{generate_random_string(5)}"
         return f"{self.table.name}_copy_{generate_random_string(5)}"
 
-
-    @abstractmethod
-    def update_schema(self) -> List:
-        ...
-
     def execute(self) -> None:
         """
             Executes the transformation by running a BigQuery query and handling table creation if needed.
@@ -181,7 +178,6 @@ class Transformation(ABC):
         query = self.get_query()
         bigquery_service.query(query=query, job_config=job_config)
         destination_table.mounted = True
-        destination_table.schema = self.update_schema()
         ref = bigquery_service.get_table_reference(destination_table.dataset_name, destination_table.name)
         destination_table.update_table_stats(table_ref=ref)
 
@@ -206,16 +202,6 @@ class MissingValuesTransformation(Transformation):
             WHERE {self.field} IS NOT NULL;
         """
         return query
-
-    def update_schema(self) -> List:
-        """
-        Returns the current schema of the table without any changes, as filtering out rows
-        does not modify the schema.
-
-        Returns:
-            List: The current table schema.
-        """
-        return self.table.schema
 
 
 class DataTypeConversionTransformation(Transformation):
@@ -289,24 +275,6 @@ class DataTypeConversionTransformation(Transformation):
                     """
         return query
 
-    def update_schema(self) -> List:
-        """
-        Updates the schema of the table to reflect the new data type of the specified field.
-
-        The method modifies the field's data type in the schema based on the conversion
-        target specified in `options`.
-
-        Returns:
-            List: Updated schema with the new data type for the field.
-        """
-        convert_to = self.options.get("convert_to")
-        schema = self.table.schema
-        for item in schema:
-            if item["column_name"] == self.field:
-                item["data_type"] = convert_to.upper()
-                break
-        return schema
-
 
 class RemoveDuplicatesTransformation(Transformation):
     """
@@ -336,17 +304,6 @@ class RemoveDuplicatesTransformation(Transformation):
             WHERE row_num = 1;
         """
         return query
-
-    def update_schema(self) -> List:
-        """
-        Returns the current schema of the table without any changes, as removing duplicates
-        does not affect the schema.
-
-        Returns:
-            List: The current table schema.
-        """
-        return self.table.schema
-
 
 class StandardizingTextTransformation(Transformation):
     """A transformation class for standardizing the text case of a column in a table."""
@@ -378,12 +335,3 @@ class StandardizingTextTransformation(Transformation):
             FROM `{self.table.path}`;
         """
         return query
-
-    def update_schema(self) -> List:
-        """
-           Updates the schema after applying the transformation.
-
-           Returns:
-               List: The updated schema of the table.
-        """
-        return self.table.schema
