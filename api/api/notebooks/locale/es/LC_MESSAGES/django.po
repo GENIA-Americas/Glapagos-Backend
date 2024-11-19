@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-15 17:42+0000\n"
+"POT-Creation-Date: 2024-11-19 22:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
 #: api/notebooks/exceptions.py:9
 msgid "User does not have a linked Google account."
 msgstr "El usuario no tiene una cuenta de Google enlazada."
@@ -29,7 +30,8 @@ msgstr "Ya existe un notebook para este usuario."
 msgid ""
 "Notebook cannot be found. Check if you have permission to access this "
 "notebook."
-msgstr "No se pudo encontrar el notebook. Verifique que tenga permisos suficientes."
+msgstr ""
+"No se pudo encontrar el notebook. Verifique que tenga permisos suficientes."
 
 #: api/notebooks/exceptions.py:31
 msgid "Error starting the notebook."
@@ -48,10 +50,16 @@ msgstr "Error eliminando el notebook."
 msgid "Instance {instance_id} not found"
 msgstr "La instancia {instance_id} no se puedo encontrar."
 
-#: api/notebooks/views/notebook.py:58
+#: api/notebooks/views/notebook.py:47
+#, fuzzy, python-brace-format
+#| msgid "Notebook started successfully"
+msgid "Notebook '{instance.name}' successfully removed."
+msgstr "El notebook fue iniciado exitosamente."
+
+#: api/notebooks/views/notebook.py:65
 msgid "Notebook started successfully"
 msgstr "El notebook fue iniciado exitosamente."
 
-#: api/notebooks/views/notebook.py:76
+#: api/notebooks/views/notebook.py:83
 msgid "Notebook stopped successfully"
 msgstr "El notebook fue detenido exitosamente."
