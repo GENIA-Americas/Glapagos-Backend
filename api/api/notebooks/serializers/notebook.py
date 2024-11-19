@@ -10,4 +10,4 @@ class NotebookSerializer(serializers.ModelSerializer):
 
 
 class StartNotebookSerializer(serializers.Serializer):
-    name = serializers.CharField()
+    id = serializers.IntegerField()

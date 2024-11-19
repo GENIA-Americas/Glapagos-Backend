@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-06 16:22+0000\n"
+"POT-Creation-Date: 2024-11-15 17:42+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -107,22 +107,21 @@ msgstr "El archivo debe contener al menos dos líneas"
 msgid "Column '{column}' should be a category of type string."
 msgstr "La columna debe ser de tipo"
 
-#: api/datasets/serializers/file.py:29
+#: api/datasets/serializers/file.py:28
 #, fuzzy
 #| msgid "The files size are too large"
 msgid "The file size is too large"
 msgstr "El tamaño de los archivos es demasiado grande"
 
-#: api/datasets/serializers/file.py:43 api/datasets/serializers/file_.py:183
+#: api/datasets/serializers/file.py:42
 msgid "The filetype does not match with the extension"
 msgstr "El tipo de archivo no coincide con la extensión"
 
-#: api/datasets/serializers/file.py:57 api/datasets/serializers/file.py:197
-#: api/datasets/serializers/file_.py:174
+#: api/datasets/serializers/file.py:56 api/datasets/serializers/file.py:196
 msgid "Only CSV, TXT, and JSON files are allowed."
 msgstr "Solo se permiten archivos CSV, TXT y JSON"
 
-#: api/datasets/serializers/file.py:65 api/datasets/serializers/file_.py:95
+#: api/datasets/serializers/file.py:64
 msgid ""
 "The number of columns in the schema does not match the number of columns in "
 "the CSV file."
@@ -130,27 +129,26 @@ msgstr ""
 "La cantidad de columnas en el esquema no coincide con la cantidad de "
 "columnas en el archivo CSV"
 
-#: api/datasets/serializers/file.py:76 api/datasets/serializers/file_.py:106
+#: api/datasets/serializers/file.py:75
 msgid "You must indicate in the schema that the column can accept null values."
 msgstr "Debe marcar en el esquema que la columna puede aceptar valores nulos."
 
-#: api/datasets/serializers/file.py:79 api/datasets/serializers/file_.py:109
+#: api/datasets/serializers/file.py:78
 msgid "Column is required but contains null values:"
 msgstr "La columna está marcada como requerida pero contiene valores nulos:"
 
-#: api/datasets/serializers/file.py:85 api/datasets/serializers/file_.py:115
+#: api/datasets/serializers/file.py:84
 msgid "Column should be of type"
 msgstr "La columna debe ser de tipo"
 
-#: api/datasets/serializers/file.py:86 api/datasets/serializers/file_.py:116
+#: api/datasets/serializers/file.py:85
 msgid ""
 "You must ensure that all rows are of this data type or modify the schema."
 msgstr ""
 "Debe asegurarse que todas las filas sean de este tipo de datos o modificar "
 "el esquema."
 
-#: api/datasets/serializers/file.py:106 api/datasets/serializers/file_.py:136
-#: api/datasets/utils/csv.py:171
+#: api/datasets/serializers/file.py:105 api/datasets/utils/csv.py:171
 msgid ""
 "Column names must start with a letter and can only contain alphanumeric "
 "characters. Modify the column names in the source file or in the schema."
@@ -159,29 +157,29 @@ msgstr ""
 "contener caracteres alfanuméricos. Modifique el nombre de las columnas en el "
 "archivo de orígen o en el esquema"
 
-#: api/datasets/serializers/file.py:111 api/datasets/serializers/file_.py:141
+#: api/datasets/serializers/file.py:110
 #, fuzzy
 #| msgid "Invalid column names in CSV:"
 msgid "Invalid column names in the file:"
 msgstr "Nombres de columnas inválidos en el CSV:"
 
-#: api/datasets/serializers/file.py:132 api/datasets/serializers/file_.py:31
+#: api/datasets/serializers/file.py:131
 msgid "The preview field must be a string for CSV or TXT files."
 msgstr "El campo preview debe ser de tipo 'string' para archivos CSV o TXT."
 
-#: api/datasets/serializers/file.py:138 api/datasets/serializers/file_.py:37
+#: api/datasets/serializers/file.py:137
 #, fuzzy
 #| msgid "File content must have at least two lines."
 msgid "File content must have at least two lines."
 msgstr "El archivo debe contener al menos dos líneas"
 
-#: api/datasets/serializers/file.py:167
+#: api/datasets/serializers/file.py:166
 msgid "Invalid extension, all files should have the same file extension"
 msgstr ""
 "Extensión invalida, todos los archivos deberian tener la misma extension de "
 "archivo"
 
-#: api/datasets/serializers/file.py:183
+#: api/datasets/serializers/file.py:182
 #, fuzzy
 #| msgid "Invalid extension, all files should have the same file extension"
 msgid "Invalid mimetype, all files should have the same mimetype"
@@ -189,42 +187,42 @@ msgstr ""
 "Extensión invalida, todos los archivos deberian tener la misma extension de "
 "archivo"
 
-#: api/datasets/serializers/file.py:258 api/datasets/serializers/file_.py:61
+#: api/datasets/serializers/file.py:257
 msgid "You must remove the blank rows at the end of the file."
 msgstr "Debe eliminar las filas en blanco al final del archivo."
 
-#: api/datasets/serializers/file.py:268 api/datasets/serializers/file_.py:72
+#: api/datasets/serializers/file.py:267
 msgid "Invalid JSON format in schema."
 msgstr "Formato JSON inválido en la definición del esquema"
 
-#: api/datasets/serializers/file.py:282 api/datasets/serializers/file_.py:86
+#: api/datasets/serializers/file.py:281
 #, fuzzy, python-brace-format
 #| msgid "Invalid column names:"
 msgid "Invalid column names: {invalid_columns}"
 msgstr "Nombres de columnas inválidos"
 
-#: api/datasets/serializers/file.py:295 api/datasets/serializers/file_.py:188
+#: api/datasets/serializers/file.py:294
 msgid ""
 "Unable to determine the file schema due to missing or incomplete parameters."
 msgstr ""
 "No es posible determinar el esquema debido a parámetros incompletos o "
 "faltantes."
 
-#: api/datasets/serializers/file.py:300 api/datasets/serializers/file_.py:193
+#: api/datasets/serializers/file.py:299
 msgid ""
 "Schema autodetection cannot be used simultaneously with a provided schema."
 msgstr ""
 "No puede utilizarse la autodetección del esquema con su definición manual."
 
-#: api/datasets/serializers/file.py:305
+#: api/datasets/serializers/file.py:304
 msgid "File was not found for upload_type file"
 msgstr "Ningun archivo fue encontrado para el upload_type file"
 
-#: api/datasets/serializers/file.py:310
+#: api/datasets/serializers/file.py:309
 msgid "Url was not found for upload_type url"
 msgstr "No se encontro url para el upload_type url"
 
-#: api/datasets/serializers/file.py:341 api/datasets/serializers/file_.py:151
+#: api/datasets/serializers/file.py:340
 msgid "Missing or incomplete parameters for CSV files."
 msgstr "Parámetros faltantes o incompletos para el archivo CSV"
 
@@ -271,14 +269,6 @@ msgstr ""
 #, python-brace-format
 msgid "Field '{field}' does not exist in the dataset schema"
 msgstr "El campo '{field}' no existe en el esquema del dataset."
-
-#: api/datasets/services/drive_service.py:34
-msgid "Google Drive key is missing"
-msgstr "No se encontró la clave de Google Drive"
-
-#: api/datasets/services/drive_service.py:36
-msgid "Error creating Google Drive credentials"
-msgstr "Error creando las credenciales de Google Drive"
 
 #: api/datasets/services/transformation_service.py:49
 msgid "Transformation class not found."
@@ -343,6 +333,12 @@ msgstr "Tabla no encontrada"
 #: api/datasets/views/table.py:48
 msgid "Table transformed successfully: "
 msgstr "Tabla transformada satisfactoriamente: "
+
+#~ msgid "Google Drive key is missing"
+#~ msgstr "No se encontró la clave de Google Drive"
+
+#~ msgid "Error creating Google Drive credentials"
+#~ msgstr "Error creando las credenciales de Google Drive"
 
 #~ msgid "Invalid column names:"
 #~ msgstr "Nombres de columnas inválidos"
