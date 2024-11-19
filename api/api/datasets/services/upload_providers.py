@@ -1,12 +1,15 @@
-from abc import ABC, abstractmethod
+from abc import ABC 
 import requests
 
 from django.utils.translation import gettext_lazy as _
 from django.core.files.uploadedfile import TemporaryUploadedFile 
 
-from api.datasets.exceptions import UrlFileNotExistException, UrlProviderException
-from api.datasets.services.drive_service import GoogleDriveService
-from api.datasets.utils.csv import get_preview_from_url_csv
+from api.datasets.enums import FileType
+from api.datasets.exceptions import UploadFailedException, UrlFileNotExistException, UrlProviderException
+from api.datasets.services.provider_upload_service import GoogleCloudService, GoogleDriveService, S3Service
+from api.datasets.utils.json import get_content_from_url_json, prepare_json_data_format
+from api.datasets.utils.csv import get_content_from_url_csv, prepare_csv_data_format
+from api.datasets.utils.text import get_content_from_url_text 
 
 
 def identify_url_provider(url: str) -> str:
@@ -17,6 +20,12 @@ def identify_url_provider(url: str) -> str:
     if url.find("drive.google.com") >= 0:
         return "google_drive"
 
+    if url.find("amazonaws.com") >= 0 and url.find("s3") >= 0:
+        return "s3"
+
+    if url.find("storage.googleapis.com") >= 0:
+        return "google_cloud"
+
     raise UrlProviderException(error=_("Provider in url not supported"))
 
 def return_url_provider(url: str):
@@ -26,7 +35,9 @@ def return_url_provider(url: str):
 
     # Register here your file providers
     providers = dict(
-        google_drive=GoogleDriveProvider(url)
+        google_drive=GoogleDriveProvider(),
+        s3=S3Provider(),
+        google_cloud=GoogleCloudProvider()
     )
 
     provider = identify_url_provider(url)
@@ -40,49 +51,17 @@ def return_url_provider(url: str):
 
 class BaseUploadProvider(ABC):
     service: type 
-    preview_content: str
-    extension: str
 
-    def __init__(self, url: str):
-        self.url = url
-
-    def process(self, skip_leading_rows: int) -> TemporaryUploadedFile:
-        if self.service.is_folder(self.url):
-            file = self.process_folder(skip_leading_rows)
+    def process(self, url: str, skip_leading_rows: int, file_type: FileType) -> TemporaryUploadedFile:
+        if self.service.is_folder(url):
+            file = self.process_folder(url, skip_leading_rows, file_type)
         else:
-            file = self.process_file(skip_leading_rows)
+            file = self.process_file(url, skip_leading_rows)
         return file
 
-    @abstractmethod
-    def process_file(self, skip_leading_rows: int) -> TemporaryUploadedFile:
-        ...
-
-    @abstractmethod
-    def process_folder(self, skip_leading_rows: int) -> TemporaryUploadedFile:
-        ...
-
-    def preview(self) -> str:
-        if self.service.is_folder(self.url):
-            preview = self.preview_folder()
-        else:
-            preview = self.preview_file()
-        return preview
-
-    @abstractmethod
-    def preview_file(self) -> str:
-        ...
-    
-    @abstractmethod
-    def preview_folder(self) -> str:
-        ...
-
-class GoogleDriveProvider(BaseUploadProvider):
-    service = GoogleDriveService
-
-    def process_file(self, skip_leading_rows: int) -> TemporaryUploadedFile:
-        d_url = self.service.convert_url(self.url)
-        r = requests.get(d_url, stream=True) 
-        metadata = self.service.get_file_metadata(self.url, ["name", "size", "mimeType"])
+    def process_file(self, url: str, skip_leading_rows: int) -> TemporaryUploadedFile:
+        r = requests.get(url, stream=True) 
+        metadata = self.service.get_file_metadata(url)
 
         file = TemporaryUploadedFile(
             name=metadata.get("name"), 
@@ -91,7 +70,8 @@ class GoogleDriveProvider(BaseUploadProvider):
             charset=None
         )
 
-        if r.status_code == 200:
+        if r.status_code == 200 and metadata.get("mimeType") in [
+            "text/csv", "application/json", "text/plain"]:
             for chunk in r.iter_content(chunk_size=8192):
                 file.write(chunk)
         else:
@@ -100,9 +80,13 @@ class GoogleDriveProvider(BaseUploadProvider):
         file.seek(0)
         return file
 
+    def process_folder(
+            self, 
+            url: str, 
+            skip_leading_rows: int, 
+            file_type: FileType) -> TemporaryUploadedFile:
 
-    def process_folder(self, skip_leading_rows: int) -> TemporaryUploadedFile:
-        files = self.service.list_files(self.url)
+        files = self.service.list_files(url)
         size = 0
         for i in files:
             size += int(i.get("size", 0))
@@ -114,32 +98,93 @@ class GoogleDriveProvider(BaseUploadProvider):
             charset=None
         )
 
-        column = False 
-        for i in files:
-            url = i.get("webContentLink", "")
-            f = requests.get(url, stream=True)
+        urls = [i.get("webContentLink", "") for i in files]
 
-            line = 0
-            for j in f.iter_lines():
-                if line not in range(skip_leading_rows) or not column:
-                    column = True
-                    file.write(j + "\r\n".encode("utf-8"))
-                line += 1
+        content = self.get_content_from_url(
+            urls, 
+            file_type, 
+            max_lines=None, 
+            skip_leading_rows=skip_leading_rows
+        ) 
             
+        file.write(content)
         file.seek(0)
         return file
 
-    def preview_folder(self) -> str:
-        files = self.service.list_files(self.url)
+    def preview(self, url: str, file_type: FileType) -> list:
+        if self.service.is_folder(url):
+            preview = self.preview_folder(url, file_type)
+        else:
+            preview = self.preview_file(url, file_type)
+        return preview
+
+    def preview_file(self, url: str, file_type: FileType) -> list:
+        assert file_type not in FileType.choices, "file_type not supported"
+
+        bigquery_format = list()
+        preview = self.get_content_from_url([url], file_type, )
+        bigquery_format = self.prepare_data_format(preview, file_type)
+
+        return bigquery_format 
+    
+    def preview_folder(self, url: str, file_type: FileType) -> list:
+
+        files = self.service.list_files(url)
         urls = [u.get("webContentLink", "") for u in files]
-        preview = get_preview_from_url_csv(urls)
 
-        self.preview_content = preview.getvalue()
-        return self.preview_content
+        bigquery_format = list()
+        preview = self.get_content_from_url(urls, file_type, )
+        bigquery_format = self.prepare_data_format(preview, file_type)
 
-    def preview_file(self) -> str:
-        d_url = self.service.convert_url(self.url)
-        self.preview_content = get_preview_from_url_csv([d_url]).getvalue()
-        return self.preview_content
+        return bigquery_format 
 
+    def get_content_from_url(self, urls: list[str], file_type: FileType, **kwargs) -> str:
+        assert file_type not in FileType.choices, "file_type not supported"
+
+        content = ""
+        if file_type == FileType.CSV: 
+            content = get_content_from_url_csv(urls, skip_leading_rows=1, **kwargs)
+
+        elif file_type == FileType.JSON:
+            content = get_content_from_url_json(urls, **kwargs)
+
+        elif file_type == FileType.TXT:
+            content = get_content_from_url_text(urls, **kwargs)
+
+        return content
+
+    def prepare_data_format(self, data: str, file_type: FileType, **kwargs) -> list:
+        assert file_type not in FileType.choices, "file_type not supported"
+
+        bigquery_format = []
+        if file_type == FileType.CSV: 
+            bigquery_format = prepare_csv_data_format(data=data, skip_leading_rows=1)
+
+        elif file_type == FileType.JSON:
+            bigquery_format = prepare_json_data_format(data=data)
+
+        elif file_type == FileType.TXT:
+            raise UploadFailedException("txt format is not supported")
+
+        return bigquery_format
+
+
+class GoogleDriveProvider(BaseUploadProvider):
+    service = GoogleDriveService
+
+    def process_file(self, url: str, skip_leading_rows: int) -> TemporaryUploadedFile:
+        d_url = self.service.convert_url(url)
+        return super().process_file(d_url, skip_leading_rows)
+
+    def preview_file(self, url: str, file_type: FileType) -> list:
+        d_url = self.service.convert_url(url)
+        return super().preview_file(d_url, file_type)
+
+
+class S3Provider(BaseUploadProvider):
+    service = S3Service 
+
+
+class GoogleCloudProvider(BaseUploadProvider):
+    service = GoogleCloudService 
 

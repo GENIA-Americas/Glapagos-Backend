@@ -9,11 +9,23 @@ from api.users.models import User
 
 class TableSerializer(serializers.ModelSerializer):
     file = FileSerializer()
+    access_required = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Table
         fields = ['id', 'name', 'created', 'modified', 'dataset_name', 'number_of_rows',
-                  'total_logical_bytes', 'reference_name', 'path', 'file', 'owner']
+                  'total_logical_bytes', 'reference_name', 'path', 'file', 'owner',
+                  'public', 'access_required']
+
+    def get_access_required(self, obj):
+        request = self.context.get('request', None)
+        if request is None:
+            return False
+
+        user = request.user
+        if not obj.public:
+            return obj.owner != user
+        return False
 
 
 class OptionSerializer(serializers.Serializer):

@@ -1,5 +1,6 @@
 import csv
 import math
+from django.core.files.uploadedfile import TemporaryUploadedFile
 import requests
 import pandas as pd
 from io import StringIO
@@ -109,22 +110,29 @@ def create_dataframe_from_csv(file, sample: str = None) -> pd.DataFrame:
         raise InvalidFileException(error=str(exp))
 
 
-def get_preview_from_url_csv(urls: list[str], max_lines: int = 20, skip_leading_rows: int = 1) -> StringIO:
+def get_content_from_url_csv(
+        urls: list[str], 
+        max_lines: int | None = 20, 
+        skip_leading_rows: int = 1,
+        **kwargs) -> str:
     """
     Get's the preview from a csv file url or list of urls
-    validating column names
+    validating column names and joining the files contents
 
     Returns:
-        A list containing the first n lines from all given urls
+        A string containing the first n lines from all given urls
+        if max_lines is None return all the lines
     """
 
     assert len(urls) > 0, "It needs to be at least one url in the list"
 
-    lines = []
+    content = ""
     columns = pd.Index([])
-    preview = StringIO()
+
+    ml = None
     url_count = len(urls)
-    ml = math.ceil(max_lines/url_count)
+    if max_lines:
+        ml = math.ceil(max_lines/url_count)
 
     for url in urls:
         r = requests.get(url, stream=True)
@@ -135,14 +143,14 @@ def get_preview_from_url_csv(urls: list[str], max_lines: int = 20, skip_leading_
         line = 0
         cols = StringIO()
         for j in r.iter_lines():
-            if line not in range(skip_leading_rows) or len(lines) == 0:
-                lines.append(j.decode() + "\r\n")
+            if line not in range(skip_leading_rows) or not content:
+                content += j.decode() + "\r\n"
 
             if line == 0:
                 cols.write(j.decode())
 
             line += 1
-            if line == ml:
+            if line == ml and max_lines:
                 break
 
         cols.seek(0)
@@ -157,9 +165,7 @@ def get_preview_from_url_csv(urls: list[str], max_lines: int = 20, skip_leading_
                 dict(detail=_("The tables need to have the same number of columns and column names"))
             )
 
-        preview.writelines(lines)
-        preview.seek(0)
-    return preview
+    return content 
 
 
 def validate_csv_column_names(df: pd.DataFrame, raise_exception=False) -> list:

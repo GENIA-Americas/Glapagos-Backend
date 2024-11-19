@@ -7,9 +7,10 @@ from rest_framework import status, permissions, mixins, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
+from api.utils.sendgrid_mail import send_private_data_mail
 from api.datasets.services.upload_providers import return_url_provider
-from api.datasets.serializers.file import CSVSerializer, JSONSerializer, UrlPreviewSerializer
-from api.datasets.models import File
+from api.datasets.serializers.file import JSONSerializer, CSVSerializer, UrlPreviewSerializer, TXTSerializer
+from api.datasets.models import File, Table
 from api.datasets.services import BigQueryService, FileServiceFactory, StructuredFileService
 from api.datasets.serializers import (
     FileSerializer,
@@ -17,9 +18,9 @@ from api.datasets.serializers import (
     FilePreviewSerializer,
     SearchQuerySerializer,
 )
-from api.datasets.utils import prepare_csv_data_format
 from api.utils.pagination import StartEndPagination, SearchQueryPagination
 from api.datasets.enums import UploadType
+from api.datasets.serializers.email import PrivateDataAccess
 
 
 class FileViewSet(mixins.ListModelMixin, GenericViewSet):
@@ -38,6 +39,34 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         user = self.request.user
         return File.objects.filter(Q(public=True) | Q(owner=user))
 
+    @action(
+        detail=False,
+        methods=["get"],
+        name="authorize-data",
+        url_path="authorize-data",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def authorize_private_data(self, request, *args, **kwargs):
+        serializer = PrivateDataAccess(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        table = serializer.validated_data.pop("table", Table)
+        emails = [table.owner.email] 
+        user = request.user
+
+        context = {
+            **serializer.validated_data, 
+            "first_name": table.owner.first_name,
+            "email": user.email,
+            "phone_number": user.phone_number,
+            "industry": user.industry,
+        }
+
+        send_private_data_mail(
+            context,
+            emails
+        )
+        return Response(dict(detail=_("Email send succesfully")), status=status.HTTP_200_OK)
 
     @action(
         detail=False,
@@ -50,12 +79,12 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         serializer = UrlPreviewSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         url = serializer.validated_data.get("url", "")
+        file_type = serializer.validated_data.get("file_type", "")
 
         provider = return_url_provider(url)
-        provider.preview()
-        bigquery_format = prepare_csv_data_format(data=provider.preview_content, skip_leading_rows=1)
+        preview = provider.preview(url, file_type)
 
-        return Response(bigquery_format, status=status.HTTP_200_OK)
+        return Response(preview, status=status.HTTP_200_OK)
 
     @action(
         detail=False,
@@ -71,10 +100,10 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         if serializer.validated_data.get("upload_type", "") == UploadType.URL:
             url = serializer.validated_data.get("url", "")
             skip_leading_rows = serializer.validated_data.get("skip_leading_rows", 1)
-            file_type = serializer.validated_data["file_type"]
+            file_type = serializer.validated_data.get("file_type", "")
 
             provider = return_url_provider(url)
-            f = provider.process(skip_leading_rows)
+            f = provider.process(url, skip_leading_rows, file_type)
 
             serializer_class_name = f"{file_type.upper()}Serializer"
             serializer_class = globals().get(serializer_class_name)
@@ -87,8 +116,8 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
                     autodetect=serializer.validated_data.get("autodetect", False)
                 )
             ).is_valid(raise_exception=True)
+            serializer.validated_data["file"] = f 
 
-            serializer.validated_data["file"] = f
 
         file_service = FileServiceFactory.get_file_service(
             user=request.user, **serializer.validated_data

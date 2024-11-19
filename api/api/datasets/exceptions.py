@@ -8,6 +8,7 @@ class UrlFileNotExistException(GenericAPIException):
     default_detail = _("Invalid url or file doesn't exist")
     default_code = "file_not_exist"
 
+
 class UrlProviderException(GenericAPIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = _("Couln't identify provider in url, or maybe is not register in providers")
@@ -20,10 +21,22 @@ class InvalidCsvColumnException(GenericAPIException):
     default_code = "invalid_csv_columns"
 
 
+class TextPreviewFailed(GenericAPIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = _("Text request failed")
+    default_code = "text_request_failed"
+
+
 class CsvPreviewFailed(GenericAPIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = _("Csv request failed")
     default_code = "csv_request_failed"
+
+
+class JsonPreviewFailed(GenericAPIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = _("Json request failed")
+    default_code = "json_request_failed"
 
 
 class UrlFolderNameExtractionException(GenericAPIException):
@@ -68,6 +81,13 @@ class ChartLimitExceededException(GenericAPIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = _("Chart limit exceeded: The selected field contains too many distinct categories.")
     default_code = "chart_limit_exceeded"
+
+
+class EmailException(GenericAPIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = _("An error has occurred sending the email")
+    default_code = "email_not_sent"
+
 
 
 class SchemaUpdateException(GenericAPIException):

@@ -27,10 +27,15 @@ class GCSService:
 class JSONGCSService(GCSService):
 
     @staticmethod
-    def is_newline_delimited_json(content) -> bool:
+    def is_newline_delimited_json(content: str) -> bool:
         try:
-            for line in content.splitlines():
-                json.loads(line)
+            lines = content.splitlines()
+            if len(lines) <= 1:
+                return False
+            for line in lines:
+                line = line.strip()
+                if line:
+                    json.loads(line)
             return True
         except json.JSONDecodeError:
             return False

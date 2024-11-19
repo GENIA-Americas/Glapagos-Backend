@@ -108,7 +108,7 @@ def _columns_validate(df: pd.DataFrame, schema: List = None):
         if invalid_columns:
             raise serializers.ValidationError({
                 "detail": _("Invalid column names in the file:") + ', '.join(
-                    invalid_columns) + f". {suffix_message}"
+                    invalid_columns[:20]) + f". {suffix_message}"
             })
 
 
@@ -185,7 +185,7 @@ class ProviderUrlField(serializers.URLField):
 
         else:
 
-            metadata = provider.service.get_file_metadata(url, ["size", "name", "mimeType"])
+            metadata = provider.service.get_file_metadata(url)
             size = int(metadata.get("size", 0))
             validate_size(size)
             validate_mimes(metadata.get("mimeType", ""))
@@ -202,6 +202,7 @@ class ProviderUrlField(serializers.URLField):
 
 class UrlPreviewSerializer(serializers.Serializer):
     url = ProviderUrlField(allow_blank=False)
+    file_type = serializers.ChoiceField(choices=[(tag.value, tag.label) for tag in FileType])
 
 
 class CSVSerializer(serializers.Serializer):
@@ -235,6 +236,10 @@ class JSONSerializer(serializers.Serializer):
         df = create_dataframe_from_json(file)
         _columns_validate(df, schema)
         return attrs
+
+
+class TXTSerializer(serializers.Serializer):
+    file = serializers.FileField()
 
 
 class FileUploadSerializer(serializers.Serializer):

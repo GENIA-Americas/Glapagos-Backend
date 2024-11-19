@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<head></head>
+<body>
+	<div>
+		<h2>Hola! {{ first_name }} </h2>
+		<p>Has recibido una solicitud de acceso a la data privada</p>
+	</div>
+	<div>
+		<div>
+			<p>Datos del solicitante: </p>
+			<ul>
+				<li>Email: {{ email }}</li>
+				<li>Celular: {{ phone_number }}</li>
+				<li>Industria: {{ industry }}</li>
+			</ul>
+		</div>
+		<div>
+			<p>Por que te interesa la data?</p>
+			<p>{{ reason }}</p>
+			<div>
+				<label for="checkbox1">
+					<input type="checkbox" id="checkbox1" name="checkbox1" value="option1" {% if share_data %} checked
+						{% endif %}>
+					Estoy dispuesto a compartir mi data
+				</label>
+			</div>
+			<div>
+				<label for="checkbox2">
+					<input type="checkbox" id="checkbox2" name="checkbox1" value="option1" {% if pay_for_access %}
+						checked {% endif %}>
+					Estoy dispuesto a pagar por la data
+				</label>
+			</div>
+		</div>
+	</div>
+</body>
