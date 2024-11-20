@@ -18,6 +18,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         except Exception:
             raise AuthenticationFailed(_('Invalid email format'))
 
+        attrs['email'] = email.lower()
+
         try:
             data = super().validate(attrs)
         except AuthenticationFailed as exp:

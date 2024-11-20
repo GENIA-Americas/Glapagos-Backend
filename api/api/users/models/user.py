@@ -17,6 +17,8 @@ class UserManager(BaseUserManager):
         if not email:
             raise ValueError(_('The email must be set'))
 
+        email = email.lower()
+
         if not username:
             username = email
         user = self.model(email=email, username=username, **extra_fields)
