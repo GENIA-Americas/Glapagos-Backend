@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-19 22:06+0000\n"
+"POT-Creation-Date: 2024-11-20 20:53+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -45,21 +45,25 @@ msgstr "Error deteniendo el notebook."
 msgid "Error destroying the notebook."
 msgstr "Error eliminando el notebook."
 
+#: api/notebooks/serializers/notebook.py:29
+msgid "Invalid notebook name after normalization."
+msgstr "El nombre del notebook es inválido después de la normalización."
+
 #: api/notebooks/services/notebook_service.py:119
 #, python-brace-format
 msgid "Instance {instance_id} not found"
 msgstr "La instancia {instance_id} no se puedo encontrar."
 
-#: api/notebooks/views/notebook.py:47
+#: api/notebooks/views/notebook.py:49
 #, fuzzy, python-brace-format
 #| msgid "Notebook started successfully"
-msgid "Notebook '{instance.name}' successfully removed."
-msgstr "El notebook fue iniciado exitosamente."
+msgid "Notebook '{name}' successfully removed."
+msgstr "El notebook '{name}' fue eliminado exitosamente."
 
-#: api/notebooks/views/notebook.py:65
+#: api/notebooks/views/notebook.py:67
 msgid "Notebook started successfully"
 msgstr "El notebook fue iniciado exitosamente."
 
-#: api/notebooks/views/notebook.py:83
+#: api/notebooks/views/notebook.py:85
 msgid "Notebook stopped successfully"
 msgstr "El notebook fue detenido exitosamente."
