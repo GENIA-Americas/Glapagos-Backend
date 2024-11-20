@@ -15,7 +15,7 @@ class TableSerializer(serializers.ModelSerializer):
         model = Table
         fields = ['id', 'name', 'created', 'modified', 'dataset_name', 'number_of_rows',
                   'total_logical_bytes', 'reference_name', 'path', 'file', 'owner',
-                  'public', 'access_required']
+                  'public', 'access_required', 'description']
 
     def get_access_required(self, obj):
         request = self.context.get('request', None)

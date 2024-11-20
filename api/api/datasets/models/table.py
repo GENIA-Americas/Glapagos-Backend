@@ -13,6 +13,7 @@ class Table(BaseModel):
     name = models.CharField(max_length=255)
     dataset_name = models.CharField(max_length=255)
     data_expiration = models.DateTimeField(null=True)
+    description = models.TextField(null=True, blank=True)
     number_of_rows = models.IntegerField(null=True)
     total_logical_bytes = models.FloatField(null=True)
     mounted = models.BooleanField(default=False)
