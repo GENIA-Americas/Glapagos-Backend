@@ -12,7 +12,7 @@ from api.users.models import User
 
 # Utilities
 from api.datasets.services import GoogleServiceAccount, GoogleRole, BigQueryService
-from api.datasets.utils import generate_random_string
+from api.utils.basics import generate_random_string
 
 from .exceptions import ServiceAccountCreateException, DatasetCreateException
 

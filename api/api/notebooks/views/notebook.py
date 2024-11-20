@@ -9,6 +9,7 @@ from api.notebooks.models import Notebook
 from api.notebooks.services import VertexInstanceService
 from api.notebooks.serializers import NotebookSerializer, StartNotebookSerializer
 from api.utils.pagination import StartEndPagination, SearchQueryPagination
+from api.utils.basics import generate_random_string
 
 
 class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin, GenericViewSet):
@@ -31,6 +32,8 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
 
         if instance:
             raise NotebookAlreadyExistsException()
+
+        name = f"{name}_{generate_random_string(5)}"
 
         instance_url = VertexInstanceService.create_instance(instance_id=name, user=user)
         serializer.save(name=name, url=instance_url, owner=user)

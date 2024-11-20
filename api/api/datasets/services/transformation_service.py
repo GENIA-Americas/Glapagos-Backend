@@ -11,7 +11,7 @@ from api.datasets.models import Table
 from api.datasets.exceptions import TransformationFailedException
 from .big_query_service import BigQueryService
 
-from api.datasets.utils import generate_random_string
+from api.utils.basics import generate_random_string
 
 
 def apply_transformations(
