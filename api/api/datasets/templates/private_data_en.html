@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+
+<head>
+	<style>
+		body {
+			font-family: Verdana, Geneva, sans-serif;
+			margin: 0;
+			padding: 0;
+			line-height: 1.6;
+			font-size: 15px;
+		}
+
+		.header-gradient {
+			background: linear-gradient(90deg, #171B22 30%, rgb(1, 8, 27) 50%);
+		}
+
+		.background-image {
+			background-image: url(https://licitaciones-test.s3.us-east-1.amazonaws.com/background_image.png);
+			background-repeat: no-repeat;
+			background-size: cover;
+			height: 40vh;
+		}
+	</style>
+</head>
+
+<body style="background: linear-gradient(180deg, #171B22 0%, #272E3A 100%); color: rgba(202, 206, 209, 1);">
+	<table style="width: 100%; border-spacing: 0;">
+		<tbody>
+			<tr class="header-gradient" style="overflow: hidden;">
+				<td style="width: 50%; padding: 2rem;">
+					<img src="https://licitaciones-test.s3.us-east-1.amazonaws.com/logo.png" />
+					<h2 style="text-transform: capitalize;">Hello! {{ first_name }} </h2>
+					<p>You have received a request to access your private data</p>
+				</td>
+				<td class="background-image">
+
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" style="padding: 0rem 0rem 0rem 2rem;">
+					<h3>Datos del solicitante: </h3>
+					<p><strong>Email:</strong> {{ email }}</p>
+					<p><strong>Phone number:</strong> {{ phone_number }}</p>
+					<p><strong>Industry:</strong> {{ industry }}</p>
+
+					<h3>Why are you interested in this data?:</h3>
+					<p>{{ reason }}</p>
+
+					<p>
+						<label for="checkbox1">
+							<input style="padding: 1rem;" type="checkbox" id="checkbox1" name="checkbox1"
+								value="option1" {% if share_data %} checked {% endif %}>
+							I am willing to share my data
+						</label>
+					</p>
+					<p>
+						<label for="checkbox2">
+							<input type="checkbox" id="checkbox2" name="checkbox2" value="option1" {% if pay_for_access
+								%} checked {% endif %}>
+							I am willing to pay for the data
+						</label>
+					</p>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</body>

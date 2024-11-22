@@ -9,3 +9,6 @@ class AuthenticationAppConfig(AppConfig):
 
     name = 'api.authentication'
     verbose_name = 'Authentication'
+
+    def ready(self):
+        from . import signals 

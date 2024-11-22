@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+
+<head>
+	<style>
+		body {
+			font-family: Verdana, Geneva, sans-serif;
+			margin: 0;
+			padding: 0;
+			line-height: 1.6;
+			font-size: 15px;
+		}
+
+		button {
+			all: unset;
+			cursor: pointer;
+		}
+
+		.header-gradient {
+			background: linear-gradient(90deg, #171B22 30%, rgb(1, 8, 27) 50%);
+		}
+
+		.background-image {
+			background-image: url(https://licitaciones-test.s3.us-east-1.amazonaws.com/background_image.png);
+			background-repeat: no-repeat;
+			background-size: cover;
+			height: 40vh;
+		}
+	</style>
+</head>
+
+<body style="background: linear-gradient(180deg, #171B22 0%, #272E3A 100%); color: rgba(202, 206, 209, 1);">
+	<table style="width: 100%; border-spacing: 0;">
+		<tbody>
+			<tr class="header-gradient" style="overflow: hidden;">
+				<td style="width: 50%; padding: 2rem;">
+					<img src="https://licitaciones-test.s3.us-east-1.amazonaws.com/logo.png" />
+					<h4 style="text-transform: capitalize;">Hi!</h4>
+					<h2>You are just one step away from activating your account on the GLÁPAGOS platform!</h2>
+					<p>Click on the button to start enjoying all the advantages of being part of Glápagos</p>
+					<a
+						style="background: linear-gradient(180deg, #0453FF -13.17%, #034BE5 46.29%, #00226B 107.04%); border-radius: 8px; padding: 14px 20px; margin-top: 2rem; text-align: center; color: white;"
+						href="{{ url }}">Activate my account now!</a>
+				</td>
+				<td class="background-image" colspan="2">
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<table style="width: 100%; border-spacing: 0;">
+		<tbody>
+			<tr>
+				<td style="padding: 2rem;">Sincerely,<br>Glápagos Team</td>
+			</tr>
+		</tbody>
+	</table>
+</body>

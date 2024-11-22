@@ -31,23 +31,23 @@ class SignupViewSet(GenericViewSet):
     @validate_data(out_serializer_class=UserSerializer)
     def sign_up(self, request, validated_data):
         # Users validated by default (Temporal)
-        email = validated_data.pop("email")
-        password = validated_data.pop("password")
-        user = User.objects.create_user(email=email, username=email, password=password, **validated_data)
-        user.setup_status = SetUpStatus.VALIDATED
-        user.password_status = PasswordStatus.ACTIVE
-        user.save()
+        # email = validated_data.pop("email")
+        # password = validated_data.pop("password")
+        # user = User.objects.create_user(email=email, username=email, password=password, **validated_data)
+        # user.setup_status = SetUpStatus.VALIDATED
+        # user.password_status = PasswordStatus.ACTIVE
+        # user.save()
 
         # Validate data by email
-        # email = validated_data.pop("email")
-        # user_id = signup.signup_request_code(
-        #     email=email,
-        #     resend=False,
-        #     channel=ExternalTokenChannel.CONSOLE,
-        #     user_id=None,
-        #     **validated_data
-        # )
-        # user = User.objects.filter(pk=user_id).first()
+        email = validated_data.pop("email")
+        user_id = signup.signup_request_code(
+            email=email,
+            resend=False,
+            channel=ExternalTokenChannel.CONSOLE,
+            user_id=None,
+            **validated_data
+        )
+        user = User.objects.filter(pk=user_id).first()
         return dict(data=user)
 
     @action(detail=False, methods=['get'], serializer_class=SignUpValidateCodeSerializer, permission_classes=[
@@ -64,6 +64,7 @@ class SignupViewSet(GenericViewSet):
         user = serializer.validated_data['user']
         user.setup_status = SetUpStatus.VALIDATED
         user.save()
+
         context = {
             'login_url': settings.FRONTEND_LOGIN_URL
         }
@@ -75,11 +76,12 @@ class SignupViewSet(GenericViewSet):
     @validate_data()
     def forgot_password_validate(self, request, validated_data):
         password = validated_data['password']
-        user = validated_data.pop('user')
+        user = validated_data['user']
         signup.forgot_password_validated(user=user, password=password)
         response = Response(status=200)
 
-        return response
+        return response 
+
 
     @action(detail=False, methods=['post'], serializer_class=ForgotPasswordRequestCodeSerializer, permission_classes=[
         AllowAny
@@ -89,3 +91,4 @@ class SignupViewSet(GenericViewSet):
         result = signup.forgot_password_request_code(
             **validated_data)
         return dict(data=result)
+
