@@ -1,4 +1,5 @@
 import re
+import unicodedata
 import datetime
 import pandas as pd
 
@@ -15,11 +16,13 @@ def normalize_column_name(column_name):
     Normalize a column name to make it compatible with BigQuery.
 
     This function applies the following transformations to the input column name:
-    1. Replaces any character that is not a letter (a-z, A-Z), digit (0-9), or underscore (_)
+    1. Replaces accented characters (e.g., á, é) with their non-accented equivalents (e.g., a, e).
+    2. Replaces 'ñ' with 'n'.
+    3. Replaces any character that is not a letter (a-z, A-Z), digit (0-9), or underscore (_)
        with an underscore (_).
-    2. Ensures that the resulting name does not start with a digit. If it does, an underscore
+    4. Ensures that the resulting name does not start with a digit. If it does, an underscore
        is prepended to the name.
-    3. Trims the resulting name to a maximum length of 128 characters.
+    5. Trims the resulting name to a maximum length of 128 characters.
 
     Args:
         column_name (str): The original column name to be normalized.
@@ -27,9 +30,21 @@ def normalize_column_name(column_name):
     Returns:
         str: The normalized column name that adheres to BigQuery's naming conventions.
     """
-    normalized_name = re.sub(r'[^a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]', '_', column_name)
+    # Replace accented characters with their unaccented equivalents
+    normalized_name = unicodedata.normalize('NFD', column_name)
+    normalized_name = ''.join(char for char in normalized_name if unicodedata.category(char) != 'Mn')
+
+    # Replace 'ñ' with 'n'
+    normalized_name = normalized_name.replace('ñ', 'n').replace('Ñ', 'N')
+
+    # Replace invalid characters with an underscore
+    normalized_name = re.sub(r'[^a-zA-Z0-9_]', '_', normalized_name)
+
+    # Ensure the name does not start with a digit
     if normalized_name and normalized_name[0].isdigit():
         normalized_name = '_' + normalized_name
+
+    # Trim the name to a maximum length of 128 characters
     return normalized_name[:128]
 
 
