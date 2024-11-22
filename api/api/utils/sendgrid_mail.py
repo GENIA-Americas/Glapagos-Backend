@@ -25,6 +25,12 @@ class SendgridSender:
         except Exception as e:
             EmailException(error=e)
 
+
+def validate_data_fields(data: dict, fields: list[str]):
+    for field in fields:
+        assert field in data, f"{field} is a required field" 
+
+    
 def send_template_email(
         template_file: str, data: dict, subject: str, emails: list[str]):
     template_string = get_template(template_file) 
@@ -35,8 +41,14 @@ def send_template_email(
     sender = SendgridSender()
     sender.send_mail(emails, subject, html_content)
 
+
 def send_private_data_mail(
         data:dict, emails: list[str], locale: str = "en"):
+
+    validate_data_fields(
+        data, 
+        ["first_name", "email", "phone_number", 
+        "reason", "industry", "share_data", "pay_for_access"])
 
     template_file =f"private_data_{locale}.html"
     subject = "Private data"
@@ -46,6 +58,8 @@ def send_private_data_mail(
 def send_change_password_mail(
         data:dict, emails: list, locale: str = "en"):
 
+    validate_data_fields(data, ["email", "url"])
+
     template_file = f"change_password_{locale}.html"    
     subject = "Change password"
     send_template_email(template_file, data, subject, emails)
@@ -53,6 +67,8 @@ def send_change_password_mail(
 
 def send_activate_account_mail(
         data:dict, emails: list, locale: str = "en"):
+
+    validate_data_fields(data, ["url"])
 
     template_file =f"activate_account_{locale}.html"    
     subject = "Activate account"
