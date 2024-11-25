@@ -31,6 +31,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             access_token=serializer.validated_data['access'],
         )
         response.data = authentication.user_jwt_setting(response.set_cookie, settings.SIMPLE_JWT, is_refresh=False, **tokens)
+        response.data['user'] = serializer.validated_data['user']
         return response
 
 

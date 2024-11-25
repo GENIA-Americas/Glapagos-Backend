@@ -96,8 +96,8 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
         instance = user.notebooks.filter(pk=pk, owner=user).first()
         if not instance:
             raise NotebookNotFoundException()
-        state = VertexInstanceService.get_status(instance_id=instance.name)
+        status = VertexInstanceService.get_status(instance_id=instance.name)
         return Response(
-            {"state": state},
+            {"status": status},
             status=status.HTTP_200_OK
         )
