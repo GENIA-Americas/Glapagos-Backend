@@ -2,13 +2,13 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-06 16:22+0000\n"
+"POT-Creation-Date: 2024-11-25 23:29+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -46,11 +46,11 @@ msgstr "Recuperar cuenta"
 msgid "Invalid email format"
 msgstr "Formato de correo electrónico inválido"
 
-#: api/authentication/serializers/authentication.py:24
+#: api/authentication/serializers/authentication.py:26
 msgid "Invalid credentials"
 msgstr "Credenciales inválidas"
 
-#: api/authentication/serializers/authentication.py:29
+#: api/authentication/serializers/authentication.py:31
 msgid ""
 "You could not log in because the registration process was not successfully "
 "completed."
@@ -58,7 +58,7 @@ msgstr ""
 "No pudiste iniciar sesión porque el proceso de registro no se completó "
 "exitosamente."
 
-#: api/authentication/serializers/authentication.py:51
+#: api/authentication/serializers/authentication.py:53
 #, fuzzy
 #| msgid "Token is invalid or has expired"
 msgid "invalid refresh token or has expired"
