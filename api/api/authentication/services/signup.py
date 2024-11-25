@@ -1,4 +1,6 @@
 from enum import Enum
+
+from api.utils.sendgrid_mail import send_change_password_mail, send_activate_account_mail
 from api.users.enums import SetUpStatus, PasswordStatus
 from api.users.models import User
 from api.authentication.enums import ExternalTokenType
@@ -23,9 +25,21 @@ def destroy_token_by(phone_number=None, email=None, token_type=ExternalTokenType
     queryset.delete()
 
 
-def create_token(user_id, channel, token_type=ExternalTokenType.VALIDATE_ACCOUNT):
+def create_token(
+        user_id, channel, token_type=ExternalTokenType.VALIDATE_ACCOUNT, locale: str = "en"):
+
     token = ExternalToken.objects.create(
         type=token_type, user_id=user_id, channel=channel)
+
+    if token.type == ExternalTokenType.RECOVER_ACCOUNT:
+        data = dict(email=token.user.email, 
+                    url=token.reset_password_url)
+        send_change_password_mail(data, [token.user.email], locale=locale)
+
+    elif token.type == ExternalTokenType.VALIDATE_ACCOUNT:
+        data = dict(url=token.activation_url)
+        send_activate_account_mail(data, [token.user.email], locale=locale)
+
     return token.resend_at, token.expires_at
 
 
@@ -39,6 +53,7 @@ def signup_request_code(
     resend,
     channel,
     user_id,
+    locale="en",
     **kwargs,
 ):
     if not resend:
@@ -46,7 +61,7 @@ def signup_request_code(
         user_id = create_user(email=email, username=email, password=password, **kwargs)
     else:
         destroy_token_by(email=email)
-    create_token(user_id=user_id, channel=channel)
+    create_token(user_id=user_id, channel=channel, locale=locale)
     return user_id
 
 
@@ -74,13 +89,15 @@ def forgot_password_request_code(
     channel,
     user_id,
     email=None,
+    locale="en",
     **kwargs,
 ):
     if resend:
         destroy_token_by(
             email=email, token_type=ExternalTokenType.RECOVER_ACCOUNT)
     create_token(user_id=user_id, channel=channel,
-                 token_type=ExternalTokenType.RECOVER_ACCOUNT)
+                 token_type=ExternalTokenType.RECOVER_ACCOUNT,
+                 locale=locale)
     return {
         'channel': channel,
         'resend': resend,
