@@ -83,3 +83,21 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
             {"detail": _("Notebook stopped successfully"), "url": instance_url},
             status=status.HTTP_200_OK
         )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        name="status",
+        url_path="status",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def status(self, request, pk, **kwargs):
+        user = request.user
+        instance = user.notebooks.filter(pk=pk, owner=user).first()
+        if not instance:
+            raise NotebookNotFoundException()
+        state = VertexInstanceService.get_status(instance_id=instance.name)
+        return Response(
+            {"state": state},
+            status=status.HTTP_200_OK
+        )

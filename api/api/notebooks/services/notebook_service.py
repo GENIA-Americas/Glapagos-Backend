@@ -73,6 +73,14 @@ class VertexInstanceService:
             raise ValueError("proxy_uri not available")
 
     @classmethod
+    def get_status(cls, instance_id: str) -> str:
+        try:
+            notebook_instance = cls.get_instance(instance_id)
+            return str(notebook_instance.state).split(".")[1]
+        except Exception as exp:
+            raise NotebookStartFailedException(error=str(exp))
+
+    @classmethod
     def start_instance(cls, instance_id: str) -> str:
         try:
             notebook_instance = cls.get_instance(instance_id)

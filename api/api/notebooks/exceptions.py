@@ -40,3 +40,8 @@ class NotebookStopFailedException(NotebookOperationException):
 class NotebookDestroyFailedException(NotebookOperationException):
     default_detail = _("Error destroying the notebook.")
     default_code = "notebook_error_destroy"
+
+
+class NotebookInvalidState(NotebookOperationException):
+    default_detail = _("Notebook in invalid state.")
+    default_code = "notebook_invalid_state"
