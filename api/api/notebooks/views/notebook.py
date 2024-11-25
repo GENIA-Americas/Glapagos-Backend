@@ -24,6 +24,27 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
         user = self.request.user
         return Notebook.objects.filter(owner=user)
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            results = []
+            for notebook in page:
+                notebook_data = self.get_serializer(notebook).data
+                notebook_data["status"] = VertexInstanceService.get_status(instance_id=notebook_data['name'])
+                results.append(notebook_data)
+
+            return self.get_paginated_response(results)
+
+        results = []
+        for notebook in queryset:
+            notebook_data = self.get_serializer(notebook).data
+            notebook_data["status"] = VertexInstanceService.get_status(instance_id=notebook_data['name'])
+            results.append(notebook_data)
+
+        return Response(results)
+
     def perform_create(self, serializer):
         name = serializer.validated_data["name"]
         user = self.request.user

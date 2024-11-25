@@ -8,7 +8,7 @@ from google.cloud.notebooks_v1 import Instance, StartInstanceRequest, StopInstan
 from api.users.models import User
 from api.notebooks.exceptions import (
     InvalidGoogleAccountException, NotebookStartFailedException,NotebookStopFailedException,
-    NotebookDestroyFailedException, NotebookNotFoundException,
+    NotebookDestroyFailedException, NotebookNotFoundException, NotebookInvalidState
 )
 
 
@@ -78,7 +78,7 @@ class VertexInstanceService:
             notebook_instance = cls.get_instance(instance_id)
             return str(notebook_instance.state).split(".")[1]
         except Exception as exp:
-            raise NotebookStartFailedException(error=str(exp))
+            raise NotebookInvalidState(error=str(exp))
 
     @classmethod
     def start_instance(cls, instance_id: str) -> str:
