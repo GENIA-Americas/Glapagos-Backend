@@ -45,6 +45,7 @@ class SignupViewSet(GenericViewSet):
             resend=False,
             channel=ExternalTokenChannel.CONSOLE,
             user_id=None,
+            locale=request.LANGUAGE_CODE,
             **validated_data
         )
         user = User.objects.filter(pk=user_id).first()
@@ -89,6 +90,6 @@ class SignupViewSet(GenericViewSet):
     @validate_data()
     def forgot_password(self, request, validated_data):
         result = signup.forgot_password_request_code(
-            **validated_data)
+            **validated_data, locale=request.LANGUAGE_CODE)
         return dict(data=result)
 

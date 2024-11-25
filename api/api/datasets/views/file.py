@@ -64,7 +64,8 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
 
         send_private_data_mail(
             context,
-            emails
+            emails,
+            locale=request.LANGUAGE_CODE
         )
         return Response(dict(detail=_("Email send succesfully")), status=status.HTTP_200_OK)
 
