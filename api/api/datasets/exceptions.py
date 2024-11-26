@@ -88,3 +88,9 @@ class EmailException(GenericAPIException):
     default_detail = _("An error has occurred sending the email")
     default_code = "email_not_sent"
 
+
+
+class SchemaUpdateException(GenericAPIException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    default_detail = _("Schema cannot be updated.")
+    default_code = "schema_update_failed"

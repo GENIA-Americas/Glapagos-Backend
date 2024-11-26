@@ -23,12 +23,13 @@ urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
     path('api/v1/docs/', schema_view.with_ui('swagger',
                                              cache_timeout=0), name='schema-swagger-ui'),
+    path('i18n/', include('django.conf.urls.i18n')),
     re_path(settings.API_URI + '/', include('api.users.urls')),
     re_path(settings.API_URI + '/', include('api.events.urls')),
     re_path(settings.API_URI + '/', include('api.datasets.urls')),
     re_path(settings.API_URI + '/', include('api.contacts.urls')),
     re_path(settings.API_URI + '/', include('api.ai.urls')),
-    re_path(settings.API_URI + '/',
-            include('api.authentication.urls')),
+    re_path(settings.API_URI + '/', include('api.notebooks.urls')),
+    re_path(settings.API_URI + '/', include('api.authentication.urls')),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

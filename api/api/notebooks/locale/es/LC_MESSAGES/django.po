@@ -1,0 +1,69 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-11-20 20:53+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: api/notebooks/exceptions.py:9
+msgid "User does not have a linked Google account."
+msgstr "El usuario no tiene una cuenta de Google enlazada."
+
+#: api/notebooks/exceptions.py:15
+msgid "A notebook already exists for this user."
+msgstr "Ya existe un notebook para este usuario."
+
+#: api/notebooks/exceptions.py:21
+msgid ""
+"Notebook cannot be found. Check if you have permission to access this "
+"notebook."
+msgstr ""
+"No se pudo encontrar el notebook. Verifique que tenga permisos suficientes."
+
+#: api/notebooks/exceptions.py:31
+msgid "Error starting the notebook."
+msgstr "Error iniciando el notebook."
+
+#: api/notebooks/exceptions.py:36
+msgid "Error stopping the notebook."
+msgstr "Error deteniendo el notebook."
+
+#: api/notebooks/exceptions.py:41
+msgid "Error destroying the notebook."
+msgstr "Error eliminando el notebook."
+
+#: api/notebooks/serializers/notebook.py:29
+msgid "Invalid notebook name after normalization."
+msgstr "El nombre del notebook es inválido después de la normalización."
+
+#: api/notebooks/services/notebook_service.py:119
+#, python-brace-format
+msgid "Instance {instance_id} not found"
+msgstr "La instancia {instance_id} no se puedo encontrar."
+
+#: api/notebooks/views/notebook.py:49
+#, fuzzy, python-brace-format
+#| msgid "Notebook started successfully"
+msgid "Notebook '{name}' successfully removed."
+msgstr "El notebook '{name}' fue eliminado exitosamente."
+
+#: api/notebooks/views/notebook.py:67
+msgid "Notebook started successfully"
+msgstr "El notebook fue iniciado exitosamente."
+
+#: api/notebooks/views/notebook.py:85
+msgid "Notebook stopped successfully"
+msgstr "El notebook fue detenido exitosamente."

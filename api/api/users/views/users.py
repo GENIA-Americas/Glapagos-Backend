@@ -6,19 +6,11 @@ from rest_framework import mixins, filters, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-# Models
 from api.users.models import User
-
-# Serializers
-from api.users.serializers import UserSerializer, SimpleUserSerializer
-
-# Permissions
+from api.users.serializers import UserSerializer, SimpleUserSerializer, AddGmailSerializer
+from api.datasets.services import GoogleRole
 from api.users.permissions import IsAdminPermission, CanCrudPermission
-
-# Utils
 from api.utils.pagination import StartEndPagination
-
-# Enums
 from api.users.enums import PasswordStatus
 
 
@@ -73,3 +65,15 @@ class UsersViewSet(mixins.ListModelMixin,
         self.perform_update(serializer)
 
         return Response(data={'detail': 'Password changed'}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['post'], name='add-gmail', url_path='add-gmail',
+            permission_classes=[permissions.IsAuthenticated])
+    def add_gmail(self, request, **kwargs):
+        user = request.user
+        serializer = AddGmailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+        res = GoogleRole.assign_user_rol(email, "roles/iam.serviceAccountUser", "user")
+        user.gmail = email
+        user.save()
+        return Response(data={'detail': 'Email added'}, status=status.HTTP_200_OK)

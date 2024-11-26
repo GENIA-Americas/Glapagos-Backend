@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from google.cloud import bigquery
 
 from api.datasets.models.file import File
+from api.datasets.exceptions import SchemaUpdateException
 from api.users.models import User
 from utils.models import BaseModel
 
@@ -51,6 +52,23 @@ class Table(BaseModel):
         self.number_of_rows = table_bq.num_rows
         self.total_logical_bytes = table_bq.num_bytes
         self.save()
+
+    def update_schema(self, bigquery_service, force=False):
+        if not force:
+            has_notebooks = self.user.owner.notebooks.count() > 0
+            if not has_notebooks:
+                return
+
+        try:
+            schema = bigquery_service.get_schema(
+                dataset=self.dataset_name,
+                table=self.name
+            )
+            if schema:
+                self.schema = schema
+                self.save()
+        except Exception as exp:
+            raise SchemaUpdateException(error=str(exp))
 
     def get_column_type(self, column_name: str):
         for item in self.schema:

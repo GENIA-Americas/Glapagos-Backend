@@ -9,6 +9,8 @@ from django.conf import settings
 from django.core.validators import validate_email
 from django.utils.translation import gettext_lazy as _
 
+from api.users.serializers import UserSerializer
+
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
@@ -35,6 +37,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data['access'] = str(refresh.access_token)
         # if you are using double authentication this maybe needed
         # data['username'] = str(self.user.username)
+
+        user_data = UserSerializer(self.user).data
+        data['user'] = user_data
 
         # Add extra responses here
         return data

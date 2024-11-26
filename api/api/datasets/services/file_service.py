@@ -6,9 +6,9 @@ from django.conf import settings
 
 from api.users.models import User
 from api.datasets.models import File, Table
-from api.datasets.utils import (generate_random_string, csv_parameters_detect,
-                                prepare_csv_data_format, prepare_json_data_format,
-                                normalize_column_name)
+from api.datasets.utils import (csv_parameters_detect, prepare_csv_data_format,
+                                prepare_json_data_format, normalize_column_name)
+from api.utils.basics import generate_random_string
 from .big_query_service import BigQueryService
 from .google_cloud_storage_service import GCSService, JSONGCSService
 

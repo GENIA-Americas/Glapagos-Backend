@@ -12,7 +12,7 @@ from api.users.models import User
 
 # Utilities
 from api.datasets.services import GoogleServiceAccount, GoogleRole, BigQueryService
-from api.datasets.utils import generate_random_string
+from api.utils.basics import generate_random_string
 
 from .exceptions import ServiceAccountCreateException, DatasetCreateException
 
@@ -26,7 +26,7 @@ def create_service_account(sender, instance, created, **kwargs):
             account = GoogleServiceAccount.create_account(account_name)
             key = GoogleServiceAccount.create_key(account.unique_id)
 
-            GoogleRole.assign_user_rol(account.email)
+            GoogleRole.assign_user_rol(account.email, "roles/bigquery.jobUser", "serviceAccount")
 
             key_instance = ServiceAccountKey(
                 name=key.name,
