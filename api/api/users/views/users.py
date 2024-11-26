@@ -73,7 +73,7 @@ class UsersViewSet(mixins.ListModelMixin,
         serializer = AddGmailSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"]
-        res = GoogleRole.assign_user_rol(email, "roles/iam.serviceAccountUser", "user")
+        GoogleRole.assign_user_rol(email, "roles/iam.serviceAccountUser", "user")
         user.gmail = email
         user.save()
         return Response(data={'detail': 'Email added'}, status=status.HTTP_200_OK)

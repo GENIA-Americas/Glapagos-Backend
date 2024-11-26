@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-20 20:53+0000\n"
+"POT-Creation-Date: 2024-11-26 20:10+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -290,15 +290,24 @@ msgstr ""
 msgid "Error creating private dataset."
 msgstr ""
 
+#: api/users/exceptions.py:21
+msgid "Invalid email address."
+msgstr "Dirección de correo inválida."
+
+#: api/users/exceptions.py:27
+msgid ""
+"An error occurred while assigning the necessary roles to the email account."
+msgstr "Ha ocurrido un error mientras se asignaban los roles necesarios a la cuenta de correo."
+
 #: api/users/models/user.py:18
 msgid "The email must be set"
 msgstr "El correo electrónico debe ser completado."
 
-#: api/users/models/user.py:40
+#: api/users/models/user.py:42
 msgid "Superuser must have is_staff=True."
 msgstr "Superusuario debe ser miembro del staff."
 
-#: api/users/models/user.py:42
+#: api/users/models/user.py:44
 msgid "Superuser must have is_superuser=True."
 msgstr "Superusuario debe tener la propiedad is_superuser=True"
 

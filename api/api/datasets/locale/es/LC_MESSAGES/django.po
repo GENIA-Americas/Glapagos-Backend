@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-20 20:53+0000\n"
+"POT-Creation-Date: 2024-11-26 20:10+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -96,7 +96,7 @@ msgstr "Ocurrió un error al montar los datos en BigQuery."
 msgid "Schema cannot be updated."
 msgstr "No se pudo actualizar el esquema del dataset."
 
-#: api/datasets/models/table.py:44
+#: api/datasets/models/table.py:45
 msgid "A 'Table' object cannot have itself as its parent."
 msgstr "Un objeto 'Tabla' no puede ser su propio padre."
 
@@ -357,19 +357,19 @@ msgstr ""
 msgid "Invalid column names in CSV:"
 msgstr "Nombres de columnas inválidos en el CSV:"
 
-#: api/datasets/views/file.py:69
+#: api/datasets/views/file.py:70
 #, fuzzy
 #| msgid "Table transformed successfully: "
 msgid "Email send succesfully"
 msgstr "Tabla transformada satisfactoriamente: "
 
-#: api/datasets/views/file.py:126
+#: api/datasets/views/file.py:127
 #, fuzzy
 #| msgid "Table transformed successfully: "
 msgid "File uploaded successfully"
 msgstr "Tabla transformada satisfactoriamente: "
 
-#: api/datasets/views/file.py:173
+#: api/datasets/views/file.py:174
 msgid "Error processing request"
 msgstr "Error procesando request"
 

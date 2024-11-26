@@ -5,11 +5,13 @@ from google.cloud import bigquery
 from google.iam.v1 import policy_pb2
 from google.api_core.retry import Retry
 from google.cloud.bigquery.enums import EntityTypes
+from google.api_core.exceptions import InvalidArgument
 
 # Settings
 from django.conf import settings
 
 from .big_query_service import BigQueryService
+from api.users.exceptions import InvalidEmailAddressException, AssignRoleFailedException
 
 
 class GoogleServiceAccount:
@@ -63,19 +65,24 @@ class GoogleRole:
 
     @staticmethod
     def assign_user_rol(account_email: str, role: str, member_type: str):
-        client = resourcemanager_v3.ProjectsClient()
+        try:
+            client = resourcemanager_v3.ProjectsClient()
 
-        project_name = f"projects/{settings.BQ_PROJECT_ID}"
-        policy = client.get_iam_policy(request={"resource": project_name})
+            project_name = f"projects/{settings.BQ_PROJECT_ID}"
+            policy = client.get_iam_policy(request={"resource": project_name})
 
-        member = f"{member_type}:{account_email}"
+            member = f"{member_type}:{account_email}"
 
-        policy.bindings.append(policy_pb2.Binding(role=role, members=[member]))
-        updated_policy = client.set_iam_policy(
-            request={"resource": project_name, "policy": policy}
-        )
+            policy.bindings.append(policy_pb2.Binding(role=role, members=[member]))
+            updated_policy = client.set_iam_policy(
+                request={"resource": project_name, "policy": policy}
+            )
 
-        return updated_policy
+            return updated_policy
+        except InvalidArgument as exp:
+            raise InvalidEmailAddressException(error=str(exp))
+        except Exception as exp:
+            raise AssignRoleFailedException(error=str(exp))
 
     @staticmethod
     def assign_table_role(table_id: str, account_email: str):
