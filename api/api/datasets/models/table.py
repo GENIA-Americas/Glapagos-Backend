@@ -55,7 +55,7 @@ class Table(BaseModel):
 
     def update_schema(self, bigquery_service, force=False):
         if not force:
-            has_notebooks = self.user.owner.notebooks.count() > 0
+            has_notebooks = self.owner.notebooks.count() > 0
             if not has_notebooks:
                 return
 
