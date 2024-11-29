@@ -4,6 +4,7 @@ from google.cloud import resourcemanager_v3
 from google.cloud import bigquery
 from google.iam.v1 import policy_pb2
 from google.api_core.retry import Retry
+from google.api_core.exceptions import NotFound
 from google.cloud.bigquery.enums import EntityTypes
 from google.api_core.exceptions import InvalidArgument
 
@@ -31,7 +32,23 @@ class GoogleServiceAccount:
             name=f"projects/{settings.BQ_PROJECT_ID}", account_id=account_id
         )
         response = client.create_service_account(request=request)
+
+        service_account_name = f"projects/{settings.BQ_PROJECT_ID}/serviceAccounts/{account_id}@{settings.BQ_PROJECT_ID}.iam.gserviceaccount.com"
+        retry = Retry(
+            predicate=lambda exc: isinstance(exc, NotFound),  # Retry only on NotFound errors
+            initial=1.0,
+            maximum=10.0,
+            multiplier=2.0,
+            deadline=120.0
+        )
+
+        @retry
+        def wait_for_service_account():
+            client.get_service_account(name=service_account_name)
+
+        wait_for_service_account()
         return response
+
 
     @staticmethod
     def create_key(unique_id: str):
