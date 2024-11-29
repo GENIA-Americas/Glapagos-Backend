@@ -51,9 +51,9 @@ class GoogleServiceAccount:
         # ready when this function is called
         retry_strategy = Retry(
             initial=1.0,
-            maximum=60.0,
+            maximum=20.0,
             multiplier=2.0,
-            deadline=10.0,
+            deadline=300.0,
         )
         response = client.create_service_account_key(
             request=request, retry=retry_strategy
