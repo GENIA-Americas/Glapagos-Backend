@@ -22,6 +22,8 @@ from rest_framework.permissions import AllowAny
 from django.conf import settings
 from django.shortcuts import render
 
+from api.users.exceptions import ServiceAccountCreateException, DatasetCreateException
+
 
 class SignupViewSet(GenericViewSet):
 
@@ -40,16 +42,22 @@ class SignupViewSet(GenericViewSet):
 
         # Validate data by email
         email = validated_data.pop("email")
-        user_id = signup.signup_request_code(
-            email=email,
-            resend=False,
-            channel=ExternalTokenChannel.CONSOLE,
-            user_id=None,
-            locale=request.LANGUAGE_CODE,
-            **validated_data
-        )
-        user = User.objects.filter(pk=user_id).first()
-        return dict(data=user)
+        try:
+            user_id = signup.signup_request_code(
+                email=email,
+                resend=False,
+                channel=ExternalTokenChannel.CONSOLE,
+                user_id=None,
+                locale=request.LANGUAGE_CODE,
+                **validated_data
+            )
+            user = User.objects.filter(pk=user_id).first()
+            return dict(data=user)
+        except (ServiceAccountCreateException, DatasetCreateException) as exp:
+            user = User.objects.filter(email=email).first()
+            if user:
+                user.delete()
+            raise exp
 
     @action(detail=False, methods=['get'], serializer_class=SignUpValidateCodeSerializer, permission_classes=[
         AllowAny
