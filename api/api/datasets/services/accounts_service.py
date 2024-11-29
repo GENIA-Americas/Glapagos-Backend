@@ -73,9 +73,17 @@ class GoogleRole:
 
             member = f"{member_type}:{account_email}"
 
+            retry_strategy = Retry(
+                initial=1.0,
+                maximum=20.0,
+                multiplier=2.0,
+                deadline=300.0,
+            )
+
             policy.bindings.append(policy_pb2.Binding(role=role, members=[member]))
             updated_policy = client.set_iam_policy(
-                request={"resource": project_name, "policy": policy}
+                request={"resource": project_name, "policy": policy},
+                retry=retry_strategy
             )
 
             return updated_policy
