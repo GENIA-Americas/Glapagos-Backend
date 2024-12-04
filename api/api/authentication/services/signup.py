@@ -92,6 +92,9 @@ def forgot_password_request_code(
     locale="en",
     **kwargs,
 ):
+    if not user_id:
+        return
+
     if resend:
         destroy_token_by(
             email=email, token_type=ExternalTokenType.RECOVER_ACCOUNT)
