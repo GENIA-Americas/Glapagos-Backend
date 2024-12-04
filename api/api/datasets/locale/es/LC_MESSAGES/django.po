@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-26 20:10+0000\n"
+"POT-Creation-Date: 2024-12-04 17:16+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -295,6 +295,7 @@ msgstr "El campo '{field}' no existe en el esquema del dataset."
 #: api/datasets/services/provider_upload_service.py:210
 msgid "Access denied when requesting resources, check your bucket permissions"
 msgstr ""
+"Acceso denegado al solicitar recursos, verifica los permisos de tu bucket."
 
 #: api/datasets/services/provider_upload_service.py:213
 msgid "No objects found in this folder"
@@ -325,19 +326,24 @@ msgid "No schema info for this dataset."
 msgstr "No hay informacion the esquema para este dataset"
 
 #: api/datasets/services/transformation_service.py:225
-#: api/datasets/services/transformation_service.py:325
+#: api/datasets/services/transformation_service.py:335
 #, python-brace-format
 msgid "No data info for the field {field} in the schema."
 msgstr "No hay informacion para el campo {field} en el esquema"
 
-#: api/datasets/services/transformation_service.py:328
+#: api/datasets/services/transformation_service.py:282
+#, python-brace-format
+msgid "Cannot convert to {to_type} from a {from_type} field."
+msgstr "No se puede convertir a {to_type} desde un campo {from_type}."
+
+#: api/datasets/services/transformation_service.py:338
 msgid "Column must be of type string to apply text standardization."
 msgstr ""
 "La columna debe ser de tipo string para aplicar la estandarizacion de texto"
 
 #: api/datasets/services/upload_providers.py:29
 msgid "Provider in url not supported"
-msgstr "El proveedor de la url no esta soportado"
+msgstr "El proveedor de la url no está soportado"
 
 #: api/datasets/services/upload_providers.py:47
 msgid "Provider not supported"
@@ -351,7 +357,7 @@ msgstr "Url invalida o archivo/carpeta no existe"
 #: api/datasets/utils/csv.py:165 api/datasets/utils/json.py:152
 msgid "The tables need to have the same number of columns and column names"
 msgstr ""
-"Las tablas deben tener el mismo numero de columnas y nombres de columnas"
+"Las tablas deben tener el mismo número de columnas y nombres de columnas"
 
 #: api/datasets/utils/csv.py:181
 msgid "Invalid column names in CSV:"

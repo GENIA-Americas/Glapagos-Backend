@@ -198,8 +198,8 @@ class MissingValuesTransformation(Transformation):
         """
         query = f"""
             SELECT * 
-            FROM {self.table.path}
-            WHERE {self.field} IS NOT NULL;
+            FROM `{self.table.path}`
+            WHERE `{self.field}` IS NOT NULL;
         """
         return query
 
@@ -232,48 +232,57 @@ class DataTypeConversionTransformation(Transformation):
             if convert_to.upper() == "DATETIME":
                 query = f"""
                     SELECT 
-                        * EXCEPT({self.field}),
-                        PARSE_DATETIME('%Y-%m-%d %H:%M:%S', {self.field}) as {self.field}
+                        * EXCEPT(`{self.field}`),
+                        PARSE_DATETIME('%Y-%m-%d %H:%M:%S', `{self.field}`) as `{self.field}`
                     FROM `{self.table.path}`
                 """
             elif convert_to.upper() == "DATE":
                 query = f"""
                     SELECT 
-                        * EXCEPT({self.field}),
-                        PARSE_DATE('%Y-%m-%d', {self.field}) as {self.field}
+                        * EXCEPT(`{self.field}`),
+                        PARSE_DATE('%Y-%m-%d', `{self.field}`) as `{self.field}`
                     FROM `{self.table.path}`
                 """
             elif convert_to.upper() in ["INT64", "FLOAT64"]:
                 query = f"""
                         SELECT 
-                            * EXCEPT({self.field}),
-                            SAFE_CAST({self.field} AS {convert_to.upper()}) as {self.field}
+                            * EXCEPT(`{self.field}`),
+                            SAFE_CAST(`{self.field}` AS {convert_to.upper()}) as `{self.field}`
                         FROM `{self.table.path}`;
                     """
+
+            return query
 
         elif convert_to.upper() == "STRING":
             if convert_from.upper() == "DATETIME":
                 query = f"""
                     SELECT 
-                        * EXCEPT({self.field}),
-                        FORMAT_DATETIME('%Y-%m-%d %H:%M:%S', {self.field}) as {self.field}
+                        * EXCEPT(`{self.field}`),
+                        FORMAT_DATETIME('%Y-%m-%d %H:%M:%S', `{self.field}`) as `{self.field}`
                     FROM `{self.table.path}`
                 """
             elif convert_from.upper() == "DATE":
                 query = f"""
                     SELECT 
-                        * EXCEPT({self.field}),
-                        FORMAT_DATE('%Y-%m-%d', {self.field}) as {self.field}
+                        * EXCEPT(`{self.field}`),
+                        FORMAT_DATE('%Y-%m-%d', `{self.field}`) as `{self.field}`
                     FROM `{self.table.path}`
                 """
             elif convert_from.upper() in ["INT64", "FLOAT64"]:
                 query = f"""
                         SELECT 
-                            * EXCEPT({self.field}),
-                            SAFE_CAST({self.field} AS {convert_to.upper()}) as {self.field}
+                            * EXCEPT(`{self.field}`),
+                            SAFE_CAST(`{self.field}` AS {convert_to.upper()}) as `{self.field}`
                         FROM `{self.table.path}`;
                     """
-        return query
+
+            return query
+
+        raise TransformationFailedException(
+            detail=_("Cannot convert to {to_type} from a {from_type} field.").format(
+                to_type=convert_to.upper(), from_type=convert_from.upper()
+            )
+        )
 
 
 class RemoveDuplicatesTransformation(Transformation):
@@ -295,7 +304,7 @@ class RemoveDuplicatesTransformation(Transformation):
             WITH numbered_rows AS (
               SELECT 
                 *,
-                ROW_NUMBER() OVER (PARTITION BY {self.field} ORDER BY {self.field}) AS row_num
+                ROW_NUMBER() OVER (PARTITION BY `{self.field}` ORDER BY `{self.field}`) AS row_num
               FROM `{self.table.path}`
             )
 
@@ -304,6 +313,7 @@ class RemoveDuplicatesTransformation(Transformation):
             WHERE row_num = 1;
         """
         return query
+
 
 class StandardizingTextTransformation(Transformation):
     """A transformation class for standardizing the text case of a column in a table."""
@@ -330,8 +340,8 @@ class StandardizingTextTransformation(Transformation):
         text_case = self.options.get("text_case")
         query = f"""
             SELECT 
-                * EXCEPT({self.field}),
-                {text_case}({self.field}) AS {self.field},
+                * EXCEPT(`{self.field}`),
+                {text_case}(`{self.field}`) AS `{self.field}`,
             FROM `{self.table.path}`;
         """
         return query
