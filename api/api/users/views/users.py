@@ -1,6 +1,6 @@
 # Model Views for users
 
-# Rest framework
+from django.conf import settings
 from rest_framework.viewsets import GenericViewSet
 from rest_framework import mixins, filters, status, permissions
 from rest_framework.decorators import action
@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from api.users.models import User
 from api.users.serializers import UserSerializer, SimpleUserSerializer, AddGmailSerializer
-from api.datasets.services import GoogleRole
+from api.datasets.services import GoogleRole, GCSService
 from api.users.permissions import IsAdminPermission, CanCrudPermission
 from api.utils.pagination import StartEndPagination
 from api.users.enums import PasswordStatus
@@ -73,6 +73,7 @@ class UsersViewSet(mixins.ListModelMixin,
         serializer = AddGmailSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"]
+        GCSService.create_folder(settings.GCS_NOTEBOOK_BUCKET, user.id)
         GoogleRole.assign_user_rol(email, "roles/iam.serviceAccountUser", "user")
         user.gmail = email
         user.save()

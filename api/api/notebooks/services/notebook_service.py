@@ -18,7 +18,7 @@ class VertexInstanceService:
     LOCATION = "us-central1-a"
     VM_IMAGE_PROJECT = "ml-images"
     VM_IMAGE_NAME = "c0-deeplearning-common-cpu-v20230925-debian-10"
-    IDLE_SHUTDOWN_TIMEOUT = "300"
+    IDLE_SHUTDOWN_TIMEOUT = "600"
     # accelerator_config = {"type": notebooks_v1.Instance.AcceleratorType.NVIDIA_TESLA_T4, "core_count": 1},
     accelerator_config = {}
     OPERATION_DEADLINE_IN_SECONDS = 300
@@ -45,9 +45,13 @@ class VertexInstanceService:
                 "project": cls.VM_IMAGE_PROJECT,
                 "image_name": cls.VM_IMAGE_NAME
             },
+            boot_disk_size_gb = 50,
+            data_disk_size_gb = 50,
             metadata={
                 "proxy-mode": "service_account",
-                "idle-shutdown-timeout": cls.IDLE_SHUTDOWN_TIMEOUT
+                "idle-shutdown": "true",
+                "idle-shutdown-timeout": cls.IDLE_SHUTDOWN_TIMEOUT,
+                "gcs-data-bucket": f"{settings.GCS_NOTEBOOK_BUCKET}/{user.id}"
             },
             instance_owners=[user.gmail],
             service_account=user.service_account.email

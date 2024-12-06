@@ -14,7 +14,6 @@ RUN apk --no-cache add bash mc \
             ttf-freefont \
             ttf-liberation \
         && rm -rf /var/cache/apk/*
-        
 
 RUN apk update \
   # psycopg2 dependencies
@@ -27,18 +26,20 @@ RUN apk update \
   # Translations dependencies
   && apk add gettext \
   && apk add g++ gcc libxslt-dev
-  # https://docs.djangoproject.com/en/dev/ref/django-admin/#dbshell
 
-# Requirements are installed here to ensure they will be cached.
 RUN apk add python3-dev
 RUN apk add postgresql-client
 RUN apk add libmagic
+RUN apk add curl dcron
 
 COPY ./requirements /requirements
 RUN pip install -r /requirements/local.txt
 
+COPY ./compose/local/django/remove_notebooks.sh /usr/local/bin/remove_notebooks.sh
+RUN chmod +x /usr/local/bin/remove_notebooks.sh
+RUN echo "*/30 * * * * /usr/local/bin/remove_notebooks.sh >> /proc/1/fd/1 2>&1" > /etc/crontabs/root
+
 COPY ./compose/production/django/wait_for_postgres.py /wait_for_postgres.py
-# RUN chmod +x /wait_for_postgres.py
 
 COPY ./compose/local/django/start /start
 RUN sed -i 's/\r//' /start
@@ -49,5 +50,3 @@ RUN sed -i 's/\r$//g' /start-celerybeat
 RUN chmod +x /start-celerybeat
 
 WORKDIR /app
-
-# ENTRYPOINT ["/start"]

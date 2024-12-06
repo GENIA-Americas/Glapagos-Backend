@@ -3,6 +3,7 @@ from rest_framework import status
 
 from api.utils.exceptions import GenericAPIException
 
+
 class UrlFileNotExistException(GenericAPIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = _("Invalid url or file doesn't exist")
@@ -89,8 +90,13 @@ class EmailException(GenericAPIException):
     default_code = "email_not_sent"
 
 
-
 class SchemaUpdateException(GenericAPIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     default_detail = _("Schema cannot be updated.")
     default_code = "schema_update_failed"
+
+
+class CloudStorageOperationException(GenericAPIException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    default_detail = _("An error occurred while executing a cloud storage operation.")
+    default_code = "cloud_storage_operation_failed"
