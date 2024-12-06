@@ -122,3 +122,27 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
             {"status": instance_status},
             status=status.HTTP_200_OK
         )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        name="remove_inactives",
+        url_path="remove_inactives",
+        permission_classes=[permissions.AllowAny],
+    )
+    def remove_inactives(self, request, **kwargs):
+        deleted_instances = 0
+        instances = Notebook.objects.all()
+        for instance in instances:
+            instance_status = VertexInstanceService.get_status(instance.name)
+            if instance_status != 'STOPPED':
+                continue
+
+            VertexInstanceService.destroy_instance(instance.name)
+            instance.delete()
+            deleted_instances += 1
+
+        return Response(
+            {"detail": _("Deleted {deleted_instances} inactive instances").format(deleted_instances=deleted_instances)},
+            status=status.HTTP_200_OK
+        )

@@ -33,6 +33,7 @@ RUN apk update \
 RUN apk add python3-dev
 RUN apk add postgresql-client
 RUN apk add libmagic
+RUN apk add curl dcron
 
 WORKDIR /app
 COPY /api /app
@@ -41,6 +42,10 @@ COPY /requirements /app/requirements
 RUN pip install -r /app/requirements/production.txt
 
 RUN mkdir -p /app/api/static
+
+COPY ./compose/local/django/remove_notebooks.sh /usr/local/bin/remove_notebooks.sh
+RUN chmod +x /usr/local/bin/remove_notebooks.sh
+RUN echo "*/30 * * * * /usr/local/bin/remove_notebooks.sh >> /proc/1/fd/1 2>&1" > /etc/crontabs/root
 
 COPY ./compose/production/django/wait_for_postgres.py /wait_for_postgres.py
 RUN chmod +x /wait_for_postgres.py

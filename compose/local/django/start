@@ -5,6 +5,7 @@ set -o pipefail
 set -o nounset
 echo "Wait for postgres"
 python /wait_for_postgres.py &&
+crond &&
 python manage.py collectstatic --noinput
 #python manage.py migrate &&
 python manage.py runserver 0.0.0.0:8000

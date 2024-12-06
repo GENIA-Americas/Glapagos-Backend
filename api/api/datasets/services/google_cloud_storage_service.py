@@ -4,7 +4,7 @@ from io import StringIO
 from google.cloud import storage
 from django.conf import settings
 
-from api.datasets.exceptions import UploadFailedException
+from api.datasets.exceptions import UploadFailedException, CloudStorageOperationException
 
 
 class GCSService:
@@ -22,6 +22,22 @@ class GCSService:
             return blob.public_url
         except Exception as exp:
             raise UploadFailedException(error=str(exp))
+
+    @staticmethod
+    def create_folder(bucket_name: str, folder_name: str) -> None:
+        """Create a folder in Google Cloud Storage."""
+        try:
+            storage_client = storage.Client()
+            bucket = storage_client.bucket(bucket_name)
+
+            blobs = list(storage_client.list_blobs(bucket, prefix=f"{folder_name}/", max_results=1))
+            if blobs:
+                return
+
+            blob = bucket.blob(f"{folder_name}/")
+            blob.upload_from_string("")
+        except Exception as exp:
+            raise CloudStorageOperationException(error=str(exp))
 
 
 class JSONGCSService(GCSService):
