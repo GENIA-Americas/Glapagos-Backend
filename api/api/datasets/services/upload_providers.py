@@ -6,7 +6,7 @@ from django.core.files.uploadedfile import TemporaryUploadedFile
 
 from api.datasets.enums import FileType
 from api.datasets.exceptions import UploadFailedException, UrlFileNotExistException, UrlProviderException
-from api.datasets.services.provider_upload_service import GoogleCloudService, GoogleDriveService, S3Service
+from api.datasets.services.provider_upload_service import GoogleCloudService, GoogleDriveService, S3Service, ProviderService
 from api.datasets.utils.json import get_content_from_url_json, prepare_json_data_format
 from api.datasets.utils.csv import get_content_from_url_csv, prepare_csv_data_format
 from api.datasets.utils.text import get_content_from_url_text 
@@ -50,7 +50,7 @@ def return_url_provider(url: str):
 
 
 class BaseUploadProvider(ABC):
-    service: type 
+    service: type[ProviderService]
 
     def process(self, url: str, skip_leading_rows: int, file_type: FileType) -> TemporaryUploadedFile:
         if self.service.is_folder(url):
@@ -107,7 +107,7 @@ class BaseUploadProvider(ABC):
             skip_leading_rows=skip_leading_rows
         ) 
             
-        file.write(content)
+        file.write(content.encode('utf-8'))
         file.seek(0)
         return file
 
@@ -121,7 +121,6 @@ class BaseUploadProvider(ABC):
     def preview_file(self, url: str, file_type: FileType) -> list:
         assert file_type not in FileType.choices, "file_type not supported"
 
-        bigquery_format = list()
         preview = self.get_content_from_url([url], file_type, )
         bigquery_format = self.prepare_data_format(preview, file_type)
 
@@ -132,7 +131,6 @@ class BaseUploadProvider(ABC):
         files = self.service.list_files(url)
         urls = [u.get("webContentLink", "") for u in files]
 
-        bigquery_format = list()
         preview = self.get_content_from_url(urls, file_type, )
         bigquery_format = self.prepare_data_format(preview, file_type)
 
@@ -143,7 +141,7 @@ class BaseUploadProvider(ABC):
 
         content = ""
         if file_type == FileType.CSV: 
-            content = get_content_from_url_csv(urls, skip_leading_rows=1, **kwargs)
+            content = get_content_from_url_csv(urls, **kwargs)
 
         elif file_type == FileType.JSON:
             content = get_content_from_url_json(urls, **kwargs)
