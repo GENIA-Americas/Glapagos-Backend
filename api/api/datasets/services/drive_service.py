@@ -1,12 +1,10 @@
 from abc import ABC, abstractmethod
 
 from django.conf import settings
-from django.utils.translation import gettext_lazy as _
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 from api.datasets.exceptions import UrlFolderNameExtractionException, UploadFailedException
-
 
 class ProviderService(ABC):
     @classmethod

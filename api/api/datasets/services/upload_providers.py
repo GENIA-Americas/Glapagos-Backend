@@ -9,7 +9,8 @@ from api.datasets.exceptions import UploadFailedException, UrlFileNotExistExcept
 from api.datasets.services.provider_upload_service import GoogleCloudService, GoogleDriveService, S3Service, ProviderService
 from api.datasets.utils.json import get_content_from_url_json, prepare_json_data_format
 from api.datasets.utils.csv import get_content_from_url_csv, prepare_csv_data_format
-from api.datasets.utils.text import get_content_from_url_text 
+from api.datasets.utils.text import get_content_from_url_text
+from api.datasets.decorators import decode_url
 
 
 def identify_url_provider(url: str) -> str:
@@ -59,6 +60,7 @@ class BaseUploadProvider(ABC):
             file = self.process_file(url, skip_leading_rows)
         return file
 
+    @decode_url
     def process_file(self, url: str, skip_leading_rows: int) -> TemporaryUploadedFile:
         r = requests.get(url, stream=True) 
         metadata = self.service.get_file_metadata(url)
@@ -80,6 +82,7 @@ class BaseUploadProvider(ABC):
         file.seek(0)
         return file
 
+    @decode_url
     def process_folder(
             self, 
             url: str, 
@@ -111,6 +114,7 @@ class BaseUploadProvider(ABC):
         file.seek(0)
         return file
 
+    @decode_url
     def preview(self, url: str, file_type: FileType) -> list:
         if self.service.is_folder(url):
             preview = self.preview_folder(url, file_type)
@@ -125,7 +129,8 @@ class BaseUploadProvider(ABC):
         bigquery_format = self.prepare_data_format(preview, file_type)
 
         return bigquery_format 
-    
+
+    @decode_url
     def preview_folder(self, url: str, file_type: FileType) -> list:
 
         files = self.service.list_files(url)
@@ -170,10 +175,12 @@ class BaseUploadProvider(ABC):
 class GoogleDriveProvider(BaseUploadProvider):
     service = GoogleDriveService
 
+    @decode_url
     def process_file(self, url: str, skip_leading_rows: int) -> TemporaryUploadedFile:
         d_url = self.service.convert_url(url)
         return super().process_file(d_url, skip_leading_rows)
 
+    @decode_url
     def preview_file(self, url: str, file_type: FileType) -> list:
         d_url = self.service.convert_url(url)
         return super().preview_file(d_url, file_type)
