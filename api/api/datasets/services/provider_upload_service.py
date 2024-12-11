@@ -196,6 +196,7 @@ class S3Service(ProviderService):
     @classmethod
     @decode_url
     def get_object_key(cls, url: str) -> str:
+        url = url.replace('+', ' ')
         object_key = url.split("amazonaws.com/")[-1]
         if "?" in object_key:
             object_key = object_key.split("?")[0]
@@ -252,7 +253,6 @@ class S3Service(ProviderService):
     def get_file_metadata(cls, url: str) -> dict:
         bucket_name = cls.get_bucket_name(url)
         object_key = cls.get_object_key(url)
-        print(bucket_name, object_key)
 
         try:
             res = cls.client.head_object(Bucket=bucket_name, Key=object_key)
