@@ -111,27 +111,33 @@ class BaseUploadProvider(ABC):
         file.seek(0)
         return file
 
-    def preview(self, url: str, file_type: FileType) -> list:
+    def preview(self, url: str, file_type: FileType) -> list | str:
         if self.service.is_folder(url):
             preview = self.preview_folder(url, file_type)
         else:
             preview = self.preview_file(url, file_type)
         return preview
 
-    def preview_file(self, url: str, file_type: FileType) -> list:
+    def preview_file(self, url: str, file_type: FileType) -> list | str:
         assert file_type not in FileType.choices, "file_type not supported"
 
         preview = self.get_content_from_url([url], file_type, )
+        if file_type == FileType.TXT:
+            return preview
+
         bigquery_format = self.prepare_data_format(preview, file_type)
 
         return bigquery_format 
 
-    def preview_folder(self, url: str, file_type: FileType) -> list:
+    def preview_folder(self, url: str, file_type: FileType) -> list | str:
 
         files = self.service.list_files(url)
         urls = [u.get("webContentLink", "") for u in files]
 
-        preview = self.get_content_from_url(urls, file_type, )
+        preview = self.get_content_from_url(urls, file_type)
+        if file_type == FileType.TXT:
+            return preview
+
         bigquery_format = self.prepare_data_format(preview, file_type)
 
         return bigquery_format 

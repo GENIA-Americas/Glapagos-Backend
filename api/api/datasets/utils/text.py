@@ -8,10 +8,10 @@ from api.datasets.exceptions import TextPreviewFailed
 
 def get_content_from_url_text(
         urls: list[str], 
-        max_lines: int | None  = 20,
-        **kwargs) -> str:
+        max_lines: int | None = 20,
+        **kwargs) -> bytes:
     """
-    Get's the preview from a json file url or list of urls
+    Gets the preview from a json file url or list of urls
     validating column names and joining the file contents
 
     Returns:
@@ -25,8 +25,7 @@ def get_content_from_url_text(
     if max_lines:
         ml = math.ceil(max_lines/url_count)
 
-
-    content = [] 
+    content = []
     lines = 0
     for url in urls:
         r = requests.get(url, stream=True)
