@@ -23,7 +23,7 @@ class SendgridSender:
         try:
             cls.client.send(message)
         except Exception as e:
-            EmailException(error=e)
+            raise EmailException(error=e)
 
 
 def validate_data_fields(data: dict, fields: list[str]):
