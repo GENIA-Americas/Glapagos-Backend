@@ -27,17 +27,13 @@ class GCSService:
     def create_folder(bucket_name: str, folder_name: str) -> None:
         """Create a folder in Google Cloud Storage."""
         try:
-            print(bucket_name, folder_name)
             storage_client = storage.Client()
             bucket = storage_client.get_bucket(bucket_name)
-            print(bucket)
             blobs = list(storage_client.list_blobs(bucket, prefix=f"{folder_name}/", max_results=1))
-            print(blobs)
             if blobs:
                 return
 
             blob = bucket.blob(f"{folder_name}/")
-            print(blob)
             blob.upload_from_string("")
         except Exception as exp:
             raise CloudStorageOperationException(error=str(exp))
