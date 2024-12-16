@@ -27,6 +27,7 @@ class GCSService:
     def create_folder(bucket_name: str, folder_name: str) -> None:
         """Create a folder in Google Cloud Storage."""
         try:
+            print(bucket_name, folder_name)
             storage_client = storage.Client()
             bucket = storage_client.get_bucket(bucket_name)
             print(bucket)
