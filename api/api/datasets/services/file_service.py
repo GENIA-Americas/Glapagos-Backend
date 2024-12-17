@@ -39,6 +39,7 @@ class FileService(ABC):
         self.extension = kwargs["extension"]
         self.public = kwargs["public"]
         self.user = user
+        self.description = kwargs["description"]
         file, extension = os.path.splitext(kwargs['file'].name)
         bigquery_valid_filename = normalize_column_name(file)
         self.filename = f"{generate_random_string(10)}_{bigquery_valid_filename}{extension}"
@@ -49,7 +50,8 @@ class FileService(ABC):
             type=self.extension,
             storage_url=file_url,
             public=self.public,
-            owner=self.user
+            owner=self.user,
+            description=self.description,
         )
         file_obj.save()
         return file_obj
@@ -76,7 +78,8 @@ class StructuredFileService(FileService):
             file=file_obj,
             owner=file_obj.owner,
             public=self.public,
-            schema=self.schema
+            schema=self.schema,
+            description=file_obj.description,
         )
         table.save()
         return table

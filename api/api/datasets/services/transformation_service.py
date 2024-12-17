@@ -168,6 +168,7 @@ class Transformation(ABC):
                 owner=self.user,
                 public=self.public_destination,
                 schema=self.table.schema,
+                description=self.table.description,
             )
 
         job_config = bigquery.QueryJobConfig(
