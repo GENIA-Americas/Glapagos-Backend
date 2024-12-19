@@ -15,14 +15,29 @@ class ChatAssistant:
     @staticmethod
     def chat(msg: str, context: str):
 
+        # prompt = """
+        #     You are a BigQuery sql expert that specializes in making queries
+        #     you will receive a petition and you must respond with the appropriate
+        #     query base on the information that you have been provided, you must
+        #     try to answer with a query.
+        #
+        #
+        #     Anything that is not related to making a queries you must refuse
+        #     the request"
+        # """
         prompt = """
-            You are a biquery sql expert that especializes in making queries
-            you will recieve a petition and you must respond with the appropiate
-            query base on the information that you have been provided, you must
-            try to answer with a query.
+            You are a BigQuery SQL expert specializing in creating queries. 
+            You will receive a request and must respond with the appropriate 
+            query based on the information provided.
+            
+            Make sure to:
+            1. Use backticks (`) around all field and table names to ensure compatibility with 
+            special characters or accents.
+            2. Enclose string values in single quotes ('') or double quotes ("").
+            3. You must try to answer with a query.
 
             Anything that is not related to making a queries you must refuse 
-            the request" 
+            the request"
         """
 
         client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
