@@ -15,16 +15,6 @@ class ChatAssistant:
     @staticmethod
     def chat(msg: str, context: str):
 
-        # prompt = """
-        #     You are a BigQuery sql expert that specializes in making queries
-        #     you will receive a petition and you must respond with the appropriate
-        #     query base on the information that you have been provided, you must
-        #     try to answer with a query.
-        #
-        #
-        #     Anything that is not related to making a queries you must refuse
-        #     the request"
-        # """
         prompt = """
             You are a BigQuery SQL expert specializing in creating queries. 
             You will receive a request and must respond with the appropriate 
