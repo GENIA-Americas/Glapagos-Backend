@@ -8,7 +8,7 @@ from google.api_core.exceptions import GoogleAPIError
 
 from api.users.models import User
 from api.datasets.models import Table
-from api.datasets.exceptions import TransformationFailedException
+from api.datasets.exceptions import TransformationFailedException, QueryFailedException
 from .big_query_service import BigQueryService
 
 from api.utils.basics import generate_random_string
@@ -56,7 +56,7 @@ def apply_transformations(
         try:
             table = obj.execute()
             create_table = False
-        except GoogleAPIError as exp:
+        except (GoogleAPIError, QueryFailedException) as exp:
             table.update_schema(bigquery_service, force=True)
             raise TransformationFailedException(
                 detail=_("Error while applying transformation {transformation} over {field}").format(
@@ -220,13 +220,13 @@ class DataTypeConversionTransformation(Transformation):
         Returns:
             str: SQL query to cast the field to the new data type or parse it to a DATE format.
         """
-        convert_from = self.table.get_column_type(column_name=self.field)
+        convert_from: str = self.table.get_column_type(column_name=self.field)
         if not convert_from:
             raise TransformationFailedException(
                 _("No data info for the field {field} in the schema.")
             ).format(field=self.field)
 
-        convert_to = self.options.get("convert_to")
+        convert_to: str = self.options.get("convert_to")
         query = None
 
         if convert_from.upper() == "STRING":
