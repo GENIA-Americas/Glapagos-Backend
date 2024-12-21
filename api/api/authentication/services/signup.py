@@ -115,5 +115,6 @@ def forgot_password_validated(
         user=user, type=ExternalTokenType.RECOVER_ACCOUNT).delete()
     user.password_status = PasswordStatus.ACTIVE
     user.set_password(password)
+    user.setup_status = SetUpStatus.VALIDATED
     user.save()
     return True
