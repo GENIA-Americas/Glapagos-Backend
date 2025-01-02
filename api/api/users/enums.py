@@ -68,5 +68,6 @@ class Country(models.TextChoices):
     TRINIDAD_AND_TOBAGO = 'Trinidad and Tobago', _('Trinidad and Tobago')
     URUGUAY = 'Uruguay', _('Uruguay')
     VENEZUELA = 'Venezuela', _('Venezuela')
+    USA = 'United States of America', _('United States of America')
 
 

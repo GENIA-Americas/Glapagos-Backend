@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-26 20:10+0000\n"
+"POT-Creation-Date: 2025-01-02 16:42+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -282,13 +282,17 @@ msgstr "Uruguay"
 msgid "Venezuela"
 msgstr "Venezuela"
 
+#: api/users/enums.py:71
+msgid "United States of America"
+msgstr "Estados Unidos"
+
 #: api/users/exceptions.py:9
 msgid "Error creating service account."
-msgstr ""
+msgstr "Error creando la cuenta de servicio."
 
 #: api/users/exceptions.py:15
 msgid "Error creating private dataset."
-msgstr ""
+msgstr "Error creando el dataset privado"
 
 #: api/users/exceptions.py:21
 msgid "Invalid email address."
@@ -297,7 +301,9 @@ msgstr "Dirección de correo inválida."
 #: api/users/exceptions.py:27
 msgid ""
 "An error occurred while assigning the necessary roles to the email account."
-msgstr "Ha ocurrido un error mientras se asignaban los roles necesarios a la cuenta de correo."
+msgstr ""
+"Ha ocurrido un error mientras se asignaban los roles necesarios a la cuenta "
+"de correo."
 
 #: api/users/models/user.py:18
 msgid "The email must be set"
