@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-26 20:10+0000\n"
+"POT-Creation-Date: 2025-01-03 17:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,15 +42,31 @@ msgstr "Validar cuenta"
 msgid "Recover account"
 msgstr "Recuperar cuenta"
 
-#: api/authentication/serializers/authentication.py:21
+#: api/authentication/serializers/authentication.py:22
 msgid "Invalid email format"
 msgstr "Formato de correo electrónico inválido"
 
-#: api/authentication/serializers/authentication.py:28
+#: api/authentication/serializers/authentication.py:29
 msgid "Invalid credentials"
 msgstr "Credenciales inválidas"
 
-#: api/authentication/serializers/authentication.py:33
+#: api/authentication/serializers/authentication.py:38
+msgid ""
+"Your account was not validated through your email within the specified time. "
+"Before logging in, you must reset your password using the 'Forgot your "
+"password' option."
+msgstr ""
+"Su cuenta no fue validada a través de su correo electrónico en el tiempo "
+"establecido. Antes de iniciar sesión debe restablecer su contraseña en la "
+"opción 'Olvidaste tu contraseña'"
+
+#: api/authentication/serializers/authentication.py:42
+msgid "You must validate your account through your email before logging in."
+msgstr ""
+"Debe validar su cuenta a través de su correo electrónico antes de iniciar "
+"sesión."
+
+#: api/authentication/serializers/authentication.py:45
 msgid ""
 "You could not log in because the registration process was not successfully "
 "completed."
@@ -58,7 +74,7 @@ msgstr ""
 "No pudiste iniciar sesión porque el proceso de registro no se completó "
 "exitosamente."
 
-#: api/authentication/serializers/authentication.py:58
+#: api/authentication/serializers/authentication.py:70
 #, fuzzy
 #| msgid "Token is invalid or has expired"
 msgid "invalid refresh token or has expired"

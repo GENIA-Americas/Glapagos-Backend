@@ -10,6 +10,7 @@ from django.core.validators import validate_email
 from django.utils.translation import gettext_lazy as _
 
 from api.users.serializers import UserSerializer
+from api.authentication.models import ExternalToken
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -29,6 +30,17 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             raise exp
 
         if not self.user.can_auth():
+            token = ExternalToken.objects.filter(user=self.user).first()
+            if token:
+                if token.is_expired:
+                    raise serializers.ValidationError(
+                        dict(email=_(
+                            "Your account was not validated through your email within the specified time. Before logging in, you must reset your password using the 'Forgot your password' option."))
+                    )
+                raise serializers.ValidationError(
+                    dict(email=_(
+                        "You must validate your account through your email before logging in."))
+                )
             raise serializers.ValidationError(
                 dict(email=_("You could not log in because the registration process was not successfully completed."))
             )
