@@ -3,6 +3,7 @@
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import serializers
 
 # models
 from api.users.models import User
@@ -63,21 +64,31 @@ class SignupViewSet(GenericViewSet):
         AllowAny
     ], name='sign-up-validate', url_path='sign-up-validate/(?P<user_id>[^/.]+)/(?P<token>[^/.]+)')
     def sign_up_validate(self, request, user_id=None, token=None):
-        data = {
-            'user_id': user_id,
-            'token': token
-        }
-        serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
+        locale = request.LANGUAGE_CODE
+        if locale not in ['es', 'en']:
+            locale = 'en'
 
-        user = serializer.validated_data['user']
-        user.setup_status = SetUpStatus.VALIDATED
-        user.save()
+        try:
+            data = {
+                'user_id': user_id,
+                'token': token
+            }
+            serializer = self.get_serializer(data=data)
+            serializer.is_valid(raise_exception=True)
 
-        context = {
-            'login_url': settings.FRONTEND_LOGIN_URL
-        }
-        return render(request, 'account_activated.html', context)
+            user = serializer.validated_data['user']
+            user.setup_status = SetUpStatus.VALIDATED
+            user.save()
+
+            context = {
+                'login_url': settings.FRONTEND_LOGIN_URL
+            }
+            return render(request, f'account_activated_{locale}.html', context)
+        except serializers.ValidationError as exp:
+            context = {
+                'error': exp.detail['detail'][0],
+            }
+            return render(request, f'account_activation_error_{locale}.html', context)
 
     @action(detail=False, methods=['post'], serializer_class=ForgotPasswordValidateCodeSerializer, permission_classes=[
         AllowAny

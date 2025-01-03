@@ -48,16 +48,16 @@ class SignUpValidateCodeSerializer(serializers.Serializer):
             field=dict(user__id=user_id), token_type=ExternalTokenType.VALIDATE_ACCOUNT)
         if not token_queryset:
             raise serializers.ValidationError(
-                {"token": _("Token is invalid or has expired")})
+                {"detail": _("Token is invalid or has expired")})
 
         expected_token = token_queryset.first()
         if expected_token.is_expired:
             raise serializers.ValidationError(
-                {"token": _("Token is invalid or has expired")})
+                {"detail": _("Token is invalid or has expired")})
 
         if expected_token.token != token:
             raise serializers.ValidationError(
-                {"token": _("Token is invalid or has expired")})
+                {"detail": _("Token is invalid or has expired")})
 
         return attrs
 
