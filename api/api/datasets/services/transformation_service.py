@@ -177,12 +177,21 @@ class Transformation(ABC):
         )
 
         query = self.get_query()
+        if not query:
+            raise TransformationFailedException()
         bigquery_service.query(query=query, job_config=job_config)
         destination_table.mounted = True
         ref = bigquery_service.get_table_reference(destination_table.dataset_name, destination_table.name)
         destination_table.update_table_stats(table_ref=ref)
 
         return destination_table
+
+    def adjust_query_for_single_column(self, query):
+        if len(self.table.schema) == 1:
+            query_lines = query.splitlines()
+            query_lines = [line for line in query_lines if "* EXCEPT" not in line]
+            query = "\n".join(query_lines).strip()
+        return query
 
 
 class MissingValuesTransformation(Transformation):
@@ -251,8 +260,7 @@ class DataTypeConversionTransformation(Transformation):
                             SAFE_CAST(`{self.field}` AS {convert_to.upper()}) as `{self.field}`
                         FROM `{self.table.path}`;
                     """
-
-            return query
+            return self.adjust_query_for_single_column(query)
 
         elif convert_to.upper() == "STRING":
             if convert_from.upper() == "DATETIME":
@@ -277,7 +285,7 @@ class DataTypeConversionTransformation(Transformation):
                         FROM `{self.table.path}`;
                     """
 
-            return query
+            return self.adjust_query_for_single_column(query)
 
         raise TransformationFailedException(
             detail=_("Cannot convert to {to_type} from a {from_type} field.").format(
@@ -333,8 +341,8 @@ class StandardizingTextTransformation(Transformation):
         convert_from = self.table.get_column_type(column_name=self.field)
         if not convert_from:
             raise TransformationFailedException(
-                _("No data info for the field {field} in the schema.")
-            ).format(field=self.field)
+                _("No data info for the field {field} in the schema.").format(field=self.field)
+            )
         if convert_from.upper() != "STRING":
             raise TransformationFailedException(_("Column must be of type string to apply text standardization."))
 
@@ -345,4 +353,4 @@ class StandardizingTextTransformation(Transformation):
                 {text_case}(`{self.field}`) AS `{self.field}`,
             FROM `{self.table.path}`;
         """
-        return query
+        return self.adjust_query_for_single_column(query)

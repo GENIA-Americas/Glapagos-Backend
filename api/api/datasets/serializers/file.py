@@ -251,7 +251,7 @@ class FileUploadSerializer(serializers.Serializer):
     file_type = serializers.ChoiceField(choices=[(tag.value, tag.label) for tag in FileType])
     url = ProviderUrlField(required=False)
     upload_type = serializers.ChoiceField(choices=UploadType.choices)
-    description = serializers.CharField(required=False, max_length=200)
+    description = serializers.CharField(max_length=200)
 
     def validate_file(self, value):
         try:
