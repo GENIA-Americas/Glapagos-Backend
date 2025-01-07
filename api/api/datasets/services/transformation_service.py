@@ -257,7 +257,7 @@ class DataTypeConversionTransformation(Transformation):
                 query = f"""
                         SELECT 
                             * EXCEPT(`{self.field}`),
-                            SAFE_CAST(`{self.field}` AS {convert_to.upper()}) as `{self.field}`
+                            CAST(`{self.field}` AS {convert_to.upper()}) as `{self.field}`
                         FROM `{self.table.path}`;
                     """
             return self.adjust_query_for_single_column(query)
@@ -281,7 +281,7 @@ class DataTypeConversionTransformation(Transformation):
                 query = f"""
                         SELECT 
                             * EXCEPT(`{self.field}`),
-                            SAFE_CAST(`{self.field}` AS {convert_to.upper()}) as `{self.field}`
+                            CAST(`{self.field}` AS {convert_to.upper()}) as `{self.field}`
                         FROM `{self.table.path}`;
                     """
 
