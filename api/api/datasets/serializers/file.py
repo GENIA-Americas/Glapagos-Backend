@@ -7,12 +7,13 @@ import pandas as pd
 from rest_framework import serializers
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
+from googleapiclient.errors import HttpError
 
 from api.datasets.services.upload_providers import return_url_provider
 from api.datasets.models import File
 from api.datasets.enums import FileType, UploadType
 from api.datasets.utils import is_valid_column_name, create_dataframe_from_csv, create_dataframe_from_json, validate_csv_column_names
-from api.datasets.exceptions import InvalidFileException
+from api.datasets.exceptions import InvalidFileException, UrlFileNotExistException
 
 
 def validate_size(value: int):
@@ -145,59 +146,62 @@ class FilePreviewSerializer(serializers.Serializer):
 
 class ProviderUrlField(serializers.URLField):
     def to_internal_value(self, data):
-        value = super().to_internal_value(data)
+        try:
+            value = super().to_internal_value(data)
 
-        url = data
-        provider = return_url_provider(url)
+            url = data
+            provider = return_url_provider(url)
 
-        if provider.service.is_folder(url):
-            files = provider.service.list_files(url)
+            if provider.service.is_folder(url):
+                files = provider.service.list_files(url)
 
-            extension = ""
-            for i in files:
-                name = i.get("name", "").split(".")[-1]
-                validate_extension(name)
+                extension = ""
+                for i in files:
+                    name = i.get("name", "").split(".")[-1]
+                    validate_extension(name)
 
-                if extension == "":
-                    extension = name
+                    if extension == "":
+                        extension = name
 
-                if extension != name:
+                    if extension != name:
+                        raise serializers.ValidationError(
+                            dict(detail=_("Invalid extension, all files should have the same file extension"))
+                        )
+
+                size = 0
+                for i in files:
+                    size += int(i.get("size", 0))
+                validate_size(size)
+
+                mimetype = ""
+                for i in files:
+                    mime =  i.get("mimeType", "")
+                    if mimetype == "":
+                        mimetype = mime
+
+                    if mime != mimetype:
+                        raise serializers.ValidationError(
+                            dict(detail=_("Invalid mimetype, all files should have the same mimetype"))
+                        )
+                validate_mimes(mimetype)
+
+            else:
+
+                metadata = provider.service.get_file_metadata(url)
+                size = int(metadata.get("size", 0))
+                validate_size(size)
+                validate_mimes(metadata.get("mimeType", ""))
+
+                extension = metadata.get("name", "").split(".")[-1]
+                if extension not in FileType.values:
                     raise serializers.ValidationError(
-                        dict(detail=_("Invalid extension, all files should have the same file extension"))
+                        {"detail": _("Only CSV, TXT, and JSON files are allowed.")}
                     )
 
-            size = 0
-            for i in files:
-                size += int(i.get("size", 0))
-            validate_size(size)
-
-            mimetype = ""
-            for i in files:
-                mime =  i.get("mimeType", "")
-                if mimetype == "":
-                    mimetype = mime
-
-                if mime != mimetype:
-                    raise serializers.ValidationError(
-                        dict(detail=_("Invalid mimetype, all files should have the same mimetype"))
-                    )
-            validate_mimes(mimetype)
-
-        else:
-
-            metadata = provider.service.get_file_metadata(url)
-            size = int(metadata.get("size", 0))
-            validate_size(size)
-            validate_mimes(metadata.get("mimeType", ""))
-
-            extension = metadata.get("name", "").split(".")[-1]
-            if extension not in FileType.values:
-                raise serializers.ValidationError(
-                    {"detail": _("Only CSV, TXT, and JSON files are allowed.")}
-                )
-
-        self.extension = extension
-        return value
+            self.extension = extension
+            return value
+        except HttpError:
+            raise UrlFileNotExistException()
 
 
 class UrlPreviewSerializer(serializers.Serializer):
