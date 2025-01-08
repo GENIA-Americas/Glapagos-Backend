@@ -209,7 +209,8 @@ class MissingValuesTransformation(Transformation):
         query = f"""
             SELECT * 
             FROM `{self.table.path}`
-            WHERE `{self.field}` IS NOT NULL;
+            WHERE `{self.field}` IS NOT NULL
+            AND `{self.field}` <> "";
         """
         return query
 
