@@ -9,6 +9,3 @@ class UsersAppConfig(AppConfig):
 
     name = 'api.users'
     verbose_name = 'Users'
-
-    def ready(self):
-        from . import signals 
