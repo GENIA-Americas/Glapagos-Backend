@@ -317,7 +317,8 @@ class RemoveDuplicatesTransformation(Transformation):
               FROM `{self.table.path}`
             )
 
-            SELECT *
+            SELECT * 
+            EXCEPT(row_num)
             FROM numbered_rows
             WHERE row_num = 1;
         """
