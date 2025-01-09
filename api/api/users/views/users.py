@@ -57,7 +57,6 @@ class UsersViewSet(mixins.ListModelMixin,
         user = self.get_object()
         user.password_status = PasswordStatus.CHANGE
         user.save()
-        print()
 
         partial = kwargs.pop('partial', False)
         serializer = UserSerializer(user, data={'password': request.data['new_password'], 'email': user.email, 'username': user.username},
