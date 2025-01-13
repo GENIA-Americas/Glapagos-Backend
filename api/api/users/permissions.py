@@ -103,3 +103,21 @@ class CanCrudPermission(permissions.BasePermission):
         elif view.action in ['update', 'partial_update', 'destroy']:
             return obj.can_modify(request.user, request.data.keys())
         return obj.can_modify(request.user, request.data.keys())
+
+
+class InstancePropertyPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user_role = getattr(request.user, 'role', None)
+        if not user_role:
+            user_role = 'ST'
+
+        allowed_properties = {
+            'A': {'name', 'boot_disk', 'data_disk', 'accelerator_type', 'core_count', 'zone'},
+            'SP': {'name', 'boot_disk', 'data_disk', 'accelerator_type', 'core_count', 'zone'},
+            'AD': {'name', 'boot_disk', 'data_disk', 'accelerator_type', 'core_count', 'zone'},
+            'ST': {'name'},
+        }
+        user_permissions = allowed_properties.get(user_role, set())
+
+        request_properties = set(request.data.keys())
+        return request_properties.issubset(user_permissions)

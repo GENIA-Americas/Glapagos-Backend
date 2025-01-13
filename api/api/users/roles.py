@@ -6,3 +6,4 @@ class UserRoles(models.TextChoices):
     ADMIN = 'A', _('Admin')
     SUPPORT = 'SP', _('Support')
     STANDARD = 'ST', _('Standard')
+    ADVANCED = 'AD', _('Advanced')

@@ -22,6 +22,12 @@ class NotebookNotFoundException(GenericAPIException):
     default_code = "notebook_not_found"
 
 
+class NotebookForbiddenException(GenericAPIException):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = _("You do not have permission to perform this action on the notebook instance.")
+    default_code = "notebook_forbidden_error"
+
+
 class NotebookOperationException(GenericAPIException):
     """Base exception for notebook operations."""
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR

@@ -7,11 +7,12 @@ from rest_framework.response import Response
 from google.cloud import compute_v1
 
 from api.notebooks.enums import VERTEX_AI_LOCATIONS, AcceleratorType
-from api.notebooks.exceptions import NotebookAlreadyExistsException, NotebookNotFoundException
+from api.notebooks.exceptions import NotebookAlreadyExistsException, NotebookNotFoundException, NotebookForbiddenException
 from api.notebooks.models import Notebook
 from api.notebooks.services import VertexInstanceService, VertexInstanceConfig
 from api.notebooks.serializers import NotebookSerializer, AcceleratorSerializer
 from api.utils.pagination import StartEndPagination, SearchQueryPagination
+from api.users.permissions import InstancePropertyPermission
 
 
 class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin, GenericViewSet):
@@ -61,6 +62,12 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
 
         if instance:
             raise NotebookAlreadyExistsException()
+
+        permission = InstancePropertyPermission()
+        if not permission.has_permission(self.request, self):
+            raise NotebookForbiddenException(
+                detail=_("You do not have permission to create a notebook with these properties.")
+            )
 
         config = VertexInstanceConfig(
             boot_disk, data_disk, accelerator_type, core_count, zone
