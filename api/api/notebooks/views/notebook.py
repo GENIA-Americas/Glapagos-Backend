@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from google.cloud import compute_v1
 
-from api.notebooks.enums import VERTEX_AI_LOCATIONS
+from api.notebooks.enums import VERTEX_AI_LOCATIONS, AcceleratorType
 from api.notebooks.exceptions import NotebookAlreadyExistsException, NotebookNotFoundException
 from api.notebooks.models import Notebook
 from api.notebooks.services import VertexInstanceService, VertexInstanceConfig
@@ -180,7 +180,7 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
         url_path="accelerator",
         permission_classes=[permissions.IsAuthenticated],
     )
-    def accelerator(self, request, **kwargs):
+    def accelerators_by_zone(self, request, **kwargs):
         serializer = AcceleratorSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         zone = serializer.validated_data['zone']
@@ -196,3 +196,17 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
                 "description": accelerator.description,
             })
         return Response({"accelerators": accelerators_list})
+
+    @action(
+        detail=False,
+        methods=["get"],
+        name="accelerator_types",
+        url_path="accelerator_types",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def accelerator_types(self, request, **kwargs):
+        accelerators = [
+            {"name": item.name.replace("_", " ").title(), "value": item.value}
+            for item in AcceleratorType
+        ]
+        return Response({"accelerators": accelerators})
