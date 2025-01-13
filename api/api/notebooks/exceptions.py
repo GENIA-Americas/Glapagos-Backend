@@ -27,6 +27,10 @@ class NotebookOperationException(GenericAPIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
+class NotebookCreationFailedException(NotebookOperationException):
+    default_detail = _("Error creating the notebook.")
+    default_code = "notebook_error_creating"
+
 class NotebookStartFailedException(NotebookOperationException):
     default_detail = _("Error starting the notebook.")
     default_code = "notebook_error_starting"

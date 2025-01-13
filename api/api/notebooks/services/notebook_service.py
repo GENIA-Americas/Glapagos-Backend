@@ -1,7 +1,9 @@
+from dataclasses import dataclass, field
+
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from google.api_core.retry import Retry
-from google.api_core.exceptions import NotFound
+from google.api_core.exceptions import NotFound, ServiceUnavailable, PermissionDenied
 from google.cloud import notebooks_v2
 from google.cloud.notebooks_v2 import (
     Instance, GceSetup, AcceleratorConfig,
@@ -10,10 +12,22 @@ from google.cloud.notebooks_v2 import (
 )
 
 from api.users.models import User
+from api.notebooks.enums import AcceleratorType
 from api.notebooks.exceptions import (
-    InvalidGoogleAccountException, NotebookStartFailedException,NotebookStopFailedException,
-    NotebookDestroyFailedException, NotebookNotFoundException, NotebookInvalidState
+    InvalidGoogleAccountException, NotebookStartFailedException,
+    NotebookStopFailedException, NotebookDestroyFailedException,
+    NotebookNotFoundException, NotebookInvalidState,
+    NotebookCreationFailedException
 )
+
+
+@dataclass
+class VertexInstanceConfig:
+    boot_disk: int = field(default=150, metadata={"min_value": 150})
+    data_disk: int = field(default=50, metadata={"min_value": 50})
+    accelerator_type: AcceleratorType = AcceleratorType.ACCELERATOR_TYPE_UNSPECIFIED
+    core_count: int = field(default=1, metadata={"min_value": 1})
+    zone: str = field(default='us-central1-a')
 
 
 class VertexInstanceService:
@@ -32,7 +46,7 @@ class VertexInstanceService:
         return notebook_instance
 
     @classmethod
-    def create_instance(cls, instance_id: str, user: User) -> str:
+    def create_instance(cls, instance_id: str, config: VertexInstanceConfig, user: User) -> str:
         if not user.gmail:
             raise InvalidGoogleAccountException()
         client = notebooks_v2.NotebookServiceClient()
@@ -40,14 +54,9 @@ class VertexInstanceService:
 
         gce_setup = GceSetup(
             machine_type = cls.MACHINE_TYPE,
-            # TODO: Graphics Accelerator
-            # accelerator_configs = [AcceleratorConfig(
-            #     type = AcceleratorConfig.AcceleratorType.NVIDIA_TESLA_T4,
-            #     core_count = 1
-            # )],
             service_accounts = [ServiceAccount(email = user.service_account.email)],
-            boot_disk = BootDisk(disk_size_gb=150),
-            data_disks = [DataDisk(disk_size_gb=50)],
+            boot_disk = BootDisk(disk_size_gb=config.boot_disk),
+            data_disks = [DataDisk(disk_size_gb=config.data_disk)],
             metadata = {
                 "proxy-mode": "service_account",
                 "idle-shutdown": "true",
@@ -56,6 +65,11 @@ class VertexInstanceService:
             }
 
         )
+        if config.accelerator_type != 0:
+            gce_setup.accelerator_configs = [AcceleratorConfig(
+                type=config.accelerator_type,
+                core_count = config.core_count
+            )]
 
         instance = Instance(
             name = instance_id,
@@ -68,13 +82,21 @@ class VertexInstanceService:
             instance_id=instance_id,
             instance=instance,
         )
+        try:
+            operation = client.create_instance(request=request)
+            operation.result()
 
-        operation = client.create_instance(request=request)
-        operation.result()
-
-        retry_policy = Retry(predicate=lambda e: isinstance(e, ValueError), deadline=300)
-        instance_url = retry_policy(lambda: cls.check_proxy_uri(instance_id))()
-        return instance_url
+            retry_policy = Retry(predicate=lambda e: isinstance(e, ValueError), deadline=300)
+            instance_url = retry_policy(lambda: cls.check_proxy_uri(instance_id))()
+            return instance_url
+        except ServiceUnavailable:
+            raise NotebookCreationFailedException(detail=_(
+                "An instance with these characteristics cannot be created in the zone: {zone}."
+            ).format(zone=cls.LOCATION))
+        except PermissionDenied:
+            raise NotebookCreationFailedException(detail=_(
+                "At this time, we do not have the resources available to allocate to an instance with these characteristics in: {zone}."
+            ).format(zone=cls.LOCATION))
 
     @classmethod
     def check_proxy_uri(cls, instance_id: str) -> str:

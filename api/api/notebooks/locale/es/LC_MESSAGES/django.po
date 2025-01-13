@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-26 20:10+0000\n"
+"POT-Creation-Date: 2025-01-10 21:55+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,40 +34,69 @@ msgstr ""
 "No se pudo encontrar el notebook. Verifique que tenga permisos suficientes."
 
 #: api/notebooks/exceptions.py:31
+#, fuzzy
+#| msgid "Error starting the notebook."
+msgid "Error creating the notebook."
+msgstr "Error iniciando el notebook."
+
+#: api/notebooks/exceptions.py:35
 msgid "Error starting the notebook."
 msgstr "Error iniciando el notebook."
 
-#: api/notebooks/exceptions.py:36
+#: api/notebooks/exceptions.py:40
 msgid "Error stopping the notebook."
 msgstr "Error deteniendo el notebook."
 
-#: api/notebooks/exceptions.py:41
+#: api/notebooks/exceptions.py:45
 msgid "Error destroying the notebook."
 msgstr "Error eliminando el notebook."
 
-#: api/notebooks/exceptions.py:46
+#: api/notebooks/exceptions.py:50
 msgid "Notebook in invalid state."
-msgstr ""
+msgstr "El notebooks se encuentra en un estado inválido."
+
+#: api/notebooks/serializers/accelerator.py:15
+#, python-brace-format
+msgid "The zone '{zone}' is not valid"
+msgstr "La zona '{zone}' no es válida."
 
 #: api/notebooks/serializers/notebook.py:29
 msgid "Invalid notebook name after normalization."
 msgstr "El nombre del notebook es inválido después de la normalización."
 
-#: api/notebooks/services/notebook_service.py:127
+#: api/notebooks/services/notebook_service.py:94
+#, python-brace-format
+msgid ""
+"An instance with these characteristics cannot be created in the zone: {zone}."
+msgstr "No puede crearse una instancia con estas características en la zona: {zone}."
+
+#: api/notebooks/services/notebook_service.py:98
+#, python-brace-format
+msgid ""
+"At this time, we do not have the resources available to allocate to an "
+"instance with these characteristics in: {zone}."
+msgstr "En estos momentos no contamos con recursos para asignar a una instancia con estas características en: {zone}."
+
+#: api/notebooks/services/notebook_service.py:161
 #, python-brace-format
 msgid "Instance {instance_id} not found"
 msgstr "La instancia {instance_id} no se puedo encontrar."
 
-#: api/notebooks/views/notebook.py:68
+#: api/notebooks/views/notebook.py:82
 #, fuzzy, python-brace-format
 #| msgid "Notebook started successfully"
 msgid "Notebook '{name}' successfully removed."
 msgstr "El notebook '{name}' fue eliminado exitosamente."
 
-#: api/notebooks/views/notebook.py:86
+#: api/notebooks/views/notebook.py:100
 msgid "Notebook started successfully"
 msgstr "El notebook fue iniciado exitosamente."
 
-#: api/notebooks/views/notebook.py:104
+#: api/notebooks/views/notebook.py:118
 msgid "Notebook stopped successfully"
 msgstr "El notebook fue detenido exitosamente."
+
+#: api/notebooks/views/notebook.py:160
+#, python-brace-format
+msgid "Deleted {deleted_instances} inactive instances"
+msgstr ""

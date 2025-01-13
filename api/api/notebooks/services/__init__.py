@@ -1,1 +1,1 @@
-from .notebook_service import VertexInstanceService
+from .notebook_service import VertexInstanceService, VertexInstanceConfig

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-26 20:10+0000\n"
+"POT-Creation-Date: 2025-01-10 21:55+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,7 +26,7 @@ msgstr "Tema no relacionado"
 msgid "Table name was not found"
 msgstr "El nombre de la tabla no se pudo encontrar."
 
-#: api/ai/services.py:50
+#: api/ai/services.py:55
 #, fuzzy
 #| msgid "Error processing request"
 msgid "Error processing the request"
