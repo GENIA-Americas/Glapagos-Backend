@@ -3,7 +3,7 @@ from django.core.validators import MinValueValidator
 
 from api.users.models import User
 from api.notebooks.enums import ACCELERATOR_TYPE_CHOICES, VERTEX_AI_LOCATIONS
-from utils.models import BaseModel
+from api.utils.models import BaseModel
 
 
 class Notebook(BaseModel):

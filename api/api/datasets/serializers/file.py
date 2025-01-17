@@ -15,6 +15,17 @@ from api.datasets.enums import FileType, UploadType
 from api.datasets.utils import is_valid_column_name, create_dataframe_from_csv, create_dataframe_from_json, validate_csv_column_names
 from api.datasets.exceptions import InvalidFileException, UrlFileNotExistException
 
+def return_serializer_class(class_name: str):
+    """
+    Finds a class by its name within the same module.
+
+    :param class_name: The name of the class to find.
+    :return: The class if found, raises an exception otherwise.
+    """
+    cls = globals().get(class_name)
+    if cls is None:
+        raise AttributeError(f"Class {class_name} not found.")
+    return cls
 
 def validate_size(value: int):
     """

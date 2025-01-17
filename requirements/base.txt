@@ -40,8 +40,10 @@ psycopg2-binary==2.9.3
 django-storages
 
 # Celery
-celery
+celery[redis]
 django-celery-beat
+gevent
+
 
 # Channels
 channels

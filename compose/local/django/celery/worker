@@ -1,0 +1,7 @@
+#!/bin/sh
+
+set -o errexit
+set -o nounset
+
+echo "Starting Celery worker..."
+celery -A api worker -l INFO --pool=gevent --concurrency=10

@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from google.cloud import compute_v1
 
+from api.notebooks.tasks import create_notebook, destroy_notebook, remove_inactive_notebooks, start_notebook, stop_notebook
 from api.notebooks.enums import VERTEX_AI_LOCATIONS, AcceleratorType
 from api.notebooks.exceptions import NotebookAlreadyExistsException, NotebookNotFoundException, NotebookForbiddenException
 from api.notebooks.models import Notebook
@@ -15,7 +16,13 @@ from api.utils.pagination import StartEndPagination, SearchQueryPagination
 from api.users.permissions import InstancePropertyPermission
 
 
-class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin, GenericViewSet):
+class NotebookViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.RetrieveModelMixin,
+    GenericViewSet
+):
     serializer_class = NotebookSerializer
     model = Notebook
     pagination_class = StartEndPagination
@@ -69,25 +76,28 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
                 detail=_("You do not have permission to create a notebook with these properties.")
             )
 
-        config = VertexInstanceConfig(
-            boot_disk, data_disk, accelerator_type, core_count, zone
+        create_notebook.apply_async(
+            kwargs=dict(
+                validated_data=serializer.validated_data,
+                user_id=user.id
+            )
         )
-
-        instance_url = VertexInstanceService.create_instance(instance_id=name, config=config, user=user)
-        serializer.save(name=name, url=instance_url, owner=user, boot_disk=boot_disk,
+        serializer.save(name=name, url=None, owner=user, boot_disk=boot_disk,
                         data_disk=data_disk, accelerator_type=accelerator_type,
                         core_count=core_count, zone=zone)
 
     def perform_destroy(self, instance):
-        success = VertexInstanceService.destroy_instance(instance_id=instance.name)
-        if success:
-            instance.delete()
+        destroy_notebook.apply_async(
+            kwargs=dict(
+                instance_name=instance.name
+            )
+        )
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(
-            {"detail": _("Notebook '{name}' successfully removed.").format(name=instance.name)},
+            {"detail": _("Notebook '{name}' it's being remove.").format(name=instance.name)},
             status=status.HTTP_200_OK,
         )
 
@@ -103,9 +113,9 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
         instance = user.notebooks.filter(pk=pk, owner=user).first()
         if not instance:
             raise NotebookNotFoundException()
-        instance_url = VertexInstanceService.start_instance(instance_id=instance.name)
+        start_notebook.apply_async(kwargs=dict(instance_name=instance.name))
         return Response(
-            {"detail": _("Notebook started successfully"), "url": instance_url},
+            {"detail": _("Notebook is starting"), "url": instance.url},
             status=status.HTTP_200_OK
         )
 
@@ -121,9 +131,9 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
         instance = user.notebooks.filter(pk=pk, owner=user).first()
         if not instance:
             raise NotebookNotFoundException()
-        instance_url = VertexInstanceService.stop_instance(instance_id=instance.name)
+        stop_notebook.apply_async(kwargs=dict(instance_name=instance.name))
         return Response(
-            {"detail": _("Notebook stopped successfully"), "url": instance_url},
+            {"detail": _("Notebook stopped successfully"), "url": instance.url},
             status=status.HTTP_200_OK
         )
 
@@ -153,16 +163,7 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
         permission_classes=[permissions.AllowAny],
     )
     def remove_inactives(self, request, **kwargs):
-        deleted_instances = 0
-        instances = Notebook.objects.all()
-        for instance in instances:
-            instance_status = VertexInstanceService.get_status(instance.name)
-            if instance_status != 'STOPPED':
-                continue
-
-            VertexInstanceService.destroy_instance(instance.name)
-            instance.delete()
-            deleted_instances += 1
+        remove_inactive_notebooks.apply_async()
 
         return Response(
             {"detail": _("Deleted {deleted_instances} inactive instances").format(deleted_instances=deleted_instances)},
