@@ -5,6 +5,8 @@ from typing import List
 from django.conf import settings
 
 from api.users.models import User
+from api.datasets.enums import FileStatus
+from api.datasets.models.file import FileUploadStatus
 from api.datasets.models import File, Table
 from api.datasets.utils import (csv_parameters_detect, prepare_csv_data_format,
                                 prepare_json_data_format, normalize_column_name)
@@ -44,7 +46,8 @@ class FileService(ABC):
         bigquery_valid_filename = normalize_column_name(file)
         self.filename = f"{generate_random_string(10)}_{bigquery_valid_filename}{extension}"
 
-    def create_file_object(self, file_url: str):
+    def create_file_object(self, file_url: str, status_id: int):
+        status = FileUploadStatus.objects.get(id=status_id)
         file_obj = File.objects.create(
             name=self.filename,
             type=self.extension,
@@ -52,6 +55,7 @@ class FileService(ABC):
             public=self.public,
             owner=self.user,
             description=self.description,
+            status=status,
         )
         file_obj.save()
         return file_obj
@@ -95,7 +99,7 @@ class StructuredFileService(FileService):
 
 
 class TXTFileService(FileService):
-    def process_file(self):
+    def process_file(self, status_id: int):
         file_url = GCSService.upload_file(self.file, self.filename)
         return file_url
 
@@ -109,9 +113,9 @@ class CSVFileService(StructuredFileService):
     def preview(data: str, skip_leading_rows: int) -> List:
         return prepare_csv_data_format(data=data, skip_leading_rows=skip_leading_rows)
 
-    def process_file(self):
+    def process_file(self, status_id: int):
         file_url = GCSService.upload_file(self.file, self.filename)
-        file_obj = self.create_file_object(file_url)
+        file_obj = self.create_file_object(file_url, status_id)
         table_obj = self.create_table_obj(file_obj)
         sample = self.file.read(4096).decode("utf-8")
         self.file.seek(0)
@@ -134,10 +138,10 @@ class JSONFileService(StructuredFileService):
     def preview(data: str, skip_leading_rows: int) -> List:
         return prepare_json_data_format(data=data)
 
-    def process_file(self):
+    def process_file(self, status_id: int):
         upload_service = JSONGCSService()
         file_url = upload_service.upload_file(self.file, self.filename)
-        file_obj = self.create_file_object(file_url)
+        file_obj = self.create_file_object(file_url, status_id)
         table_obj = self.create_table_obj(file_obj)
         big_query_service = BigQueryService(user=self.user)
         big_query_service.mount_table_from_gcs(

@@ -11,6 +11,7 @@ from googleapiclient.errors import HttpError
 
 from api.datasets.services.upload_providers import return_url_provider
 from api.datasets.models import File
+from api.datasets.models.file import FileUploadStatus
 from api.datasets.enums import FileType, UploadType
 from api.datasets.utils import is_valid_column_name, create_dataframe_from_csv, create_dataframe_from_json, validate_csv_column_names
 from api.datasets.exceptions import InvalidFileException, UrlFileNotExistException
@@ -369,3 +370,9 @@ class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
         fields = "__all__"
+
+
+class FileStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FileUploadStatus
+        fields = ['id', 'status']
