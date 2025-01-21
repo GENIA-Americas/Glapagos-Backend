@@ -7,9 +7,11 @@ from rest_framework import status, permissions, mixins, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
+from api.datasets.models.file import FileUploadStatus
+from api.datasets.tasks import upload_file_task
 from api.utils.sendgrid_mail import send_private_data_mail
 from api.datasets.services.upload_providers import return_url_provider
-from api.datasets.serializers.file import JSONSerializer, CSVSerializer, UrlPreviewSerializer, TXTSerializer
+from api.datasets.serializers.file import FileStatusSerializer, JSONSerializer, CSVSerializer, UrlPreviewSerializer, TXTSerializer
 from api.datasets.models import File, Table
 from api.datasets.services import BigQueryService, FileServiceFactory, StructuredFileService
 from api.datasets.serializers import (
@@ -98,33 +100,19 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         serializer = FileUploadSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        if serializer.validated_data.get("upload_type", "") == UploadType.URL:
-            url = serializer.validated_data.get("url", "")
-            skip_leading_rows = serializer.validated_data.get("skip_leading_rows", 1)
-            file_type = serializer.validated_data.get("file_type", "")
+        s_instance = FileStatusSerializer(data=dict())
+        s_instance.is_valid()
+        s_instance.save()
 
-            provider = return_url_provider(url)
-            f = provider.process(url, skip_leading_rows, file_type)
-
-            serializer_class_name = f"{file_type.upper()}Serializer"
-            serializer_class = globals().get(serializer_class_name)
-
-            # validates the generated file
-            serializer_class(
-                data=dict(
-                    file=f,
-                    schema=serializer.validated_data.get("schema", []),
-                    autodetect=serializer.validated_data.get("autodetect", False)
-                )
-            ).is_valid(raise_exception=True)
-            serializer.validated_data["file"] = f 
-
-
-        file_service = FileServiceFactory.get_file_service(
-            user=request.user, **serializer.validated_data
+        upload_file_task.apply_async(
+            kwargs=dict(
+                validated_data=serializer.validated_data,
+                user_id=request.user.id,
+                status_id=s_instance.data.get('id')
+            )
         )
-        file_url = file_service.process_file()
-        return Response({"detail": _("File uploaded successfully"), "file_url": file_url}, status=status.HTTP_201_CREATED)
+
+        return Response({"detail": _("File its being uploaded"), "file_status": s_instance.data}, status=status.HTTP_200_OK)
 
     @action(
         detail=False,
@@ -176,3 +164,11 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
                 )
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FileUploadStatusViewset(mixins.RetrieveModelMixin, GenericViewSet):
+    serializer_class = FileStatusSerializer
+    model = FileUploadStatus
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = FileUploadStatus.objects.filter(deleted=False)
+

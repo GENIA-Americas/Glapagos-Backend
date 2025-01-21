@@ -2,9 +2,17 @@ from enum import Enum
 
 from django.db import models
 
+
+class FileStatus(models.TextChoices):
+    UPLOADED = 'uploaded', 'UPLOADED'
+    PROCESSING = 'processing', 'PROCESSING'
+    ERROR = 'error', 'ERROR'
+
+
 class UploadType(models.TextChoices):
     FILE = 'file', 'FILE'
     URL = 'url', 'URL'
+
 
 class FileType(models.TextChoices):
     CSV = 'csv', 'CSV'

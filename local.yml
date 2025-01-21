@@ -17,6 +17,7 @@ services:
     image: base-default-api
     depends_on:
       - postgres
+      - redis
     volumes:
       - ./api:/app
     env_file:
@@ -29,3 +30,22 @@ services:
 
   redis:
     image: redis:6.2
+
+  celeryworker: &celery
+    build:
+      context: ./
+      dockerfile: ./compose/local/django/celery/Dockerfile
+    image:  geneuse_worker
+    volumes:
+      - ./api:/app
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.db
+      - ./.envs/.local/.cloud
+    command: ["wait-for-it.sh", "postgres:5432", "-t", "60", "--", "celery", "-A", "api", "worker", "--loglevel=info"]
+    # command: /start-worker
+    depends_on:
+      - postgres
+      - redis
+    restart: "always"
+

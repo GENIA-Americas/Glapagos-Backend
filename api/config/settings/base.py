@@ -59,12 +59,11 @@ AUTH_USER_MODEL = 'users.User'
 
 # Apps
 DJANGO_APPS = [
-    'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django.contrib.auth',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     "admin_interface",
     "colorfield",
     'django.contrib.admin',
@@ -332,3 +331,8 @@ FILE_UPLOAD_LIMIT = 100_000_000
 
 SECURED_FIELDS_KEY = os.getenv('SECURED_FIELDS_KEY')
 SECURED_FIELDS_HASH_SALT = os.getenv('SECURED_FIELDS_HASH_SALT')
+
+# Celery configuration
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://redis:6379/0')

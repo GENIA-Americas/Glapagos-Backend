@@ -7,7 +7,7 @@ from google.cloud import bigquery
 from api.datasets.models.file import File
 from api.datasets.exceptions import SchemaUpdateException
 from api.users.models import User
-from utils.models import BaseModel
+from api.utils.models import BaseModel
 
 
 class Table(BaseModel):
