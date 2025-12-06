@@ -17,8 +17,6 @@ Glapagos-Backend/
 ├── docker-build.sh # Docker build script
 ├── *.yml # Environment configurations
 └── ...
-
-
 ## Features
 - **Django architecture** for scalable API design
 - **Celery + Redis** for background jobs
