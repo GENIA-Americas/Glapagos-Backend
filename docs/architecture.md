@@ -7,16 +7,16 @@ It provides API scaffolding, background job execution, Dockerized deployment, an
 ## Folder Structure
 
 Glapagos-Backend/
-├── api/ # Django REST API endpoints
-├── castroquiles/ # Core Django app
-├── ml/ # AI/ML models and inference modules
-│ └── inference/
-├── compose/ # Docker Compose files
-├── docs/ # Documentation
-├── requirements.txt # Python dependencies
-├── docker-build.sh # Docker build script
-├── *.yml # Environment configurations
-└── ...
+  api/                 # Django REST API endpoints / core Django app
+  ml/                  # AI/ML models and inference modules
+    inference/         # Inference scripts
+  compose/             # Docker Compose files
+  docs/                # Documentation
+  requirements.txt     # Python dependencies
+  docker-build.sh      # Docker build script
+  *.yml                # Environment configuration files
+  ...
+
 ## Features
 - **Django architecture** for scalable API design
 - **Celery + Redis** for background jobs
