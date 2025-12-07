@@ -5,16 +5,15 @@ The Glápagos Backend is a modular Django-based backend designed to support AI-e
 It provides API scaffolding, background job execution, Dockerized deployment, and optional AI/ML integrations.
 
 ## Folder Structure
-
 Glapagos-Backend/
-  api/                 # Django REST API endpoints / core Django app
-  ml/                  # AI/ML models and inference modules
-    inference/         # Inference scripts
-  compose/             # Docker Compose files
-  docs/                # Documentation
-  requirements.txt     # Python dependencies
-  docker-build.sh      # Docker build script
-  *.yml                # Environment configuration files
+  api/
+  ml/
+    inference/
+  compose/
+  docs/
+  requirements.txt
+  docker-build.sh
+  *.yml
   ...
 
 ## Features
