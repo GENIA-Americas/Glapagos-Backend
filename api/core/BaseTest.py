@@ -29,10 +29,10 @@ class UtilsTest(APITestCase):
         self.group = Group.objects.get(name=name)
 
     def create_token_headers(self):
-        self.super_user_token_headers = {'HTTP_AUTHORIZATION': self.super_token}
+        self.super_user_token_headers = {"HTTP_AUTHORIZATION": self.super_token}
 
     def create_user_token_headers(self):
-        self.user_token_headers = {'HTTP_AUTHORIZATION': '{}'.format(self.token_user)}
+        self.user_token_headers = {"HTTP_AUTHORIZATION": "{}".format(self.token_user)}
 
     def create_token_user(self):
         token = AccessToken.for_user(self.user)
@@ -45,11 +45,13 @@ class UtilsTest(APITestCase):
         self.super_token = token_total
 
     def create_super_user(self, **kwargs):
-        data = {"email": 'admin@mail.com', "password": '123'}
+        data = {"email": "admin@mail.com", "password": "123"}
         data.update(kwargs)
         self.super_user = User.objects.create_superuser(**data)
 
-    def create_image(self, storage, filename, mode='RGB', size=(100, 100), format="PNG"):
+    def create_image(
+        self, storage, filename, mode="RGB", size=(100, 100), format="PNG"
+    ):
         data = BytesIO()
         Image.new(mode=mode, size=size).save(data, format)
         data.seek(0)

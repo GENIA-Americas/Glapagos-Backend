@@ -8,25 +8,74 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='ExternalToken',
+            name="ExternalToken",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', models.DateTimeField(auto_now_add=True, help_text='Date time on which the object was created.', verbose_name='created at')),
-                ('modified', models.DateTimeField(auto_now=True, help_text='Date time on which the object was modified.', verbose_name='modified at')),
-                ('deleted', models.BooleanField(default=False, help_text='Set to False when an element is deleted')),
-                ('channel', models.IntegerField(choices=[(None, '(Unknown)'), (0, 'Console'), (1, 'SMS')], default=1)),
-                ('type', models.IntegerField(choices=[(None, '(Unknown)'), (1, 'Validate account'), (2, 'Recover account')])),
-                ('token', models.CharField(blank=True, default=api.authentication.services.external_token.token.random_token, max_length=16)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(
+                        auto_now_add=True,
+                        help_text="Date time on which the object was created.",
+                        verbose_name="created at",
+                    ),
+                ),
+                (
+                    "modified",
+                    models.DateTimeField(
+                        auto_now=True,
+                        help_text="Date time on which the object was modified.",
+                        verbose_name="modified at",
+                    ),
+                ),
+                (
+                    "deleted",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Set to False when an element is deleted",
+                    ),
+                ),
+                (
+                    "channel",
+                    models.IntegerField(
+                        choices=[(None, "(Unknown)"), (0, "Console"), (1, "SMS")],
+                        default=1,
+                    ),
+                ),
+                (
+                    "type",
+                    models.IntegerField(
+                        choices=[
+                            (None, "(Unknown)"),
+                            (1, "Validate account"),
+                            (2, "Recover account"),
+                        ]
+                    ),
+                ),
+                (
+                    "token",
+                    models.CharField(
+                        blank=True,
+                        default=api.authentication.services.external_token.token.random_token,
+                        max_length=16,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created', '-modified'],
-                'get_latest_by': 'created',
-                'abstract': False,
+                "ordering": ["-created", "-modified"],
+                "get_latest_by": "created",
+                "abstract": False,
             },
         ),
     ]

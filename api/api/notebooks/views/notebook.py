@@ -4,14 +4,22 @@ from rest_framework import status, permissions, mixins, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from api.notebooks.exceptions import NotebookAlreadyExistsException, NotebookNotFoundException
+from api.notebooks.exceptions import (
+    NotebookAlreadyExistsException,
+    NotebookNotFoundException,
+)
 from api.notebooks.models import Notebook
 from api.notebooks.services import VertexInstanceService
 from api.notebooks.serializers import NotebookSerializer, StartNotebookSerializer
 from api.utils.pagination import StartEndPagination, SearchQueryPagination
 
 
-class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin, GenericViewSet):
+class NotebookViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    GenericViewSet,
+):
     serializer_class = NotebookSerializer
     model = Notebook
     pagination_class = StartEndPagination
@@ -32,7 +40,9 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
             results = []
             for notebook in page:
                 notebook_data = self.get_serializer(notebook).data
-                notebook_data["status"] = VertexInstanceService.get_status(instance_id=notebook_data['name'])
+                notebook_data["status"] = VertexInstanceService.get_status(
+                    instance_id=notebook_data["name"]
+                )
                 results.append(notebook_data)
 
             return self.get_paginated_response(results)
@@ -40,7 +50,9 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
         results = []
         for notebook in queryset:
             notebook_data = self.get_serializer(notebook).data
-            notebook_data["status"] = VertexInstanceService.get_status(instance_id=notebook_data['name'])
+            notebook_data["status"] = VertexInstanceService.get_status(
+                instance_id=notebook_data["name"]
+            )
             results.append(notebook_data)
 
         return Response(results)
@@ -53,7 +65,9 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
         if instance:
             raise NotebookAlreadyExistsException()
 
-        instance_url = VertexInstanceService.create_instance(instance_id=name, user=user)
+        instance_url = VertexInstanceService.create_instance(
+            instance_id=name, user=user
+        )
         serializer.save(name=name, url=instance_url, owner=user)
 
     def perform_destroy(self, instance):
@@ -65,7 +79,11 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(
-            {"detail": _("Notebook '{name}' successfully removed.").format(name=instance.name)},
+            {
+                "detail": _("Notebook '{name}' successfully removed.").format(
+                    name=instance.name
+                )
+            },
             status=status.HTTP_200_OK,
         )
 
@@ -84,7 +102,7 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
         instance_url = VertexInstanceService.start_instance(instance_id=instance.name)
         return Response(
             {"detail": _("Notebook started successfully"), "url": instance_url},
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
 
     @action(
@@ -102,7 +120,7 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
         instance_url = VertexInstanceService.stop_instance(instance_id=instance.name)
         return Response(
             {"detail": _("Notebook stopped successfully"), "url": instance_url},
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
 
     @action(
@@ -118,10 +136,7 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
         if not instance:
             raise NotebookNotFoundException()
         instance_status = VertexInstanceService.get_status(instance_id=instance.name)
-        return Response(
-            {"status": instance_status},
-            status=status.HTTP_200_OK
-        )
+        return Response({"status": instance_status}, status=status.HTTP_200_OK)
 
     @action(
         detail=False,
@@ -135,7 +150,7 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
         instances = Notebook.objects.all()
         for instance in instances:
             instance_status = VertexInstanceService.get_status(instance.name)
-            if instance_status != 'STOPPED':
+            if instance_status != "STOPPED":
                 continue
 
             VertexInstanceService.destroy_instance(instance.name)
@@ -143,6 +158,10 @@ class NotebookViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Des
             deleted_instances += 1
 
         return Response(
-            {"detail": _("Deleted {deleted_instances} inactive instances").format(deleted_instances=deleted_instances)},
-            status=status.HTTP_200_OK
+            {
+                "detail": _("Deleted {deleted_instances} inactive instances").format(
+                    deleted_instances=deleted_instances
+                )
+            },
+            status=status.HTTP_200_OK,
         )

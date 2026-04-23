@@ -10,7 +10,11 @@ from google.oauth2 import service_account
 from google.cloud import storage
 
 
-from api.datasets.exceptions import UrlFileNotExistException, UrlFolderNameExtractionException, UrlProviderException
+from api.datasets.exceptions import (
+    UrlFileNotExistException,
+    UrlFolderNameExtractionException,
+    UrlProviderException,
+)
 from api.datasets.decorators import decode_url
 
 
@@ -44,7 +48,6 @@ class GoogleDriveService(ProviderService):
         )
     except Exception as e:
         print("Google credentials from google drive were not loaded")
-        
 
     @classmethod
     @decode_url
@@ -69,7 +72,9 @@ class GoogleDriveService(ProviderService):
         folder_name = clean_url.split("?")[0]
 
         if folder_name == "" or folder_name.find("/") != -1:
-            raise UrlFolderNameExtractionException(detail=f"Name extracted incorrectly: {folder_name}") 
+            raise UrlFolderNameExtractionException(
+                detail=f"Name extracted incorrectly: {folder_name}"
+            )
 
         return folder_name
 
@@ -83,14 +88,18 @@ class GoogleDriveService(ProviderService):
         if url.find("file") >= 0:
             clean_url = url.replace("https://drive.google.com/file/d/", "")
             file_id = clean_url.split("/")[0]
-        elif url.find("&id") >= 0: 
-            clean_url = url.replace("https://drive.google.com/uc?export=download&id=", "")
+        elif url.find("&id") >= 0:
+            clean_url = url.replace(
+                "https://drive.google.com/uc?export=download&id=", ""
+            )
             file_id = clean_url
-        else: 
-            raise UrlFileNotExistException(detail="File id could not be extracted correctly")
+        else:
+            raise UrlFileNotExistException(
+                detail="File id could not be extracted correctly"
+            )
 
         return file_id
-        
+
     @classmethod
     @decode_url
     def list_files(cls, url: str) -> list:
@@ -110,7 +119,7 @@ class GoogleDriveService(ProviderService):
         files = results.get("files", [])
 
         return files
-    
+
     @classmethod
     @decode_url
     def convert_url(cls, url: str):
@@ -127,7 +136,9 @@ class GoogleDriveService(ProviderService):
         service = build("drive", "v3", credentials=cls.credentials)
         file_id = cls.get_file_id(url)
 
-        meta = service.files().get(fileId=file_id, fields="name, size, mimeType").execute()
+        meta = (
+            service.files().get(fileId=file_id, fields="name, size, mimeType").execute()
+        )
         return meta
 
 
@@ -150,7 +161,7 @@ class S3Service(ProviderService):
     @decode_url
     def is_file(cls, url: str) -> bool:
         """
-        Determines if a link contains a file 
+        Determines if a link contains a file
         """
         url_clean = url.split("/")[-1]
         if url_clean == "":
@@ -166,7 +177,7 @@ class S3Service(ProviderService):
         number of amazon headers that it has
         """
         count = url.count("X-Amz")
-        if count != 8 :
+        if count != 8:
             return False
 
         return True
@@ -178,7 +189,9 @@ class S3Service(ProviderService):
         folder_name = clean_url.split("/")[-2]
 
         if folder_name == "" or folder_name.find("/") != -1:
-            raise UrlFolderNameExtractionException(error=f"Name extracted incorrectly: {folder_name}") 
+            raise UrlFolderNameExtractionException(
+                error=f"Name extracted incorrectly: {folder_name}"
+            )
 
         return folder_name + "/"
 
@@ -188,24 +201,28 @@ class S3Service(ProviderService):
         clean_url = url.replace("https://", "")
         name = clean_url.split("?")[0].split("/")[-1]
 
-        if name == "" :
-            raise UrlFolderNameExtractionException(error=f"Name extracted incorrectly: {name}") 
+        if name == "":
+            raise UrlFolderNameExtractionException(
+                error=f"Name extracted incorrectly: {name}"
+            )
 
-        return name 
+        return name
 
     @classmethod
     @decode_url
     def get_object_key(cls, url: str) -> str:
-        url = url.replace('+', ' ')
+        url = url.replace("+", " ")
         object_key = url.split("amazonaws.com/")[-1]
         if "?" in object_key:
             object_key = object_key.split("?")[0]
 
         if object_key == "":
-            raise UrlFolderNameExtractionException(error=f"Object key extracted incorrectly: {object_key}") 
+            raise UrlFolderNameExtractionException(
+                error=f"Object key extracted incorrectly: {object_key}"
+            )
 
-        return object_key 
-    
+        return object_key
+
     @classmethod
     @decode_url
     def get_bucket_name(cls, url: str) -> str:
@@ -213,7 +230,7 @@ class S3Service(ProviderService):
         bucket_name = clean_url.split(".")[0]
 
         return bucket_name
-    
+
     @classmethod
     @decode_url
     def list_files(cls, url: str) -> list:
@@ -221,12 +238,17 @@ class S3Service(ProviderService):
         folder_prefix = cls.get_folder_name(url)
 
         try:
-            res: Dict = cls.client.list_objects_v2(Bucket=bucket_name, Prefix=folder_prefix)
+            res: Dict = cls.client.list_objects_v2(
+                Bucket=bucket_name, Prefix=folder_prefix
+            )
         except Exception as e:
             raise UrlFolderNameExtractionException(
-                _("Access denied when requesting resources, check your bucket permissions"))
+                _(
+                    "Access denied when requesting resources, check your bucket permissions"
+                )
+            )
 
-        if 'Contents' not in res:
+        if "Contents" not in res:
             raise UrlFolderNameExtractionException(_("No objects found in this folder"))
 
         items = []
@@ -235,18 +257,18 @@ class S3Service(ProviderService):
             head_res = cls.client.head_object(Bucket=bucket_name, Key=object_key)
             content_type = head_res.get("ContentType", "application/octet-stream")
 
-            name =i.get("Key").split("/")[-1]
+            name = i.get("Key").split("/")[-1]
             if name:
                 items.append(
                     dict(
                         name=name,
                         size=i.get("Size"),
                         mimeType=content_type,
-                        webContentLink=f"{url}{name}"
+                        webContentLink=f"{url}{name}",
                     )
-                ) 
+                )
 
-        return items 
+        return items
 
     @classmethod
     @decode_url
@@ -258,23 +280,21 @@ class S3Service(ProviderService):
             res = cls.client.head_object(Bucket=bucket_name, Key=object_key)
         except Exception as e:
             raise UrlProviderException(
-                _("Invalid or forbidden url, check that your bucket has the correct permissions")
+                _(
+                    "Invalid or forbidden url, check that your bucket has the correct permissions"
+                )
             )
 
         content_type = res.get("ContentType", "application/octet-stream")
         size = res.get("ContentLength", 0)
 
-        item = dict(
-            name=object_key.split("/")[-1],
-            size=size,
-            mimeType=content_type
-        )
+        item = dict(name=object_key.split("/")[-1], size=size, mimeType=content_type)
 
-        return item 
+        return item
 
 
 class GoogleCloudService(ProviderService):
-    client = storage.Client.create_anonymous_client() 
+    client = storage.Client.create_anonymous_client()
 
     @classmethod
     @decode_url
@@ -292,7 +312,7 @@ class GoogleCloudService(ProviderService):
     @decode_url
     def is_file(cls, url: str) -> bool:
         """
-        Determines if a link contains a file 
+        Determines if a link contains a file
         """
         url_clean = url.split("/")[-1]
         if url_clean == "":
@@ -310,24 +330,28 @@ class GoogleCloudService(ProviderService):
     @classmethod
     @decode_url
     def get_folder_name(cls, url: str) -> str:
-        clean_url = cls.clean_url(url) 
+        clean_url = cls.clean_url(url)
         folder_name = clean_url.split("/")[-2]
 
         if folder_name == "" or folder_name.find("/") != -1:
-            raise UrlFolderNameExtractionException(error=f"Name extracted incorrectly: {folder_name}") 
+            raise UrlFolderNameExtractionException(
+                error=f"Name extracted incorrectly: {folder_name}"
+            )
 
         return folder_name + "/"
 
     @classmethod
     @decode_url
     def get_file_name(cls, url: str) -> str:
-        clean_url = cls.clean_url(url) 
+        clean_url = cls.clean_url(url)
         name = clean_url.split("?")[0].split("/")[-1]
 
         if name == "":
-            raise UrlFolderNameExtractionException(error=f"Name extracted incorrectly: {name}") 
+            raise UrlFolderNameExtractionException(
+                error=f"Name extracted incorrectly: {name}"
+            )
 
-        return name 
+        return name
 
     @classmethod
     @decode_url
@@ -343,13 +367,13 @@ class GoogleCloudService(ProviderService):
         clean_url = cls.clean_url(url).split("?")[0]
 
         if len(clean_url.split("/")) < 2:
-            raise UrlFolderNameExtractionException() 
+            raise UrlFolderNameExtractionException()
 
         el = clean_url.split("/")[1:]
         object_key = "/".join(el)
 
-        return object_key 
-    
+        return object_key
+
     @classmethod
     @decode_url
     def list_files(cls, url: str) -> list:
@@ -365,11 +389,11 @@ class GoogleCloudService(ProviderService):
                     name=blob.name,
                     size=blob.size,
                     mimeType=blob.content_type,
-                    webContentLink=blob.media_link
+                    webContentLink=blob.media_link,
                 )
                 items.append(item)
 
-        return items 
+        return items
 
     @classmethod
     @decode_url
@@ -382,18 +406,18 @@ class GoogleCloudService(ProviderService):
             res = bucket.get_blob(object_key)
         except Exception as e:
             raise UrlProviderException(
-                _("Invalid or forbidden url, check that your bucket has the correct permissions")
+                _(
+                    "Invalid or forbidden url, check that your bucket has the correct permissions"
+                )
             )
 
         if res is None:
             raise UrlProviderException(
-                _("Invalid or forbidden url, check that your bucket has the correct permissions")
+                _(
+                    "Invalid or forbidden url, check that your bucket has the correct permissions"
+                )
             )
 
-        item = dict(
-            name=res.name,
-            size=res.size,
-            mimeType=res.content_type
-        )
+        item = dict(name=res.name, size=res.size, mimeType=res.content_type)
 
-        return item 
+        return item

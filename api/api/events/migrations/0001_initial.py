@@ -8,40 +8,102 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Event',
+            name="Event",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', models.DateTimeField(auto_now_add=True, help_text='Date time on which the object was created.', verbose_name='created at')),
-                ('modified', models.DateTimeField(auto_now=True, help_text='Date time on which the object was modified.', verbose_name='modified at')),
-                ('deleted', models.BooleanField(default=False, help_text='Set to False when an element is deleted')),
-                ('type', models.CharField(choices=[('T', 'Test')], max_length=10)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(
+                        auto_now_add=True,
+                        help_text="Date time on which the object was created.",
+                        verbose_name="created at",
+                    ),
+                ),
+                (
+                    "modified",
+                    models.DateTimeField(
+                        auto_now=True,
+                        help_text="Date time on which the object was modified.",
+                        verbose_name="modified at",
+                    ),
+                ),
+                (
+                    "deleted",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Set to False when an element is deleted",
+                    ),
+                ),
+                ("type", models.CharField(choices=[("T", "Test")], max_length=10)),
             ],
             options={
-                'ordering': ['-created', '-modified'],
-                'get_latest_by': 'created',
-                'abstract': False,
+                "ordering": ["-created", "-modified"],
+                "get_latest_by": "created",
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='UserEvent',
+            name="UserEvent",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', models.DateTimeField(auto_now_add=True, help_text='Date time on which the object was created.', verbose_name='created at')),
-                ('modified', models.DateTimeField(auto_now=True, help_text='Date time on which the object was modified.', verbose_name='modified at')),
-                ('deleted', models.BooleanField(default=False, help_text='Set to False when an element is deleted')),
-                ('seen_at', models.DateField(blank=True, default=None, null=True)),
-                ('amount', models.IntegerField(default=1)),
-                ('event', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_events', to='events.event')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(
+                        auto_now_add=True,
+                        help_text="Date time on which the object was created.",
+                        verbose_name="created at",
+                    ),
+                ),
+                (
+                    "modified",
+                    models.DateTimeField(
+                        auto_now=True,
+                        help_text="Date time on which the object was modified.",
+                        verbose_name="modified at",
+                    ),
+                ),
+                (
+                    "deleted",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Set to False when an element is deleted",
+                    ),
+                ),
+                ("seen_at", models.DateField(blank=True, default=None, null=True)),
+                ("amount", models.IntegerField(default=1)),
+                (
+                    "event",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="user_events",
+                        to="events.event",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created', '-modified'],
-                'get_latest_by': 'created',
-                'abstract': False,
+                "ordering": ["-created", "-modified"],
+                "get_latest_by": "created",
+                "abstract": False,
             },
         ),
     ]

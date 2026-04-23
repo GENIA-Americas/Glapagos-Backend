@@ -1,4 +1,3 @@
-
 from django.db.models import Q
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
@@ -14,8 +13,7 @@ class ChatSerializer(serializers.Serializer):
     def validate_table(self, value):
         user = self.context["request"].user
         table = Table.objects.filter(
-            Q(file__owner=user) | Q(public=True),
-            name=value
+            Q(file__owner=user) | Q(public=True), name=value
         ).first()
 
         if not table:
@@ -24,4 +22,4 @@ class ChatSerializer(serializers.Serializer):
         bigquery_service = BigQueryService(user=None)
         table.update_schema(bigquery_service)
 
-        return table 
+        return table

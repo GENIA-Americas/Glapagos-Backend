@@ -18,48 +18,66 @@ class ExternalToken(BaseModel):
         choices=ExternalTokenChannel.choices,
         default=ExternalTokenChannel.SMS,
     )
-    type = models.IntegerField(
-        choices=ExternalTokenType.choices,
-        blank=False
+    type = models.IntegerField(choices=ExternalTokenType.choices, blank=False)
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        related_name="external_token",
+        null=False,
+        blank=False,
     )
-    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='external_token', null=False,
-                             blank=False)
     token = models.CharField(default=random_token, max_length=16, blank=True)
 
     @classmethod
     def get_token_type_lifetime(cls, token_type):
-        return settings.AUTHENTICATION_EXTERNAL_TOKEN_EXPIRY[cls.get_type_verbose(token_type).lower()]
+        return settings.AUTHENTICATION_EXTERNAL_TOKEN_EXPIRY[
+            cls.get_type_verbose(token_type).lower()
+        ]
 
     @classmethod
     def get_token_type_resend_time(cls, token_type):
-        return settings.AUTHENTICATION_EXTERNAL_TOKEN_RESEND[cls.get_type_verbose(token_type).lower()]
+        return settings.AUTHENTICATION_EXTERNAL_TOKEN_RESEND[
+            cls.get_type_verbose(token_type).lower()
+        ]
 
     def get_channel_token_message(self):
-        return settings.AUTHENTICATION_EXTERNAL_TOKEN_FORMATS[self.channel_verbose.lower()][
-            self.type_verbose.lower()].format(app_name=settings.APP_NAME, token=self.token)
+        return settings.AUTHENTICATION_EXTERNAL_TOKEN_FORMATS[
+            self.channel_verbose.lower()
+        ][self.type_verbose.lower()].format(
+            app_name=settings.APP_NAME, token=self.token
+        )
 
     @classmethod
     def get_type_verbose(cls, token_type):
         return ExternalTokenType._value2member_map_[token_type]._name_
 
     def get_message_details(self):
-        if self.channel_verbose.lower() not in settings.AUTHENTICATION_EXTERNAL_TOKEN_MESSAGE_FORMATS:
+        if (
+            self.channel_verbose.lower()
+            not in settings.AUTHENTICATION_EXTERNAL_TOKEN_MESSAGE_FORMATS
+        ):
             message = self.activation_url
         else:
-            format_values = {
-                "app_name": settings.APP_NAME, "url": self.activation_url}
-            if self.type_verbose.lower() == 'recover_account':
+            format_values = {"app_name": settings.APP_NAME, "url": self.activation_url}
+            if self.type_verbose.lower() == "recover_account":
                 format_values["url"] = self.reset_password_url
-            if self.channel_verbose.lower() == 'email':
+            if self.channel_verbose.lower() == "email":
                 format_values["email"] = self.user.email
-            message = settings.AUTHENTICATION_EXTERNAL_TOKEN_MESSAGE_FORMATS[self.channel_verbose.lower()][
-                self.type_verbose.lower()].format(**format_values)
+            message = settings.AUTHENTICATION_EXTERNAL_TOKEN_MESSAGE_FORMATS[
+                self.channel_verbose.lower()
+            ][self.type_verbose.lower()].format(**format_values)
 
-        if self.channel_verbose.lower() not in settings.AUTHENTICATION_EXTERNAL_TOKEN_TITLE_FORMATS:
+        if (
+            self.channel_verbose.lower()
+            not in settings.AUTHENTICATION_EXTERNAL_TOKEN_TITLE_FORMATS
+        ):
             title = None  # self.get_type_verbose().lower()
         else:
-            title = settings.AUTHENTICATION_EXTERNAL_TOKEN_TITLE_FORMATS[self.channel_verbose.lower()][
-                self.type_verbose.lower()].format(app_name=settings.APP_NAME, message_type=self.type_verbose)
+            title = settings.AUTHENTICATION_EXTERNAL_TOKEN_TITLE_FORMATS[
+                self.channel_verbose.lower()
+            ][self.type_verbose.lower()].format(
+                app_name=settings.APP_NAME, message_type=self.type_verbose
+            )
 
         return message, title
 
@@ -106,8 +124,13 @@ class ExternalToken(BaseModel):
 def auth_token_created(sender, instance: ExternalToken, *args, **kwargs):
     try:
         channel_token_message, channel_token_title = instance.get_message_details()
-        send_by_channel(instance.channel_verbose, instance.user.preferred_language_code,
-                        email=instance.user.email, phone_number=instance.user.phone_number,
-                        channel_token_message=channel_token_message, channel_token_title=channel_token_title)
+        send_by_channel(
+            instance.channel_verbose,
+            instance.user.preferred_language_code,
+            email=instance.user.email,
+            phone_number=instance.user.phone_number,
+            channel_token_message=channel_token_message,
+            channel_token_title=channel_token_title,
+        )
     except Exception as e:
         raise e

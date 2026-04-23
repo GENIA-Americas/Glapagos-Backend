@@ -14,35 +14,42 @@ class ChartSerializer(serializers.Serializer):
         if not column:
             return column
 
-        table: Table = self.context.get('table')
+        table: Table = self.context.get("table")
         column_type = table.get_column_type(column)
 
         if not column_type:
             raise serializers.ValidationError(
-                _("Column '{column}' not found in the table schema.").format(column=column)
+                _("Column '{column}' not found in the table schema.").format(
+                    column=column
+                )
             )
 
         return column_type
 
     def validate(self, attrs):
-        x = attrs.get('x')
-        y = attrs.get('y')
+        x = attrs.get("x")
+        y = attrs.get("y")
 
         if not x and not y:
-            raise serializers.ValidationError(_("Chart must have at least one coordinate."))
+            raise serializers.ValidationError(
+                _("Chart must have at least one coordinate.")
+            )
 
         x_type = self.validate_column(x)
         y_type = self.validate_column(y)
 
-        if not x and y_type != 'STRING':
+        if not x and y_type != "STRING":
             raise serializers.ValidationError(
-                _("Column '{column}' should be a category of type string.").format(column=y)
+                _("Column '{column}' should be a category of type string.").format(
+                    column=y
+                )
             )
 
-        if not y and x_type != 'STRING':
+        if not y and x_type != "STRING":
             raise serializers.ValidationError(
-                _("Column '{column}' should be a category of type string.").format(column=x)
+                _("Column '{column}' should be a category of type string.").format(
+                    column=x
+                )
             )
 
         return attrs
-

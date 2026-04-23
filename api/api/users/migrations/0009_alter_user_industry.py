@@ -6,13 +6,37 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0008_auto_20240917_1352'),
+        ("users", "0008_auto_20240917_1352"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
-            name='industry',
-            field=models.CharField(blank=True, choices=[('Automotive', 'Automotive'), ('Technology', 'Technology'), ('Energy', 'Energy'), ('Chemical', 'Chemical'), ('Food', 'Food'), ('Pharmaceutical', 'Pharmaceutical'), ('Textile and Fashion', 'Textile and Fashion'), ('Construction', 'Construction'), ('Financial Services', 'Financial Services'), ('Tourism and Hospitality', 'Tourism and Hospitality'), ('Entertainment', 'Entertainment'), ('Mining', 'Mining'), ('Transportation and Logistics', 'Transportation and Logistics'), ('Shipbuilding', 'Shipbuilding'), ('Agriculture and Livestock', 'Agriculture and Livestock'), ('Healthcare and Biotechnology', 'Healthcare and Biotechnology'), ('Defense and Security', 'Defense and Security'), ('Professional Services', 'Professional Services')], max_length=255, null=True),
+            model_name="user",
+            name="industry",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("Automotive", "Automotive"),
+                    ("Technology", "Technology"),
+                    ("Energy", "Energy"),
+                    ("Chemical", "Chemical"),
+                    ("Food", "Food"),
+                    ("Pharmaceutical", "Pharmaceutical"),
+                    ("Textile and Fashion", "Textile and Fashion"),
+                    ("Construction", "Construction"),
+                    ("Financial Services", "Financial Services"),
+                    ("Tourism and Hospitality", "Tourism and Hospitality"),
+                    ("Entertainment", "Entertainment"),
+                    ("Mining", "Mining"),
+                    ("Transportation and Logistics", "Transportation and Logistics"),
+                    ("Shipbuilding", "Shipbuilding"),
+                    ("Agriculture and Livestock", "Agriculture and Livestock"),
+                    ("Healthcare and Biotechnology", "Healthcare and Biotechnology"),
+                    ("Defense and Security", "Defense and Security"),
+                    ("Professional Services", "Professional Services"),
+                ],
+                max_length=255,
+                null=True,
+            ),
         ),
     ]

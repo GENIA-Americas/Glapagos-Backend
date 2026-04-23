@@ -26,7 +26,9 @@ def create_service_account(sender, instance, created, **kwargs):
             account = GoogleServiceAccount.create_account(account_name)
             key = GoogleServiceAccount.create_key(account.unique_id)
 
-            GoogleRole.assign_user_rol(account.email, "roles/bigquery.jobUser", "serviceAccount")
+            GoogleRole.assign_user_rol(
+                account.email, "roles/bigquery.jobUser", "serviceAccount"
+            )
 
             key_instance = ServiceAccountKey(
                 name=key.name,
@@ -36,7 +38,7 @@ def create_service_account(sender, instance, created, **kwargs):
                 valid_before_time=key.valid_before_time,
                 key_algorithm=key.key_algorithm,
                 key_origin=key.key_origin,
-                key_type=key.key_type
+                key_type=key.key_type,
             )
             key_instance.save()
         except Exception as exp:
@@ -49,7 +51,9 @@ def create_service_account(sender, instance, created, **kwargs):
             bigquery_service.create_dataset(dataset_name)
 
             # Assign OWNER role to dataset
-            GoogleRole.assign_dataset_role(dataset_name=dataset_name, account_email=account.email, role="OWNER")
+            GoogleRole.assign_dataset_role(
+                dataset_name=dataset_name, account_email=account.email, role="OWNER"
+            )
 
             account_instance = ServiceAccount(
                 name=account.name,

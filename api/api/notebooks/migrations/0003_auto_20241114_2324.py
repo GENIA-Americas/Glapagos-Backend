@@ -6,20 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('notebooks', '0002_auto_20241113_2004'),
+        ("notebooks", "0002_auto_20241113_2004"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='notebook',
-            name='instance',
+            model_name="notebook",
+            name="instance",
         ),
         migrations.AddField(
-            model_name='notebook',
-            name='url',
+            model_name="notebook",
+            name="url",
             field=models.URLField(blank=True, null=True),
         ),
         migrations.DeleteModel(
-            name='Instance',
+            name="Instance",
         ),
     ]

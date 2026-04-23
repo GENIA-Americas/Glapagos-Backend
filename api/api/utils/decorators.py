@@ -7,7 +7,7 @@ def validate_data(in_serializer_class=None, out_serializer_class=None):
         @wraps(func)
         def wrapper(view, request, *args, **kwargs):
             # In data
-            is_detail_request = 'pk' in request.parser_context['kwargs']
+            is_detail_request = "pk" in request.parser_context["kwargs"]
 
             if in_serializer_class:
                 in_serializer = in_serializer_class
@@ -22,22 +22,21 @@ def validate_data(in_serializer_class=None, out_serializer_class=None):
             validated_data = in_serializer.validated_data
 
             # Process
-            result = func(
-                view, request, validated_data=validated_data, *args, **kwargs)
+            result = func(view, request, validated_data=validated_data, *args, **kwargs)
 
             # Out data
             if isinstance(result, Response):
                 result_data = result.data
-                out_data = validate_out_data(
-                    result_data, out_serializer_class, view)
+                out_data = validate_out_data(result_data, out_serializer_class, view)
                 result.data = out_data
                 return result
             else:
-                result_data = result.pop('data')
-                out_data = validate_out_data(
-                    result_data, out_serializer_class, view)
+                result_data = result.pop("data")
+                out_data = validate_out_data(result_data, out_serializer_class, view)
                 return Response(out_data, **result)
+
         return wrapper
+
     return decorator
 
 

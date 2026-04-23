@@ -16,9 +16,12 @@ async def update_chat(channel_name, obj_dict, chat_model):
         "payload": obj_dict,
     }
 
-    await channel_layer.group_send(group_name, {
-        # This "type" defines which handler on the Consumer gets
-        # called.
-        "type": "notify",
-        "content": content,
-    })
+    await channel_layer.group_send(
+        group_name,
+        {
+            # This "type" defines which handler on the Consumer gets
+            # called.
+            "type": "notify",
+            "content": content,
+        },
+    )

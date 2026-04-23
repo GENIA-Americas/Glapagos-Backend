@@ -6,8 +6,12 @@ from django.conf import settings
 
 from api.users.models import User
 from api.datasets.models import File, Table
-from api.datasets.utils import (csv_parameters_detect, prepare_csv_data_format,
-                                prepare_json_data_format, normalize_column_name)
+from api.datasets.utils import (
+    csv_parameters_detect,
+    prepare_csv_data_format,
+    prepare_json_data_format,
+    normalize_column_name,
+)
 from api.utils.basics import generate_random_string
 from .big_query_service import BigQueryService
 from .google_cloud_storage_service import GCSService, JSONGCSService
@@ -15,15 +19,15 @@ from .google_cloud_storage_service import GCSService, JSONGCSService
 
 class FileServiceFactory:
     @staticmethod
-    def get_file_service(user: User=None, return_instance=True, **kwargs):
-        extension = kwargs['extension']
+    def get_file_service(user: User = None, return_instance=True, **kwargs):
+        extension = kwargs["extension"]
         class_ = None
 
-        if extension.lower() == 'txt':
+        if extension.lower() == "txt":
             class_ = TXTFileService
-        elif extension.lower() == 'csv':
+        elif extension.lower() == "csv":
             class_ = CSVFileService
-        elif extension.lower() in ['json', 'jsonl']:
+        elif extension.lower() in ["json", "jsonl"]:
             class_ = JSONFileService
 
         if not return_instance:
@@ -40,9 +44,11 @@ class FileService(ABC):
         self.public = kwargs["public"]
         self.user = user
         self.description = kwargs["description"]
-        file, extension = os.path.splitext(kwargs['file'].name)
+        file, extension = os.path.splitext(kwargs["file"].name)
         bigquery_valid_filename = normalize_column_name(file)
-        self.filename = f"{generate_random_string(10)}_{bigquery_valid_filename}{extension}"
+        self.filename = (
+            f"{generate_random_string(10)}_{bigquery_valid_filename}{extension}"
+        )
 
     def create_file_object(self, file_url: str):
         file_obj = File.objects.create(
@@ -57,8 +63,7 @@ class FileService(ABC):
         return file_obj
 
     @abstractmethod
-    def process_file(self):
-        ...
+    def process_file(self): ...
 
 
 class StructuredFileService(FileService):
@@ -86,12 +91,10 @@ class StructuredFileService(FileService):
 
     @staticmethod
     @abstractmethod
-    def preview(data: str, skip_leading_rows: int) -> List:
-        ...
+    def preview(data: str, skip_leading_rows: int) -> List: ...
 
     @abstractmethod
-    def process_file(self):
-        ...
+    def process_file(self): ...
 
 
 class TXTFileService(FileService):
@@ -123,7 +126,7 @@ class CSVFileService(StructuredFileService):
             autodetect=self.autodetect,
             skip_leading_rows=self.skip_leading_rows,
             schema=self.schema,
-            format_params=format_params
+            format_params=format_params,
         )
         return file_url
 
@@ -144,6 +147,6 @@ class JSONFileService(StructuredFileService):
             table=table_obj,
             autodetect=self.autodetect,
             skip_leading_rows=0,
-            schema=self.schema
+            schema=self.schema,
         )
         return file_url

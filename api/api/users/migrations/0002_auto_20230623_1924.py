@@ -6,28 +6,35 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0001_initial'),
+        ("users", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='auth0_id',
-            field=models.CharField(blank=True, default='', max_length=100, null=True),
+            model_name="user",
+            name="auth0_id",
+            field=models.CharField(blank=True, default="", max_length=100, null=True),
         ),
         migrations.AddField(
-            model_name='user',
-            name='first_sign_up',
+            model_name="user",
+            name="first_sign_up",
             field=models.BooleanField(default=True),
         ),
         migrations.AddField(
-            model_name='user',
-            name='generated_email',
+            model_name="user",
+            name="generated_email",
             field=models.BooleanField(default=False),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='password_status',
-            field=models.IntegerField(choices=[(0, 'Requires password Change'), (1, 'ACTIVE'), (2, 'External')], default=0),
+            model_name="user",
+            name="password_status",
+            field=models.IntegerField(
+                choices=[
+                    (0, "Requires password Change"),
+                    (1, "ACTIVE"),
+                    (2, "External"),
+                ],
+                default=0,
+            ),
         ),
     ]

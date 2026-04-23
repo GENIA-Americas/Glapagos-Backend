@@ -25,10 +25,10 @@ def lookup_user(key: str, token: dict):
     """Searches for the user email so it takes into
     account the users registered via email and password
     """
-    auth0_id = token['sub'].split('|')[1]
+    auth0_id = token["sub"].split("|")[1]
     email = f"{auth0_id}@auto_generated.email"
-    if 'email' in token:
-        email = token['email']
+    if "email" in token:
+        email = token["email"]
 
     # need to check for the email or the auth0 id in case that the
     # user change his auto generated email, this is because the changed email

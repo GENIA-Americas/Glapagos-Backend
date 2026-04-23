@@ -13,7 +13,7 @@ class BaseViewSet:
         context = super().get_serializer_context()
 
         return context
-    
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.deleted = True

@@ -21,9 +21,13 @@ class Table(BaseModel):
     public = models.BooleanField(default=False)
     role_asigned = models.BooleanField(default=False)
     is_transformed = models.BooleanField(default=False)
-    parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, related_name='child_tables')
-    file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='tables')
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tables', null=True)
+    parent = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, null=True, related_name="child_tables"
+    )
+    file = models.ForeignKey(File, on_delete=models.CASCADE, related_name="tables")
+    owner = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="tables", null=True
+    )
     schema = models.JSONField(null=True, blank=True)
 
     @property
@@ -42,7 +46,9 @@ class Table(BaseModel):
     def clean(self):
         super().clean()
         if self.parent and self.parent == self:
-            raise ValidationError(_("A 'Table' object cannot have itself as its parent."))
+            raise ValidationError(
+                _("A 'Table' object cannot have itself as its parent.")
+            )
 
     def update_table_stats(self, table_ref):
         client = bigquery.Client()
@@ -61,8 +67,7 @@ class Table(BaseModel):
 
         try:
             schema = bigquery_service.get_schema(
-                dataset=self.dataset_name,
-                table=self.name
+                dataset=self.dataset_name, table=self.name
             )
             if schema:
                 self.schema = schema
@@ -72,10 +77,9 @@ class Table(BaseModel):
 
     def get_column_type(self, column_name: str):
         for item in self.schema:
-            if item['column_name'] != column_name:
+            if item["column_name"] != column_name:
                 continue
-            return item['data_type']
+            return item["data_type"]
 
     def __str__(self):
         return f"{self.path}"
-

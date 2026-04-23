@@ -15,27 +15,27 @@ from api.utils.basics import generate_random_string
 
 
 def apply_transformations(
-        table: Table,
-        user: User,
-        transformations: List[Dict],
-        create_table: bool,
-        public_destination: bool = None,
+    table: Table,
+    user: User,
+    transformations: List[Dict],
+    create_table: bool,
+    public_destination: bool = None,
 ) -> Table:
     """
-        Applies a series of transformations to a BigQuery table.
+    Applies a series of transformations to a BigQuery table.
 
-        Args:
-            table (Table): The table to transform.
-            user (User): The user applying the transformations.
-            transformations (list): A list of dictionaries with "field", "transformation" and "options".
-            create_table (bool): If True, allows table creation on the first transformation.
-            public_destination (bool | None): Set new table privacy if create table is True
+    Args:
+        table (Table): The table to transform.
+        user (User): The user applying the transformations.
+        transformations (list): A list of dictionaries with "field", "transformation" and "options".
+        create_table (bool): If True, allows table creation on the first transformation.
+        public_destination (bool | None): Set new table privacy if create table is True
 
-        Returns:
-            Table: The transformed table.
+    Returns:
+        Table: The transformed table.
 
-        Raises:
-            ValueError: If the transformation class is not found.
+    Raises:
+        ValueError: If the transformation class is not found.
     """
     bigquery_service = BigQueryService(user=user)
     for item in transformations:
@@ -49,20 +49,24 @@ def apply_transformations(
         if TransformationClass is None:
             raise ValueError(_(f"Transformation class not found."))
 
-        obj = TransformationClass(table=table, field=field, user=user,
-                                  create_table=create_table,
-                                  public_destination=public_destination,
-                                  options=options)
+        obj = TransformationClass(
+            table=table,
+            field=field,
+            user=user,
+            create_table=create_table,
+            public_destination=public_destination,
+            options=options,
+        )
         try:
             table = obj.execute()
             create_table = False
         except (GoogleAPIError, QueryFailedException) as exp:
             table.update_schema(bigquery_service, force=True)
             raise TransformationFailedException(
-                detail=_("Error while applying transformation {transformation} over {field}").format(
-                    transformation=transformation, field=field
-                ),
-                error=str(exp)
+                detail=_(
+                    "Error while applying transformation {transformation} over {field}"
+                ).format(transformation=transformation, field=field),
+                error=str(exp),
             )
     table.update_schema(bigquery_service, force=True)
     return table
@@ -70,19 +74,26 @@ def apply_transformations(
 
 class Transformation(ABC):
     """
-        Abstract base class for applying transformations to a BigQuery table.
+    Abstract base class for applying transformations to a BigQuery table.
 
-        Args:
-            table (Table): The table to transform.
-            field (str): The field in the table to be transformed.
-            user (User): The user performing the transformation.
-            create_table (bool): Flag to indicate if a new table should be created.
+    Args:
+        table (Table): The table to transform.
+        field (str): The field in the table to be transformed.
+        user (User): The user performing the transformation.
+        create_table (bool): Flag to indicate if a new table should be created.
     """
-    def __init__(self, table: Table, field: str, user: User,
-                 create_table: bool, public_destination: bool,
-                 options: Dict = None) -> None:
+
+    def __init__(
+        self,
+        table: Table,
+        field: str,
+        user: User,
+        create_table: bool,
+        public_destination: bool,
+        options: Dict = None,
+    ) -> None:
         """
-            Initializes the transformation with the given table, field and user
+        Initializes the transformation with the given table, field and user
         """
         self.table: Table = table
         self.field: str = field
@@ -93,36 +104,40 @@ class Transformation(ABC):
 
     def get_mode(self) -> bigquery.WriteDisposition:
         """
-            Determines the BigQuery write disposition mode.
+        Determines the BigQuery write disposition mode.
 
-            Returns:
-                bigquery.WriteDisposition: The write mode, either WRITE_EMPTY (for table creation) or WRITE_TRUNCATE.
+        Returns:
+            bigquery.WriteDisposition: The write mode, either WRITE_EMPTY (for table creation) or WRITE_TRUNCATE.
         """
-        return bigquery.WriteDisposition.WRITE_EMPTY if self.create_table else bigquery.WriteDisposition.WRITE_TRUNCATE
+        return (
+            bigquery.WriteDisposition.WRITE_EMPTY
+            if self.create_table
+            else bigquery.WriteDisposition.WRITE_TRUNCATE
+        )
 
     @abstractmethod
     def get_query(self) -> str:
         """
-            Abstract method to define the transformation query.
+        Abstract method to define the transformation query.
 
-            Returns:
-                str: The query to execute in BigQuery.
+        Returns:
+            str: The query to execute in BigQuery.
         """
         ...
 
     def generate_table_name(self):
         """
-            Generates a new table name based on the current table name.
+        Generates a new table name based on the current table name.
 
-            If the current table name contains the substring '_copy_', the new table name
-            will preserve the part before the last '_copy_' and append a new '_copy_'
-            followed by a random 5-character string.
+        If the current table name contains the substring '_copy_', the new table name
+        will preserve the part before the last '_copy_' and append a new '_copy_'
+        followed by a random 5-character string.
 
-            If the current table name does not contain '_copy_', the function appends
-            '_copy_' followed by a random 5-character string to the original name.
+        If the current table name does not contain '_copy_', the function appends
+        '_copy_' followed by a random 5-character string to the original name.
 
-            Returns:
-                str: The newly generated table name.
+        Returns:
+            str: The newly generated table name.
         """
         split_name: List = self.table.name.split("_copy_")
         if len(split_name) > 1:
@@ -131,33 +146,38 @@ class Transformation(ABC):
 
     def execute(self) -> None:
         """
-            Executes the transformation by running a BigQuery query and handling table creation if needed.
+        Executes the transformation by running a BigQuery query and handling table creation if needed.
 
-            Params:
-            create_table (bool): If a new table should be created to storage transformation results
-            public_destination (bool): Destination privacy. True if destination table should be public.
+        Params:
+        create_table (bool): If a new table should be created to storage transformation results
+        public_destination (bool): Destination privacy. True if destination table should be public.
 
-            Returns:
-                Table: The transformed table.
+        Returns:
+            Table: The transformed table.
 
-            Raises:
-                GoogleAPIError: If there is an error executing the query in BigQuery.
-                Exception: For any other unexpected errors.
+        Raises:
+            GoogleAPIError: If there is an error executing the query in BigQuery.
+            Exception: For any other unexpected errors.
         """
         bigquery_service = BigQueryService(user=self.user)
         mode: bigquery.WriteDisposition = self.get_mode()
 
         if not self.table.schema:
             schema = bigquery_service.get_schema(
-                dataset=self.table.dataset_name,
-                table=self.table.name
+                dataset=self.table.dataset_name, table=self.table.name
             )
             if not schema:
-                raise TransformationFailedException(_("No schema info for this dataset."))
+                raise TransformationFailedException(
+                    _("No schema info for this dataset.")
+                )
 
         destination_table = self.table
         if self.create_table:
-            dataset_name = settings.BQ_DATASET_ID if self.public_destination else self.user.service_account.dataset_name
+            dataset_name = (
+                settings.BQ_DATASET_ID
+                if self.public_destination
+                else self.user.service_account.dataset_name
+            )
 
             destination_table = Table.objects.create(
                 name=self.generate_table_name(),
@@ -181,7 +201,9 @@ class Transformation(ABC):
             raise TransformationFailedException()
         bigquery_service.query(query=query, job_config=job_config)
         destination_table.mounted = True
-        ref = bigquery_service.get_table_reference(destination_table.dataset_name, destination_table.name)
+        ref = bigquery_service.get_table_reference(
+            destination_table.dataset_name, destination_table.name
+        )
         destination_table.update_table_stats(table_ref=ref)
 
         return destination_table
@@ -331,22 +353,26 @@ class StandardizingTextTransformation(Transformation):
 
     def get_query(self) -> str:
         """
-            Constructs a SQL query to apply a text case transformation to the specified column.
+        Constructs a SQL query to apply a text case transformation to the specified column.
 
-            Raises:
-                TransformationFailedException: If the column type is not 'STRING' or if
-                there's no information about the field in the schema.
+        Raises:
+            TransformationFailedException: If the column type is not 'STRING' or if
+            there's no information about the field in the schema.
 
-            Returns:
-                str: The SQL query for applying the text case transformation.
-            """
+        Returns:
+            str: The SQL query for applying the text case transformation.
+        """
         convert_from = self.table.get_column_type(column_name=self.field)
         if not convert_from:
             raise TransformationFailedException(
-                _("No data info for the field {field} in the schema.").format(field=self.field)
+                _("No data info for the field {field} in the schema.").format(
+                    field=self.field
+                )
             )
         if convert_from.upper() != "STRING":
-            raise TransformationFailedException(_("Column must be of type string to apply text standardization."))
+            raise TransformationFailedException(
+                _("Column must be of type string to apply text standardization.")
+            )
 
         text_case = self.options.get("text_case")
         query = f"""

@@ -47,7 +47,9 @@ def prepare_json_data_format(data: str, include_examples: bool = True) -> List:
             if bigquery_type == "RECORD":
                 nested_data = df[column].fillna("").tolist()
                 nested_json = json.dumps(nested_data)
-                column_data["fields"] = prepare_json_data_format(nested_json, include_examples=False)
+                column_data["fields"] = prepare_json_data_format(
+                    nested_json, include_examples=False
+                )
 
             result.append(column_data)
         return result
@@ -57,15 +59,15 @@ def prepare_json_data_format(data: str, include_examples: bool = True) -> List:
 
 def create_dataframe_from_json(file) -> pd.DataFrame:
     """
-        Creates a pandas DataFrame from a JSON file.
+    Creates a pandas DataFrame from a JSON file.
 
-        Args:
-            file: The file containing the JSON data.
+    Args:
+        file: The file containing the JSON data.
 
-        Returns:
-            df (pd.DataFrame): The DataFrame created from the JSON file.
+    Returns:
+        df (pd.DataFrame): The DataFrame created from the JSON file.
     """
-    content = file.read().decode('utf-8')
+    content = file.read().decode("utf-8")
     file.seek(0)
     try:
         data = json.loads(content)
@@ -86,9 +88,8 @@ def create_dataframe_from_json(file) -> pd.DataFrame:
 
 
 def get_content_from_url_json(
-        urls: list[str], 
-        max_lines: int | None  = 20,
-        **kwargs) -> str:
+    urls: list[str], max_lines: int | None = 20, **kwargs
+) -> str:
     """
     Get's the preview from a json file url or list of urls
     validating column names and joining the file contents
@@ -99,20 +100,25 @@ def get_content_from_url_json(
 
     assert len(urls) > 0, "It needs to be at least one url in the list"
 
-    ml = 0 
+    ml = 0
     url_count = len(urls)
     if max_lines:
-        ml = math.ceil(max_lines/url_count)
+        ml = math.ceil(max_lines / url_count)
 
-    columns = None 
+    columns = None
     items = []
     item_count = 0
 
     for url in urls:
         r = requests.get(url, stream=True)
 
-        if r.status_code != 200 or r.headers.get("Content-Type", "") not in ["application/octet-stream", "application/json"]:
-            raise JsonPreviewFailed(detail=_("Invalid url or file/folder doesn't not exist"))
+        if r.status_code != 200 or r.headers.get("Content-Type", "") not in [
+            "application/octet-stream",
+            "application/json",
+        ]:
+            raise JsonPreviewFailed(
+                detail=_("Invalid url or file/folder doesn't not exist")
+            )
 
         open_brackets = 0
         item = ""
@@ -123,7 +129,7 @@ def get_content_from_url_json(
                 if c == "{":
                     save = True
                     open_brackets += 1
-                elif c == "}": 
+                elif c == "}":
                     open_brackets -= 1
                     if open_brackets == 0:
                         complete_item = True
@@ -132,7 +138,7 @@ def get_content_from_url_json(
                     item += c
 
                 if complete_item:
-                    if item[0] in [",", "["]: 
+                    if item[0] in [",", "["]:
                         item = item[1:]
 
                     load_item = json.loads(item)
@@ -144,11 +150,15 @@ def get_content_from_url_json(
                     complete_item = False
 
                     if columns == None:
-                        columns = load_item.keys() 
+                        columns = load_item.keys()
 
                     if columns != load_item.keys():
                         raise JsonPreviewFailed(
-                            dict(detail=_("The tables need to have the same number of columns and column names"))
+                            dict(
+                                detail=_(
+                                    "The tables need to have the same number of columns and column names"
+                                )
+                            )
                         )
 
                 if item_count == ml and max_lines:
@@ -158,4 +168,3 @@ def get_content_from_url_json(
                 break
 
     return json.dumps(items)
-

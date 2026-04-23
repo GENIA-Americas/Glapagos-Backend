@@ -24,5 +24,7 @@ class InvalidEmailAddressException(GenericAPIException):
 
 class AssignRoleFailedException(GenericAPIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-    default_detail = _("An error occurred while assigning the necessary roles to the email account.")
+    default_detail = _(
+        "An error occurred while assigning the necessary roles to the email account."
+    )
     default_code = "assign_role_failed"

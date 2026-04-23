@@ -4,15 +4,25 @@ from google.api_core.retry import Retry
 from google.api_core.exceptions import NotFound
 from google.cloud import notebooks_v2
 from google.cloud.notebooks_v2 import (
-    Instance, GceSetup, AcceleratorConfig,
-    BootDisk, DataDisk, ServiceAccount,
-    CreateInstanceRequest, StartInstanceRequest, StopInstanceRequest
+    Instance,
+    GceSetup,
+    AcceleratorConfig,
+    BootDisk,
+    DataDisk,
+    ServiceAccount,
+    CreateInstanceRequest,
+    StartInstanceRequest,
+    StopInstanceRequest,
 )
 
 from api.users.models import User
 from api.notebooks.exceptions import (
-    InvalidGoogleAccountException, NotebookStartFailedException,NotebookStopFailedException,
-    NotebookDestroyFailedException, NotebookNotFoundException, NotebookInvalidState
+    InvalidGoogleAccountException,
+    NotebookStartFailedException,
+    NotebookStopFailedException,
+    NotebookDestroyFailedException,
+    NotebookNotFoundException,
+    NotebookInvalidState,
 )
 
 
@@ -39,28 +49,25 @@ class VertexInstanceService:
         parent = f"projects/{cls.PROJECT_ID}/locations/{cls.LOCATION}"
 
         gce_setup = GceSetup(
-            machine_type = cls.MACHINE_TYPE,
+            machine_type=cls.MACHINE_TYPE,
             # TODO: Graphics Accelerator
             # accelerator_configs = [AcceleratorConfig(
             #     type = AcceleratorConfig.AcceleratorType.NVIDIA_TESLA_T4,
             #     core_count = 1
             # )],
-            service_accounts = [ServiceAccount(email = user.service_account.email)],
-            boot_disk = BootDisk(disk_size_gb=150),
-            data_disks = [DataDisk(disk_size_gb=50)],
-            metadata = {
+            service_accounts=[ServiceAccount(email=user.service_account.email)],
+            boot_disk=BootDisk(disk_size_gb=150),
+            data_disks=[DataDisk(disk_size_gb=50)],
+            metadata={
                 "proxy-mode": "service_account",
                 "idle-shutdown": "true",
                 "idle-shutdown-timeout": cls.IDLE_SHUTDOWN_TIMEOUT,
-                "gcs-data-bucket": f"{settings.GCS_NOTEBOOK_BUCKET}/{user.id}"
-            }
-
+                "gcs-data-bucket": f"{settings.GCS_NOTEBOOK_BUCKET}/{user.id}",
+            },
         )
 
         instance = Instance(
-            name = instance_id,
-            instance_owners=[user.gmail],
-            gce_setup = gce_setup
+            name=instance_id, instance_owners=[user.gmail], gce_setup=gce_setup
         )
 
         request = CreateInstanceRequest(
@@ -72,7 +79,9 @@ class VertexInstanceService:
         operation = client.create_instance(request=request)
         operation.result()
 
-        retry_policy = Retry(predicate=lambda e: isinstance(e, ValueError), deadline=300)
+        retry_policy = Retry(
+            predicate=lambda e: isinstance(e, ValueError), deadline=300
+        )
         instance_url = retry_policy(lambda: cls.check_proxy_uri(instance_id))()
         return instance_url
 
@@ -102,7 +111,9 @@ class VertexInstanceService:
                 operation = client.start_instance(request=request)
                 operation.result()
 
-            retry_policy = Retry(predicate=lambda e: isinstance(e, ValueError), deadline=300)
+            retry_policy = Retry(
+                predicate=lambda e: isinstance(e, ValueError), deadline=300
+            )
             instance_url = retry_policy(lambda: cls.check_proxy_uri(instance_id))()
             return instance_url
         except Exception as exp:
@@ -136,7 +147,9 @@ class VertexInstanceService:
 
         except NotFound:
             raise NotebookNotFoundException(
-                detail=_("Instance {instance_id} not found").format(instance_id=instance_id),
+                detail=_("Instance {instance_id} not found").format(
+                    instance_id=instance_id
+                ),
             )
         except Exception as exp:
             raise NotebookDestroyFailedException(error=str(exp))

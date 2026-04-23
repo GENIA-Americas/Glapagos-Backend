@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('datasets', '0010_auto_20241004_2225'),
+        ("datasets", "0010_auto_20241004_2225"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='table',
-            name='public',
+            model_name="table",
+            name="public",
             field=models.BooleanField(default=False),
         ),
     ]

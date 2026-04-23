@@ -1,16 +1,16 @@
 # Django
-from django.urls import include, path 
+from django.urls import include, path
 
 # Django Rest Framework
 from rest_framework.routers import DefaultRouter
 
 # Views
-from api.ai.views import AiViewset 
+from api.ai.views import AiViewset
 
 router = DefaultRouter()
 
-router.register(r'ai', AiViewset, basename='ai')
+router.register(r"ai", AiViewset, basename="ai")
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path("", include(router.urls)),
 ]

@@ -4,7 +4,10 @@ from io import StringIO
 from google.cloud import storage
 from django.conf import settings
 
-from api.datasets.exceptions import UploadFailedException, CloudStorageOperationException
+from api.datasets.exceptions import (
+    UploadFailedException,
+    CloudStorageOperationException,
+)
 
 
 class GCSService:
@@ -29,7 +32,11 @@ class GCSService:
         try:
             storage_client = storage.Client()
             bucket = storage_client.get_bucket(bucket_name)
-            blobs = list(storage_client.list_blobs(bucket, prefix=f"{folder_name}/", max_results=1))
+            blobs = list(
+                storage_client.list_blobs(
+                    bucket, prefix=f"{folder_name}/", max_results=1
+                )
+            )
             if blobs:
                 return
 

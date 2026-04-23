@@ -9,8 +9,6 @@ from api.events.views import *
 
 router = DefaultRouter()
 
-router.register(r'events', EventViewSet, basename='events')
+router.register(r"events", EventViewSet, basename="events")
 
-urlpatterns = [
-    path('', include(router.urls))
-]
+urlpatterns = [path("", include(router.urls))]

@@ -18,15 +18,17 @@ class NotebookSerializer(serializers.ModelSerializer):
         value = f"{value}-{generate_random_string(5)}"
         value = value.lower()
 
-        value = re.sub(r'[^a-z0-9-]', '-', value)
+        value = re.sub(r"[^a-z0-9-]", "-", value)
 
         if not value[0].isalpha():
-            value = f'a{value}'
+            value = f"a{value}"
 
-        value = value[:58].rstrip('-')
+        value = value[:58].rstrip("-")
 
-        if not re.match(r'^[a-z][a-z0-9-]{0,57}$', value):
-            raise serializers.ValidationError(_("Invalid notebook name after normalization."))
+        if not re.match(r"^[a-z][a-z0-9-]{0,57}$", value):
+            raise serializers.ValidationError(
+                _("Invalid notebook name after normalization.")
+            )
 
         return value
 

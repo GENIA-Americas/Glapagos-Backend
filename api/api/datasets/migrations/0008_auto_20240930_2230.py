@@ -7,18 +7,23 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('datasets', '0007_table_role_asigned'),
+        ("datasets", "0007_table_role_asigned"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='table',
-            name='is_transformed',
+            model_name="table",
+            name="is_transformed",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='table',
-            name='parent',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='child_tables', to='datasets.table'),
+            model_name="table",
+            name="parent",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="child_tables",
+                to="datasets.table",
+            ),
         ),
     ]

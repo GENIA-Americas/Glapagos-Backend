@@ -25,9 +25,7 @@ class Auth0JWTBearerTokenAuthentication(TokenAuthentication):
             domain = cls.get_setting("AUTH0_DOMAIN", "")
             issuer = f"https://{domain}/"
             jsonurl = f"{issuer}.well-known/jwks.json"
-            cls._jwks_client = jwt.PyJWKClient(
-                jsonurl
-            )
+            cls._jwks_client = jwt.PyJWKClient(jsonurl)
         return cls._jwks_client
 
     @classmethod
@@ -65,7 +63,9 @@ class Auth0JWTBearerTokenAuthentication(TokenAuthentication):
 class DoubleAuthentication(TokenAuthentication):
     keyword = "Bearer"
     authenticator_classes = [
-        Auth0JWTBearerTokenAuthentication, CookieOrHeaderAuthentication]
+        Auth0JWTBearerTokenAuthentication,
+        CookieOrHeaderAuthentication,
+    ]
 
     def authenticate(self, *args, **kwargs) -> Tuple[Any, dict]:
         for authenticator_class in self.authenticator_classes:

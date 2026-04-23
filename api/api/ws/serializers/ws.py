@@ -17,6 +17,6 @@ class WSSerializer(serializers.Serializer):
 
     def get_group_names(self):
         groups = []
-        if self.validated_data['type'] == 'event':
-            groups.append('event-{}'.format(self.validated_data['event_id']))
+        if self.validated_data["type"] == "event":
+            groups.append("event-{}".format(self.validated_data["event_id"]))
         return groups

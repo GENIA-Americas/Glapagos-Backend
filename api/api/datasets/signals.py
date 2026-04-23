@@ -20,4 +20,3 @@ def grant_table_role(sender, instance, created, **kwargs):
         GoogleRole.assign_table_role(instance.path, account.email)
         instance.role_asigned = True
         instance.save()
-

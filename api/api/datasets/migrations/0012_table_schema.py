@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('datasets', '0011_table_public'),
+        ("datasets", "0011_table_public"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='table',
-            name='schema',
+            model_name="table",
+            name="schema",
             field=models.JSONField(blank=True, null=True),
         ),
     ]

@@ -11,16 +11,15 @@ from api.datasets.models import Table
 # Permissions
 from api.ai.services import ChatAssistant
 
+
 class AiViewset(viewsets.ViewSet):
-    serializer_class = ChatSerializer 
+    serializer_class = ChatSerializer
 
     @action(
         detail=False, methods=["post"], permission_classes=[permissions.IsAuthenticated]
     )
     def chat(self, request, *args, **kwargs):
-        serializer = ChatSerializer(
-            data=request.data, context=dict(request=request)
-        )
+        serializer = ChatSerializer(data=request.data, context=dict(request=request))
         serializer.is_valid(raise_exception=True)
 
         msg = serializer.validated_data.get("msg", "")
@@ -29,4 +28,3 @@ class AiViewset(viewsets.ViewSet):
         res = ChatAssistant.chat(msg, context)
 
         return Response(dict(message=res.__dict__), status=status.HTTP_200_OK)
-

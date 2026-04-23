@@ -6,13 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('datasets', '0013_alter_serviceaccountkey_private_key_data'),
+        ("datasets", "0013_alter_serviceaccountkey_private_key_data"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='file',
-            name='type',
-            field=models.CharField(choices=[('csv', 'CSV'), ('json', 'JSON'), ('jsonl', 'JSONL'), ('txt', 'TXT')], max_length=10),
+            model_name="file",
+            name="type",
+            field=models.CharField(
+                choices=[
+                    ("csv", "CSV"),
+                    ("json", "JSON"),
+                    ("jsonl", "JSONL"),
+                    ("txt", "TXT"),
+                ],
+                max_length=10,
+            ),
         ),
     ]

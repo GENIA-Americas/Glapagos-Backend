@@ -15,21 +15,60 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Notebook',
+            name="Notebook",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', models.DateTimeField(auto_now_add=True, help_text='Date time on which the object was created.', verbose_name='created at')),
-                ('modified', models.DateTimeField(auto_now=True, help_text='Date time on which the object was modified.', verbose_name='modified at')),
-                ('deleted', models.BooleanField(default=False, help_text='Set to False when an element is deleted')),
-                ('name', models.CharField(max_length=255)),
-                ('instance_name', models.CharField(blank=True, max_length=255, null=True)),
-                ('instance_url', models.URLField(blank=True, null=True)),
-                ('owner', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='notebooks', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(
+                        auto_now_add=True,
+                        help_text="Date time on which the object was created.",
+                        verbose_name="created at",
+                    ),
+                ),
+                (
+                    "modified",
+                    models.DateTimeField(
+                        auto_now=True,
+                        help_text="Date time on which the object was modified.",
+                        verbose_name="modified at",
+                    ),
+                ),
+                (
+                    "deleted",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Set to False when an element is deleted",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255)),
+                (
+                    "instance_name",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                ("instance_url", models.URLField(blank=True, null=True)),
+                (
+                    "owner",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="notebooks",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created', '-modified'],
-                'get_latest_by': 'created',
-                'abstract': False,
+                "ordering": ["-created", "-modified"],
+                "get_latest_by": "created",
+                "abstract": False,
             },
         ),
     ]

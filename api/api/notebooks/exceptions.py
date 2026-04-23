@@ -18,12 +18,15 @@ class NotebookAlreadyExistsException(GenericAPIException):
 
 class NotebookNotFoundException(GenericAPIException):
     status_code = status.HTTP_404_NOT_FOUND
-    default_detail = _("Notebook cannot be found. Check if you have permission to access this notebook.")
+    default_detail = _(
+        "Notebook cannot be found. Check if you have permission to access this notebook."
+    )
     default_code = "notebook_not_found"
 
 
 class NotebookOperationException(GenericAPIException):
     """Base exception for notebook operations."""
+
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
 
 

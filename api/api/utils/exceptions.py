@@ -7,9 +7,10 @@ class GenericAPIException(APIException):
     A generic API exception that includes an additional 'error' field to store
     the original exception details.
     """
+
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'An error occurred.'
-    default_code = 'generic_error'
+    default_detail = "An error occurred."
+    default_code = "generic_error"
 
     def __init__(self, detail=None, code=None, error=None):
         """

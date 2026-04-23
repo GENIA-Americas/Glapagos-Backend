@@ -7,23 +7,30 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('datasets', '0003_file_table'),
+        ("datasets", "0003_file_table"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='table',
-            name='mounted',
+            model_name="table",
+            name="mounted",
             field=models.BooleanField(default=False),
         ),
         migrations.AlterField(
-            model_name='file',
-            name='type',
-            field=models.CharField(choices=[('csv', 'CSV'), ('json', 'JSON'), ('txt', 'TXT')], max_length=10),
+            model_name="file",
+            name="type",
+            field=models.CharField(
+                choices=[("csv", "CSV"), ("json", "JSON"), ("txt", "TXT")],
+                max_length=10,
+            ),
         ),
         migrations.AlterField(
-            model_name='table',
-            name='file',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tables', to='datasets.file'),
+            model_name="table",
+            name="file",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="tables",
+                to="datasets.file",
+            ),
         ),
     ]

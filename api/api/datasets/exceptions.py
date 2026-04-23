@@ -12,7 +12,9 @@ class UrlFileNotExistException(GenericAPIException):
 
 class UrlProviderException(GenericAPIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = _("Couln't identify provider in url, or maybe is not register in providers")
+    default_detail = _(
+        "Couln't identify provider in url, or maybe is not register in providers"
+    )
     default_code = "invalid_provider_url"
 
 
@@ -80,7 +82,9 @@ class TransformationFailedException(GenericAPIException):
 
 class ChartLimitExceededException(GenericAPIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = _("Chart limit exceeded: The selected field contains too many distinct categories.")
+    default_detail = _(
+        "Chart limit exceeded: The selected field contains too many distinct categories."
+    )
     default_code = "chart_limit_exceeded"
 
 

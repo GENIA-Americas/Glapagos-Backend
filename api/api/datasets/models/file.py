@@ -11,11 +11,10 @@ class File(BaseModel):
     storage_url = models.CharField(max_length=255)
     public = models.BooleanField(default=False)
     description = models.TextField()
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='files')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="files")
 
     def get_owner(self):
         return self.owner
 
     def __str__(self):
         return self.name
-

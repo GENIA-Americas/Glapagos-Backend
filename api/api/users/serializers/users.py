@@ -9,25 +9,36 @@ from api.users.enums import SetUpStatus, PasswordStatus
 
 # Serializers
 
+
 class UserSerializer(serializers.ModelSerializer):
-    industry = serializers.CharField(source='get_industry_display', read_only=True)
+    industry = serializers.CharField(source="get_industry_display", read_only=True)
 
     class Meta:
         model = User
         fields = [
-            'id', 'email', 'gmail', 'username', 'first_name', 'last_name', 'organization', 'industry',
-            'country', 'country_code', 'phone_number', 'password'
+            "id",
+            "email",
+            "gmail",
+            "username",
+            "first_name",
+            "last_name",
+            "organization",
+            "industry",
+            "country",
+            "country_code",
+            "phone_number",
+            "password",
         ]
         extra_kwargs = {
-            'password': {'write_only': True},
-            'organization': {'required': False},
-            'country': {'required': False},
+            "password": {"write_only": True},
+            "organization": {"required": False},
+            "country": {"required": False},
         }
 
     def update(self, instance, validated_data):
-        if 'password' in validated_data:
-            validated_data['password_status'] = PasswordStatus.ACTIVE
-            instance.set_password(validated_data.pop('password'))
+        if "password" in validated_data:
+            validated_data["password_status"] = PasswordStatus.ACTIVE
+            instance.set_password(validated_data.pop("password"))
 
         if not instance.setup_status != SetUpStatus.VALIDATED:
             if instance.password and instance.username and instance.phone_number:
@@ -43,7 +54,7 @@ class SimpleUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username']
+        fields = ["id", "username"]
 
 
 class Auth0CreateUserSerializer(serializers.ModelSerializer):
@@ -51,27 +62,27 @@ class Auth0CreateUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['token']
+        fields = ["token"]
 
     def create(self, validated_data):
         # call create_user on user object. Without this
         # the password will be stored in plain text.
-        data = validated_data['token']
-        auth0_id = data['sub'].split('|')[1]
+        data = validated_data["token"]
+        auth0_id = data["sub"].split("|")[1]
         generated_email = False
-        username = str(data['nickname']).replace(" ", ".")
+        username = str(data["nickname"]).replace(" ", ".")
 
         # generate fake email for providers that do not
         # send it
-        if 'email' not in data:
-            data['email'] = f"{auth0_id}@auto_generated.email"
+        if "email" not in data:
+            data["email"] = f"{auth0_id}@auto_generated.email"
             generated_email = True
 
         if User.objects.filter(username=username).exists() or username == "":
             username += auth0_id
 
         user_data = dict(
-            email=data['email'],
+            email=data["email"],
             username=username,
             auth0_id=auth0_id,
             setup_status=SetUpStatus.VALIDATED,

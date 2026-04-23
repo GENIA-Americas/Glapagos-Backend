@@ -1,12 +1,18 @@
 from django.conf import settings
 import requests
 
-def get_user(key:str, user_sub:dict):
-    headers = { 'authorization': f"Bearer {key}" }
 
-    res = requests.request("GET", f"https://{settings.AUTH0_DOMAIN}/api/v2/users/{user_sub}", headers=headers)
+def get_user(key: str, user_sub: dict):
+    headers = {"authorization": f"Bearer {key}"}
+
+    res = requests.request(
+        "GET",
+        f"https://{settings.AUTH0_DOMAIN}/api/v2/users/{user_sub}",
+        headers=headers,
+    )
     data = res.json()
     return data
+
 
 """
 Auth0 user description call example response

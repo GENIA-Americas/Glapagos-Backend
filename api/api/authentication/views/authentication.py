@@ -13,7 +13,11 @@ from api.authentication.serializers import *
 from api.authentication.services import signup, authentication, jwt_authentication
 
 # Utilities
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenError
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenError,
+)
 from rest_framework_simplejwt.exceptions import InvalidToken
 from api.utils.decorators import validate_data
 
@@ -27,11 +31,13 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         serializer.is_valid(raise_exception=True)
         response = Response(status=status.HTTP_200_OK)
         tokens = dict(
-            refresh_token=serializer.validated_data['refresh'],
-            access_token=serializer.validated_data['access'],
+            refresh_token=serializer.validated_data["refresh"],
+            access_token=serializer.validated_data["access"],
         )
-        response.data = authentication.user_jwt_setting(response.set_cookie, settings.SIMPLE_JWT, is_refresh=False, **tokens)
-        response.data['user'] = serializer.validated_data['user']
+        response.data = authentication.user_jwt_setting(
+            response.set_cookie, settings.SIMPLE_JWT, is_refresh=False, **tokens
+        )
+        response.data["user"] = serializer.validated_data["user"]
         return response
 
 
@@ -39,13 +45,15 @@ class CustomTokenRefreshView(TokenRefreshView):
     serializer_class = CustomTokenRefreshSerializer
 
     def post(self, request, *args, **kwargs):
-        
+
         serializer = self.get_serializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
         response = Response(status=status.HTTP_200_OK)
         tokens = dict(
-            access_token=serializer.validated_data['access'],
+            access_token=serializer.validated_data["access"],
         )
-        response.data = authentication.user_jwt_setting(response.set_cookie, settings.SIMPLE_JWT, is_refresh=True, **tokens)
+        response.data = authentication.user_jwt_setting(
+            response.set_cookie, settings.SIMPLE_JWT, is_refresh=True, **tokens
+        )
         return response

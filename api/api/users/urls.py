@@ -11,8 +11,8 @@ from api.users.views import UsersViewSet
 
 router = DefaultRouter()
 
-router.register(r'users', UsersViewSet, basename='users')
+router.register(r"users", UsersViewSet, basename="users")
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path("", include(router.urls)),
 ]

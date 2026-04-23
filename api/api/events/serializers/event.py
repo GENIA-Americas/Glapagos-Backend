@@ -5,8 +5,10 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from api.events.enums import EventType
+
 # Models
 from api.events.models import Event, UserEvent
+
 # utilities
 from api.users.models import User
 from api.utils.serializers import ChoiceField
@@ -22,7 +24,7 @@ class UserForEventSerializer(serializers.ModelSerializer):
 class SimpleUserEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserEvent
-        fields = ['event_type']
+        fields = ["event_type"]
 
 
 class EventsModelSerializer(serializers.ModelSerializer):
@@ -34,7 +36,7 @@ class EventsModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ['id', 'type', 'created_by', 'created', 'is_checked']
+        fields = ["id", "type", "created_by", "created", "is_checked"]
 
 
 class UserEventSerializer(SimpleUserEventSerializer):
@@ -44,7 +46,7 @@ class UserEventSerializer(SimpleUserEventSerializer):
 
     class Meta:
         model = UserEvent
-        fields = ['event', 'data', 'section']
+        fields = ["event", "data", "section"]
 
     def get_section(self, obj):
         last_week = (now() + dateutil.relativedelta.relativedelta(weeks=-1)).date()
@@ -61,12 +63,12 @@ class UserEventSerializer(SimpleUserEventSerializer):
 
     def to_representation(self, instance):
         repr = super(UserEventSerializer, self).to_representation(instance)
-        if repr['section'] == "today":
-            repr['order'] = 1
-        if repr['section'] == "last_week":
-            repr['order'] = 2
-        if repr['section'] == "last_month":
-            repr['order'] = 3
+        if repr["section"] == "today":
+            repr["order"] = 1
+        if repr["section"] == "last_week":
+            repr["order"] = 2
+        if repr["section"] == "last_month":
+            repr["order"] = 3
 
         data = repr.pop("data")
         final_data = {**repr, **data}
@@ -78,8 +80,7 @@ class UserEventSerializer(SimpleUserEventSerializer):
         }
         event_type = obj.event_type
         if obj.event_type not in EVENT_SERIALIZERS_BY_TYPE:
-            raise ValidationError(
-                f'The event type {event_type.name} is not supported')
+            raise ValidationError(f"The event type {event_type.name} is not supported")
 
         serializer = EVENT_SERIALIZERS_BY_TYPE[event_type](obj)
         return serializer.data

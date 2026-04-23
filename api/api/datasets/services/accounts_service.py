@@ -35,11 +35,13 @@ class GoogleServiceAccount:
 
         service_account_name = f"projects/{settings.BQ_PROJECT_ID}/serviceAccounts/{account_id}@{settings.BQ_PROJECT_ID}.iam.gserviceaccount.com"
         retry = Retry(
-            predicate=lambda exc: isinstance(exc, NotFound),  # Retry only on NotFound errors
+            predicate=lambda exc: isinstance(
+                exc, NotFound
+            ),  # Retry only on NotFound errors
             initial=1.0,
             maximum=10.0,
             multiplier=2.0,
-            deadline=120.0
+            deadline=120.0,
         )
 
         @retry
@@ -48,7 +50,6 @@ class GoogleServiceAccount:
 
         wait_for_service_account()
         return response
-
 
     @staticmethod
     def create_key(unique_id: str):
@@ -100,7 +101,7 @@ class GoogleRole:
             policy.bindings.append(policy_pb2.Binding(role=role, members=[member]))
             updated_policy = client.set_iam_policy(
                 request={"resource": project_name, "policy": policy},
-                retry=retry_strategy
+                retry=retry_strategy,
             )
 
             return updated_policy

@@ -11,8 +11,7 @@ Serializer = TypeVar("Serializer")
 class IService(ABC):
     @property
     @abstractmethod
-    def model(self) -> Model:
-        ...
+    def model(self) -> Model: ...
 
 
 class Service(IService, ABC):
@@ -51,11 +50,17 @@ class Service(IService, ABC):
         excludes = kwargs.get("excludes", {})
 
         # Get all elements from BD
-        all_elements = self.model.objects.filter(deleted=False, **filters).exclude(**excludes)
+        all_elements = self.model.objects.filter(deleted=False, **filters).exclude(
+            **excludes
+        )
 
         # Order all elements
         all_elements = all_elements.order_by("pk")
-        if (kwargs.get("sort") and kwargs.get("order") and not isinstance(kwargs.get("sort"), list)):
+        if (
+            kwargs.get("sort")
+            and kwargs.get("order")
+            and not isinstance(kwargs.get("sort"), list)
+        ):
             # Ordena los elementos
             sort = kwargs.pop("sort")
             order = kwargs.pop("order")
@@ -143,7 +148,13 @@ class Service(IService, ABC):
                 return data_saved
             return self.json()
 
-    def update_by(self, partial: bool = False, return_object: bool = False, by: str = "id", **kwargs):
+    def update_by(
+        self,
+        partial: bool = False,
+        return_object: bool = False,
+        by: str = "id",
+        **kwargs,
+    ):
         """
         Update an element in the DB.
         If serializer is provided, it validates the fields against the serializer
@@ -153,7 +164,9 @@ class Service(IService, ABC):
         :param kwargs: Fields to save in the model
         :return:
         """
-        assert by in kwargs, "The field by which it is going to be updated was not defined"
+        assert (
+            by in kwargs
+        ), "The field by which it is going to be updated was not defined"
         try:
             id_to_update = {by: kwargs[by]}
             model_object = self.model.objects.get(**id_to_update)
@@ -203,7 +216,9 @@ class Service(IService, ABC):
         :param kwargs: Filters params to query
         :return:
         """
-        assert by in kwargs.keys(), "The field by which it is going to be deleted was not defined"
+        assert (
+            by in kwargs.keys()
+        ), "The field by which it is going to be deleted was not defined"
         try:
             id_to_delete = {by: kwargs[by]}
             model_object = self.model.objects.get(**id_to_delete)
@@ -313,7 +328,9 @@ class Service(IService, ABC):
         :return: JSON Parseable
         """
         if isinstance(self._results, list) or isinstance(self._results, QuerySet):
-            true__data = self._serializer(self._results, many=True, context=self._context).data
+            true__data = self._serializer(
+                self._results, many=True, context=self._context
+            ).data
             return true__data, self._total
         elif self._serializer:
             return self._serializer(self._results, context=self._context).data

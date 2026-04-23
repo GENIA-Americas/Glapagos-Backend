@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('datasets', '0006_serviceaccount_serviceaccountkey'),
+        ("datasets", "0006_serviceaccount_serviceaccountkey"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='table',
-            name='role_asigned',
+            model_name="table",
+            name="role_asigned",
             field=models.BooleanField(default=False),
         ),
     ]

@@ -1,4 +1,4 @@
-""" User model."""
+"""User model."""
 
 # Django
 from django.db import models
@@ -15,7 +15,7 @@ import uuid
 class UserManager(BaseUserManager):
     def create_user(self, email=None, username=None, password=None, **extra_fields):
         if not email:
-            raise ValueError(_('The email must be set'))
+            raise ValueError(_("The email must be set"))
 
         email = email.lower()
 
@@ -34,15 +34,17 @@ class UserManager(BaseUserManager):
         """
         Create and save a SuperUser with the given username and password.
         """
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True)
 
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError(_('Superuser must have is_staff=True.'))
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError(_('Superuser must have is_superuser=True.'))
-        return self.create_user(email=email, password=password, username=email, **extra_fields)
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError(_("Superuser must have is_staff=True."))
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError(_("Superuser must have is_superuser=True."))
+        return self.create_user(
+            email=email, password=password, username=email, **extra_fields
+        )
 
 
 class User(BaseModel, AbstractUser):
@@ -53,8 +55,7 @@ class User(BaseModel, AbstractUser):
     """
 
     class Meta:
-        permissions = (
-        )
+        permissions = ()
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
@@ -68,24 +69,31 @@ class User(BaseModel, AbstractUser):
 
     organization = models.CharField(max_length=255, null=True, blank=True)
 
-    industry = models.CharField(choices=Industry.choices, max_length=255, null=True, blank=True)
+    industry = models.CharField(
+        choices=Industry.choices, max_length=255, null=True, blank=True
+    )
 
-    country = models.CharField(choices=Country.choices, max_length=255, null=True, blank=True)
+    country = models.CharField(
+        choices=Country.choices, max_length=255, null=True, blank=True
+    )
 
     country_code = models.CharField(max_length=5)
 
     phone_number = models.CharField(max_length=16)
 
     setup_status = models.IntegerField(
-        choices=SetUpStatus.choices, default=SetUpStatus.SIGN_UP_VALIDATION)
+        choices=SetUpStatus.choices, default=SetUpStatus.SIGN_UP_VALIDATION
+    )
 
     password_status = models.IntegerField(
-        choices=PasswordStatus.choices, default=PasswordStatus.ACTIVE)
+        choices=PasswordStatus.choices, default=PasswordStatus.ACTIVE
+    )
 
-    preferred_language_code = models.CharField(max_length=16, default='es_ES')
+    preferred_language_code = models.CharField(max_length=16, default="es_ES")
 
-    role = models.CharField(choices=UserRoles.choices,
-                            max_length=5, blank=True, null=True)
+    role = models.CharField(
+        choices=UserRoles.choices, max_length=5, blank=True, null=True
+    )
 
     public = models.BooleanField(default=False)
 
@@ -95,8 +103,7 @@ class User(BaseModel, AbstractUser):
 
     first_sign_up = models.BooleanField(default=True)
 
-    auth0_id = models.CharField(
-        default='', max_length=100, blank=True, null=True)
+    auth0_id = models.CharField(default="", max_length=100, blank=True, null=True)
 
     def get_owner(self):
         return self
@@ -106,7 +113,7 @@ class User(BaseModel, AbstractUser):
         has_model_access = self.get_owner() == user
         if not has_model_access:
             return False
-        if 'password' in attributes:
+        if "password" in attributes:
             if self.password_status != PasswordStatus.CHANGE:
                 return False
         return True
@@ -119,17 +126,23 @@ class User(BaseModel, AbstractUser):
 
     def can_auth(self):
         if self.setup_status in [SetUpStatus.SIGN_UP_VALIDATION.value]:
-            print("WARNING: can't login because",
-                  "setup_status", self.setup_status)
+            print("WARNING: can't login because", "setup_status", self.setup_status)
             return False
         if self.password_status in [PasswordStatus.EXTERNAL.value]:
-            print("WARNING: can't login because",
-                  "password_status", self.password_status)
+            print(
+                "WARNING: can't login because", "password_status", self.password_status
+            )
             return False
         return True
 
     def get_email_name(self):
-        return str(self.email).replace("@", "").replace(".", "").replace("_", "").replace("-", "")[:22]
+        return (
+            str(self.email)
+            .replace("@", "")
+            .replace(".", "")
+            .replace("_", "")
+            .replace("-", "")[:22]
+        )
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

@@ -7,9 +7,8 @@ from api.datasets.exceptions import TextPreviewFailed
 
 
 def get_content_from_url_text(
-        urls: list[str], 
-        max_lines: int | None = 20,
-        **kwargs) -> bytes:
+    urls: list[str], max_lines: int | None = 20, **kwargs
+) -> bytes:
     """
     Gets the preview from a json file url or list of urls
     validating column names and joining the file contents
@@ -20,10 +19,10 @@ def get_content_from_url_text(
 
     assert len(urls) > 0, "It needs to be at least one url in the list"
 
-    ml = 0 
+    ml = 0
     url_count = len(urls)
     if max_lines:
-        ml = math.ceil(max_lines/url_count)
+        ml = math.ceil(max_lines / url_count)
 
     content = []
     lines = 0
@@ -31,7 +30,9 @@ def get_content_from_url_text(
         r = requests.get(url, stream=True)
 
         if r.status_code != 200:
-            raise TextPreviewFailed(detail=_("Invalid url or file/folder doesn't not exist"))
+            raise TextPreviewFailed(
+                detail=_("Invalid url or file/folder doesn't not exist")
+            )
 
         for line in r.iter_lines():
             content.append(line)
@@ -44,5 +45,3 @@ def get_content_from_url_text(
             break
 
     return b"\n".join(content)
-
-

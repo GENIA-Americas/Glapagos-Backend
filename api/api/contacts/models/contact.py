@@ -21,8 +21,12 @@ def contact_created(sender, instance: Contact, *args, **kwargs):
         message = f"El usuario {instance.email} se ha registrado."
         channel = "console"
         send_by_channel(
-            channel, 'es', email=settings.ADMIN_EMAIL, phone_number=None,
-            channel_token_message=message, channel_token_title=title
+            channel,
+            "es",
+            email=settings.ADMIN_EMAIL,
+            phone_number=None,
+            channel_token_message=message,
+            channel_token_title=title,
         )
     except Exception as e:
         raise e

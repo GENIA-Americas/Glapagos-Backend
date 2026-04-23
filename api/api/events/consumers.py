@@ -46,8 +46,8 @@ class Consumer(AsyncJsonWebsocketConsumer):
         """
 
         cookie = {}
-        for header in self.scope['headers']:
-            if header[0].decode() == 'cookie':
+        for header in self.scope["headers"]:
+            if header[0].decode() == "cookie":
                 cookies = header[1].decode()
                 cookie = SimpleCookie(cookies)
                 cookie.load(cookies)
@@ -74,4 +74,7 @@ class Consumer(AsyncJsonWebsocketConsumer):
                 self.groups.append(group_name)
                 # This actually subscribes the requesting socket to the
                 # named group:
-                await self.channel_layer.group_add(group_name, self.channel_name, )
+                await self.channel_layer.group_add(
+                    group_name,
+                    self.channel_name,
+                )

@@ -9,8 +9,8 @@ from api.notebooks.views.notebook import NotebookViewSet
 
 router = DefaultRouter()
 
-router.register(r'notebook', NotebookViewSet, basename='notebook')
+router.register(r"notebook", NotebookViewSet, basename="notebook")
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path("", include(router.urls)),
 ]

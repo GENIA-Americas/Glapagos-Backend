@@ -9,18 +9,22 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('datasets', '0008_auto_20240930_2230'),
+        ("datasets", "0008_auto_20240930_2230"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='serviceaccount',
-            name='dataset_name',
+            model_name="serviceaccount",
+            name="dataset_name",
             field=models.CharField(max_length=255, null=True),
         ),
         migrations.AlterField(
-            model_name='serviceaccount',
-            name='owner',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='service_account', to=settings.AUTH_USER_MODEL),
+            model_name="serviceaccount",
+            name="owner",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="service_account",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

@@ -7,5 +7,5 @@ from django.apps import AppConfig
 class AuthenticationAppConfig(AppConfig):
     """Authentication app config"""
 
-    name = 'api.authentication'
-    verbose_name = 'Authentication'
+    name = "api.authentication"
+    verbose_name = "Authentication"

@@ -9,9 +9,18 @@ from rest_framework.decorators import action
 
 from api.utils.sendgrid_mail import send_private_data_mail
 from api.datasets.services.upload_providers import return_url_provider
-from api.datasets.serializers.file import JSONSerializer, CSVSerializer, UrlPreviewSerializer, TXTSerializer
+from api.datasets.serializers.file import (
+    JSONSerializer,
+    CSVSerializer,
+    UrlPreviewSerializer,
+    TXTSerializer,
+)
 from api.datasets.models import File, Table
-from api.datasets.services import BigQueryService, FileServiceFactory, StructuredFileService
+from api.datasets.services import (
+    BigQueryService,
+    FileServiceFactory,
+    StructuredFileService,
+)
 from api.datasets.serializers import (
     FileSerializer,
     FileUploadSerializer,
@@ -51,23 +60,21 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         serializer.is_valid(raise_exception=True)
 
         table = serializer.validated_data.pop("table", Table)
-        emails = [table.owner.email] 
+        emails = [table.owner.email]
         user = request.user
 
         context = {
-            **serializer.validated_data, 
+            **serializer.validated_data,
             "first_name": table.owner.first_name,
             "email": user.email,
             "phone_number": user.phone_number,
             "industry": user.industry,
         }
 
-        send_private_data_mail(
-            context,
-            emails,
-            locale=request.LANGUAGE_CODE
+        send_private_data_mail(context, emails, locale=request.LANGUAGE_CODE)
+        return Response(
+            dict(detail=_("Email send succesfully")), status=status.HTTP_200_OK
         )
-        return Response(dict(detail=_("Email send succesfully")), status=status.HTTP_200_OK)
 
     @action(
         detail=False,
@@ -114,17 +121,19 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
                 data=dict(
                     file=f,
                     schema=serializer.validated_data.get("schema", []),
-                    autodetect=serializer.validated_data.get("autodetect", False)
+                    autodetect=serializer.validated_data.get("autodetect", False),
                 )
             ).is_valid(raise_exception=True)
-            serializer.validated_data["file"] = f 
-
+            serializer.validated_data["file"] = f
 
         file_service = FileServiceFactory.get_file_service(
             user=request.user, **serializer.validated_data
         )
         file_url = file_service.process_file()
-        return Response({"detail": _("File uploaded successfully"), "file_url": file_url}, status=status.HTTP_201_CREATED)
+        return Response(
+            {"detail": _("File uploaded successfully"), "file_url": file_url},
+            status=status.HTTP_201_CREATED,
+        )
 
     @action(
         detail=False,
@@ -137,13 +146,15 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         serializer = FilePreviewSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         preview = serializer.validated_data["preview"]
-        skip_leading_rows = serializer.validated_data.get('skip_leading_rows')
-        file_type = serializer.validated_data['file_type']
+        skip_leading_rows = serializer.validated_data.get("skip_leading_rows")
+        file_type = serializer.validated_data["file_type"]
 
         FileService: Type[StructuredFileService] = FileServiceFactory.get_file_service(
             return_instance=False, extension=file_type
         )
-        bigquery_format = FileService.preview(data=preview, skip_leading_rows=skip_leading_rows)
+        bigquery_format = FileService.preview(
+            data=preview, skip_leading_rows=skip_leading_rows
+        )
         return Response(bigquery_format, status=status.HTTP_200_OK)
 
     @action(

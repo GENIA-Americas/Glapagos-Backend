@@ -2,13 +2,16 @@
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.db import models
+
 # Timezone
 from django.utils import timezone
 
 from api.events.enums import EventType
 from api.events.service.event_service import EventService
+
 # Models
 from api.users.models import User
+
 # Utils
 from api.utils.models import BaseModel
 
@@ -22,10 +25,10 @@ class UserEvent(BaseModel):
     User event model
     """
 
-    user = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     event = models.ForeignKey(
-        'events.Event', on_delete=models.CASCADE, related_name='user_events')
+        "events.Event", on_delete=models.CASCADE, related_name="user_events"
+    )
     seen_at = models.DateField(null=True, blank=True, default=None)
     amount = models.IntegerField(default=1)
 
@@ -41,7 +44,9 @@ class Event(BaseModel):
     """
 
     type = models.CharField(choices=EventType.choices, max_length=10)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True
+    )
 
     @classmethod
     def test(cls, created_by):

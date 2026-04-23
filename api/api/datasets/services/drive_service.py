@@ -4,7 +4,11 @@ from django.conf import settings
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-from api.datasets.exceptions import UrlFolderNameExtractionException, UploadFailedException
+from api.datasets.exceptions import (
+    UrlFolderNameExtractionException,
+    UploadFailedException,
+)
+
 
 class ProviderService(ABC):
     @classmethod
@@ -31,7 +35,6 @@ class GoogleDriveService(ProviderService):
     except Exception as exp:
         print(str(exp))
 
-
     @classmethod
     def is_folder(cls, url: str) -> bool:
         """
@@ -39,9 +42,9 @@ class GoogleDriveService(ProviderService):
         """
 
         if url.find("https://drive.google.com/drive/folders/") >= 0:
-            return True 
+            return True
 
-        return False 
+        return False
 
     @classmethod
     def get_folder_name(cls, url: str) -> str:
@@ -53,7 +56,9 @@ class GoogleDriveService(ProviderService):
         folder_name = clean_url.split("?")[0]
 
         if folder_name == "" or folder_name.find("/") != -1:
-            raise UrlFolderNameExtractionException(error=f"Name extracted incorrectly: {folder_name}") 
+            raise UrlFolderNameExtractionException(
+                error=f"Name extracted incorrectly: {folder_name}"
+            )
 
         return folder_name
 
@@ -65,7 +70,7 @@ class GoogleDriveService(ProviderService):
         clean_url = url.replace("https://drive.google.com/file/d/", "")
         file_id = clean_url.split("/")[0]
         return file_id
-        
+
     @classmethod
     def list_files(cls, url: str) -> list:
         """List the files in a public folder"""
@@ -84,7 +89,7 @@ class GoogleDriveService(ProviderService):
         files = results.get("files", [])
 
         return files
-    
+
     @classmethod
     def convert_url(cls, url: str):
         """

@@ -12,12 +12,12 @@ from .views import *
 router = DefaultRouter()
 
 # router.register(r'auth', AuthViewSet, basename='auth')
-router.register(r'auth', SignupViewSet, basename='auth')
+router.register(r"auth", SignupViewSet, basename="auth")
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path("", include(router.urls)),
     # path('password-reset/<uidb64>/<token>/', auth_view.PasswordResetConfirmView.as_view(),name='password-reset'),
     # path('password_reset_complete/',auth_view.PasswordResetCompleteView.as_view(),name='password-reset-complete'),
-    path('auth/token/', CustomTokenObtainPairView.as_view(), name='login'),
-    path('auth/token/refresh/', CustomTokenRefreshView.as_view(), name='refresh'),
+    path("auth/token/", CustomTokenObtainPairView.as_view(), name="login"),
+    path("auth/token/refresh/", CustomTokenRefreshView.as_view(), name="refresh"),
 ]

@@ -29,34 +29,35 @@ def custom_exception_handler(exc, context):
         request = context.get("request")
         path = request.path if request else "unknown path"
 
-        tb_str = ''.join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+        tb_str = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
 
         if isinstance(exc, ValidationError):
-            logger.error(f'Validation Error: {exc} in {path}\n{tb_str}')
+            logger.error(f"Validation Error: {exc} in {path}\n{tb_str}")
         elif isinstance(exc, GenericAPIException):
-            logger.error(f'Error: {exc} in {path}. {exc.error}\n{tb_str}')
+            logger.error(f"Error: {exc} in {path}. {exc.error}\n{tb_str}")
             response.data = {
-                'detail': response.data.get("detail", exc.default_detail),
-                'error': exc.error,
-                'status_code': exc.status_code
+                "detail": response.data.get("detail", exc.default_detail),
+                "error": exc.error,
+                "status_code": exc.status_code,
             }
         else:
-            logger.error(f'Error: {exc} in {path}\n{tb_str}')
+            logger.error(f"Error: {exc} in {path}\n{tb_str}")
             response.data = {
-                'detail': response.data.get("detail", _("An unexpected error occurred.")),
-                'status_code': response.status_code
+                "detail": response.data.get(
+                    "detail", _("An unexpected error occurred.")
+                ),
+                "status_code": response.status_code,
             }
     else:
         view = context.get("view")
         view_info = view.__class__.__name__ if view else "unknown view"
 
-        tb_str = ''.join(traceback.format_exception(type(exc), exc, exc.__traceback__))
-        logger.critical(f'Unhandled error: {exc} in {view_info}\n{tb_str}')
+        tb_str = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+        logger.critical(f"Unhandled error: {exc} in {view_info}\n{tb_str}")
 
         response = Response(
-            {'detail': _('Internal server error.')},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            {"detail": _("Internal server error.")},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
     return response
-

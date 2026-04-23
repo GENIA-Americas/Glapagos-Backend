@@ -7,13 +7,13 @@ import secured_fields.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('datasets', '0012_table_schema'),
+        ("datasets", "0012_table_schema"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='serviceaccountkey',
-            name='private_key_data',
+            model_name="serviceaccountkey",
+            name="private_key_data",
             field=secured_fields.fields.EncryptedTextField(),
         ),
     ]

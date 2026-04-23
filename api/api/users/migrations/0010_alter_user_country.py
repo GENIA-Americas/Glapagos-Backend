@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0009_alter_user_industry'),
+        ("users", "0009_alter_user_industry"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
-            name='country',
-            field=models.CharField(blank=True, choices=[("<enum 'Country'>", 'Country')], max_length=255, null=True),
+            model_name="user",
+            name="country",
+            field=models.CharField(
+                blank=True,
+                choices=[("<enum 'Country'>", "Country")],
+                max_length=255,
+                null=True,
+            ),
         ),
     ]

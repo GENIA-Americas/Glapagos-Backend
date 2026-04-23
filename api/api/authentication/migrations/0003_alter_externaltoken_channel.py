@@ -6,13 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('authentication', '0002_externaltoken_user'),
+        ("authentication", "0002_externaltoken_user"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='externaltoken',
-            name='channel',
-            field=models.IntegerField(choices=[(None, '(Unknown)'), (0, 'Console'), (1, 'SMS'), (2, 'Email')], default=1),
+            model_name="externaltoken",
+            name="channel",
+            field=models.IntegerField(
+                choices=[(None, "(Unknown)"), (0, "Console"), (1, "SMS"), (2, "Email")],
+                default=1,
+            ),
         ),
     ]

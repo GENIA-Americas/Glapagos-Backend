@@ -1,4 +1,3 @@
-
 # Rest Framework
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.decorators import action
@@ -28,9 +27,14 @@ from api.users.exceptions import ServiceAccountCreateException, DatasetCreateExc
 
 class SignupViewSet(GenericViewSet):
 
-    @action(detail=False, methods=['post'], serializer_class=SignUpEmailSerializer, permission_classes=[
-        AllowAny
-    ], name='sign-up', url_path='sign-up')
+    @action(
+        detail=False,
+        methods=["post"],
+        serializer_class=SignUpEmailSerializer,
+        permission_classes=[AllowAny],
+        name="sign-up",
+        url_path="sign-up",
+    )
     @validate_data(out_serializer_class=UserSerializer)
     def sign_up(self, request, validated_data):
         # Users validated by default (Temporal)
@@ -50,7 +54,7 @@ class SignupViewSet(GenericViewSet):
                 channel=ExternalTokenChannel.CONSOLE,
                 user_id=None,
                 locale=request.LANGUAGE_CODE,
-                **validated_data
+                **validated_data,
             )
             user = User.objects.filter(pk=user_id).first()
             return dict(data=user)
@@ -60,55 +64,64 @@ class SignupViewSet(GenericViewSet):
                 user.delete()
             raise exp
 
-    @action(detail=False, methods=['get'], serializer_class=SignUpValidateCodeSerializer, permission_classes=[
-        AllowAny
-    ], name='sign-up-validate', url_path='sign-up-validate/(?P<user_id>[^/.]+)/(?P<token>[^/.]+)')
+    @action(
+        detail=False,
+        methods=["get"],
+        serializer_class=SignUpValidateCodeSerializer,
+        permission_classes=[AllowAny],
+        name="sign-up-validate",
+        url_path="sign-up-validate/(?P<user_id>[^/.]+)/(?P<token>[^/.]+)",
+    )
     def sign_up_validate(self, request, user_id=None, token=None):
         locale = request.LANGUAGE_CODE
-        if locale not in ['es', 'en']:
-            locale = 'en'
+        if locale not in ["es", "en"]:
+            locale = "en"
 
         try:
-            data = {
-                'user_id': user_id,
-                'token': token
-            }
+            data = {"user_id": user_id, "token": token}
             serializer = self.get_serializer(data=data)
             serializer.is_valid(raise_exception=True)
 
-            user = serializer.validated_data['user']
+            user = serializer.validated_data["user"]
             user.setup_status = SetUpStatus.VALIDATED
             user.save()
 
-            context = {
-                'login_url': settings.FRONTEND_LOGIN_URL
-            }
-            return render(request, f'account_activated_{locale}.html', context)
+            context = {"login_url": settings.FRONTEND_LOGIN_URL}
+            return render(request, f"account_activated_{locale}.html", context)
         except serializers.ValidationError as exp:
             context = {
-                'error': exp.detail['detail'][0],
+                "error": exp.detail["detail"][0],
             }
-            return render(request, f'account_activation_error_{locale}.html', context)
+            return render(request, f"account_activation_error_{locale}.html", context)
 
-    @action(detail=False, methods=['post'], serializer_class=ForgotPasswordValidateCodeSerializer, permission_classes=[
-        AllowAny
-    ], name='forgot-password-validate', url_path='forgot-password-validate')
+    @action(
+        detail=False,
+        methods=["post"],
+        serializer_class=ForgotPasswordValidateCodeSerializer,
+        permission_classes=[AllowAny],
+        name="forgot-password-validate",
+        url_path="forgot-password-validate",
+    )
     @validate_data()
     def forgot_password_validate(self, request, validated_data):
-        password = validated_data['password']
-        user = validated_data['user']
+        password = validated_data["password"]
+        user = validated_data["user"]
         signup.forgot_password_validated(user=user, password=password)
         response = Response(status=200)
 
-        return response 
+        return response
 
-
-    @action(detail=False, methods=['post'], serializer_class=ForgotPasswordRequestCodeSerializer, permission_classes=[
-        AllowAny
-    ], name='forgot-password', url_path='forgot-password')
+    @action(
+        detail=False,
+        methods=["post"],
+        serializer_class=ForgotPasswordRequestCodeSerializer,
+        permission_classes=[AllowAny],
+        name="forgot-password",
+        url_path="forgot-password",
+    )
     @validate_data()
     def forgot_password(self, request, validated_data):
         result = signup.forgot_password_request_code(
-            **validated_data, locale=request.LANGUAGE_CODE)
+            **validated_data, locale=request.LANGUAGE_CODE
+        )
         return dict(data=result)
-

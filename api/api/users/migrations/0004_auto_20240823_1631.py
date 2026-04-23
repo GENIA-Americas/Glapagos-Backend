@@ -6,32 +6,39 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0003_alter_user_phone_number'),
+        ("users", "0003_alter_user_phone_number"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='user',
-            name='dob',
+            model_name="user",
+            name="dob",
         ),
         migrations.AddField(
-            model_name='user',
-            name='country',
+            model_name="user",
+            name="country",
             field=models.CharField(max_length=255, null=True),
         ),
         migrations.AddField(
-            model_name='user',
-            name='country_code',
+            model_name="user",
+            name="country_code",
             field=models.CharField(max_length=10, null=True),
         ),
         migrations.AddField(
-            model_name='user',
-            name='organization',
+            model_name="user",
+            name="organization",
             field=models.CharField(max_length=255, null=True),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='password_status',
-            field=models.IntegerField(choices=[(0, 'Requires password Change'), (1, 'ACTIVE'), (2, 'External')], default=1),
+            model_name="user",
+            name="password_status",
+            field=models.IntegerField(
+                choices=[
+                    (0, "Requires password Change"),
+                    (1, "ACTIVE"),
+                    (2, "External"),
+                ],
+                default=1,
+            ),
         ),
     ]
