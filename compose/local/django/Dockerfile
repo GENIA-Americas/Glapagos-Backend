@@ -33,7 +33,7 @@ RUN apk add libmagic
 RUN apk add curl dcron
 
 COPY ./requirements /requirements
-RUN pip install -r /requirements/local.txt
+RUN pip install -r /requirements/local.txt && pip install setuptools==67.8.0
 
 COPY ./compose/local/django/remove_notebooks.sh /usr/local/bin/remove_notebooks.sh
 RUN chmod +x /usr/local/bin/remove_notebooks.sh

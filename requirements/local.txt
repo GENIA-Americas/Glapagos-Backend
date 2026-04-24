@@ -14,3 +14,4 @@ factory-boy
 flake8
 
 django-storages
+setuptools

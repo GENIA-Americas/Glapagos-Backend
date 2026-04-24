@@ -51,7 +51,7 @@ django-modeltranslation
 pillow
 
 # Swagger
-drf-yasg==1.21.4
+drf-yasg==1.21.7
 
 # Authentication
 twilio
@@ -83,3 +83,4 @@ pandas
 #Notebooks
 google-cloud-notebooks
 
+setuptools
