@@ -1,6 +1,7 @@
+import logging
 import os
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional
 
 from django.conf import settings
 
@@ -16,42 +17,49 @@ from api.utils.basics import generate_random_string
 from .big_query_service import BigQueryService
 from .google_cloud_storage_service import GCSService, JSONGCSService
 
+logger = logging.getLogger(__name__)
+
 
 class FileServiceFactory:
+    _EXTENSION_MAP = {
+        "txt": "TXTFileService",
+        "csv": "CSVFileService",
+        "json": "JSONFileService",
+        "jsonl": "JSONFileService",
+    }
+
     @staticmethod
-    def get_file_service(user: User = None, return_instance=True, **kwargs):
-        extension = kwargs["extension"]
-        class_ = None
+    def get_file_service(
+        user: Optional[User] = None, return_instance: bool = True, **kwargs
+    ):
+        extension = kwargs.get("extension", "").lower()
+        class_name = FileServiceFactory._EXTENSION_MAP.get(extension)
+        if not class_name:
+            logger.warning("Unsupported file extension: %s", extension)
+            return None
 
-        if extension.lower() == "txt":
-            class_ = TXTFileService
-        elif extension.lower() == "csv":
-            class_ = CSVFileService
-        elif extension.lower() in ["json", "jsonl"]:
-            class_ = JSONFileService
+        cls = globals().get(class_name)
+        if cls is None:
+            return None
 
-        if not return_instance:
-            return class_
-
-        if class_:
-            return class_(user, **kwargs)
+        return cls(user, **kwargs) if return_instance else cls
 
 
 class FileService(ABC):
-    def __init__(self, user: User = None, **kwargs):
+    def __init__(self, user: Optional[User] = None, **kwargs):
         self.file = kwargs["file"]
-        self.extension = kwargs["extension"]
+        self.extension = kwargs["extension"].lower()
         self.public = kwargs["public"]
         self.user = user
-        self.description = kwargs["description"]
-        file, extension = os.path.splitext(kwargs["file"].name)
-        bigquery_valid_filename = normalize_column_name(file)
-        self.filename = (
-            f"{generate_random_string(10)}_{bigquery_valid_filename}{extension}"
-        )
+        self.description = kwargs.get("description", "")
 
-    def create_file_object(self, file_url: str):
-        file_obj = File.objects.create(
+        base, ext = os.path.splitext(kwargs["file"].name)
+        safe_name = normalize_column_name(base)
+        rand = generate_random_string(10)
+        self.filename = f"{rand}_{safe_name}{ext}"
+
+    def create_file_object(self, file_url: str) -> File:
+        return File.objects.create(
             name=self.filename,
             type=self.extension,
             storage_url=file_url,
@@ -59,26 +67,26 @@ class FileService(ABC):
             owner=self.user,
             description=self.description,
         )
-        file_obj.save()
-        return file_obj
 
     @abstractmethod
-    def process_file(self): ...
+    def process_file(self):
+        ...
 
 
 class StructuredFileService(FileService):
-
-    def __init__(self, user: User, **kwargs):
+    def __init__(self, user: Optional[User], **kwargs):
         super().__init__(user, **kwargs)
-        self.autodetect = kwargs.get("autodetect", False)
-        self.schema = kwargs.get("schema")
+        self.autodetect: bool = kwargs.get("autodetect", False)
+        self.schema: Optional[List] = kwargs.get("schema")
 
     def create_table_obj(self, file_obj: File) -> Table:
-        dataset_name = settings.BQ_DATASET_ID
-        if not self.public:
+        if self.public:
+            dataset_name = settings.BQ_DATASET_ID
+        else:
             dataset_name = self.user.service_account.dataset_name
-        table = Table.objects.create(
-            name=self.filename.split(".")[0],
+
+        return Table.objects.create(
+            name=self.filename.rsplit(".", 1)[0],
             dataset_name=dataset_name,
             file=file_obj,
             owner=file_obj.owner,
@@ -86,27 +94,26 @@ class StructuredFileService(FileService):
             schema=self.schema,
             description=file_obj.description,
         )
-        table.save()
-        return table
 
     @staticmethod
     @abstractmethod
-    def preview(data: str, skip_leading_rows: int) -> List: ...
+    def preview(data: str, skip_leading_rows: int) -> List:
+        ...
 
     @abstractmethod
-    def process_file(self): ...
+    def process_file(self):
+        ...
 
 
 class TXTFileService(FileService):
     def process_file(self):
-        file_url = GCSService.upload_file(self.file, self.filename)
-        return file_url
+        return GCSService.upload_file(self.file, self.filename)
 
 
 class CSVFileService(StructuredFileService):
-    def __init__(self, user: User, **kwargs):
+    def __init__(self, user: Optional[User], **kwargs):
         super().__init__(user, **kwargs)
-        self.skip_leading_rows = kwargs.get("skip_leading_rows", 1)
+        self.skip_leading_rows: int = kwargs.get("skip_leading_rows", 1)
 
     @staticmethod
     def preview(data: str, skip_leading_rows: int) -> List:
@@ -116,23 +123,24 @@ class CSVFileService(StructuredFileService):
         file_url = GCSService.upload_file(self.file, self.filename)
         file_obj = self.create_file_object(file_url)
         table_obj = self.create_table_obj(file_obj)
+
         sample = self.file.read(4096).decode("utf-8")
         self.file.seek(0)
         format_params = csv_parameters_detect(sample)
 
-        big_query_service = BigQueryService(user=self.user)
-        big_query_service.mount_table_from_gcs(
+        bq = BigQueryService(user=self.user)
+        bq.mount_table_from_gcs(
             table=table_obj,
             autodetect=self.autodetect,
             skip_leading_rows=self.skip_leading_rows,
             schema=self.schema,
             format_params=format_params,
         )
+        logger.info("CSV file uploaded and mounted: %s", self.filename)
         return file_url
 
 
 class JSONFileService(StructuredFileService):
-
     @staticmethod
     def preview(data: str, skip_leading_rows: int) -> List:
         return prepare_json_data_format(data=data)
@@ -142,11 +150,13 @@ class JSONFileService(StructuredFileService):
         file_url = upload_service.upload_file(self.file, self.filename)
         file_obj = self.create_file_object(file_url)
         table_obj = self.create_table_obj(file_obj)
-        big_query_service = BigQueryService(user=self.user)
-        big_query_service.mount_table_from_gcs(
+
+        bq = BigQueryService(user=self.user)
+        bq.mount_table_from_gcs(
             table=table_obj,
             autodetect=self.autodetect,
             skip_leading_rows=0,
             schema=self.schema,
         )
+        logger.info("JSON file uploaded and mounted: %s", self.filename)
         return file_url
