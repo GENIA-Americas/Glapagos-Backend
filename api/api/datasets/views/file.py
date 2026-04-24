@@ -1,46 +1,48 @@
+import logging
 from typing import Type
 
-from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
-from rest_framework.viewsets import GenericViewSet
-from rest_framework import status, permissions, mixins, filters
-from rest_framework.response import Response
+from django.utils.translation import gettext_lazy as _
+from rest_framework import filters, mixins, permissions, status
 from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
-from api.utils.sendgrid_mail import send_private_data_mail
-from api.datasets.services.upload_providers import return_url_provider
-from api.datasets.serializers.file import (
-    JSONSerializer,
-    CSVSerializer,
-    UrlPreviewSerializer,
-    TXTSerializer,
-)
+from api.datasets.enums import UploadType
 from api.datasets.models import File, Table
-from api.datasets.services import (
-    BigQueryService,
-    FileServiceFactory,
-    StructuredFileService,
-)
 from api.datasets.serializers import (
+    FilePreviewSerializer,
     FileSerializer,
     FileUploadSerializer,
-    FilePreviewSerializer,
     SearchQuerySerializer,
 )
-from api.utils.pagination import StartEndPagination, SearchQueryPagination
-from api.datasets.enums import UploadType
 from api.datasets.serializers.email import PrivateDataAccess
+from api.datasets.serializers.file import (
+    CSVSerializer,
+    JSONSerializer,
+    TXTSerializer,
+    UrlPreviewSerializer,
+)
+from api.datasets.services import BigQueryService, FileServiceFactory, StructuredFileService
+from api.datasets.services.upload_providers import return_url_provider
+from api.utils.pagination import SearchQueryPagination, StartEndPagination
+from api.utils.sendgrid_mail import send_private_data_mail
+
+logger = logging.getLogger(__name__)
+
+_UPLOAD_SERIALIZER_MAP = {
+    "CSV": CSVSerializer,
+    "JSON": JSONSerializer,
+    "TXT": TXTSerializer,
+}
 
 
 class FileViewSet(mixins.ListModelMixin, GenericViewSet):
     serializer_class = FileSerializer
-    serializer_classes = dict(
-        list=FileSerializer,
-    )
+    serializer_classes = dict(list=FileSerializer)
     model = File
     pagination_class = StartEndPagination
     permission_classes = [permissions.IsAuthenticated]
-
     filter_backends = [filters.SearchFilter]
     search_fields = ["name"]
 
@@ -59,8 +61,7 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         serializer = PrivateDataAccess(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        table = serializer.validated_data.pop("table", Table)
-        emails = [table.owner.email]
+        table: Table = serializer.validated_data.pop("table")
         user = request.user
 
         context = {
@@ -71,9 +72,9 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
             "industry": user.industry,
         }
 
-        send_private_data_mail(context, emails, locale=request.LANGUAGE_CODE)
+        send_private_data_mail(context, [table.owner.email], locale=request.LANGUAGE_CODE)
         return Response(
-            dict(detail=_("Email send succesfully")), status=status.HTTP_200_OK
+            {"detail": _("Email sent successfully")}, status=status.HTTP_200_OK
         )
 
     @action(
@@ -86,12 +87,12 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
     def url_preview(self, request, *args, **kwargs):
         serializer = UrlPreviewSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        url = serializer.validated_data.get("url", "")
-        file_type = serializer.validated_data.get("file_type", "")
+
+        url = serializer.validated_data["url"]
+        file_type = serializer.validated_data["file_type"]
 
         provider = return_url_provider(url)
         preview = provider.preview(url, file_type)
-
         return Response(preview, status=status.HTTP_200_OK)
 
     @action(
@@ -105,30 +106,41 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
         serializer = FileUploadSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        if serializer.validated_data.get("upload_type", "") == UploadType.URL:
-            url = serializer.validated_data.get("url", "")
+        if serializer.validated_data.get("upload_type") == UploadType.URL:
+            url = serializer.validated_data["url"]
             skip_leading_rows = serializer.validated_data.get("skip_leading_rows", 1)
-            file_type = serializer.validated_data.get("file_type", "")
+            file_type = serializer.validated_data["file_type"]
 
             provider = return_url_provider(url)
             f = provider.process(url, skip_leading_rows, file_type)
 
-            serializer_class_name = f"{file_type.upper()}Serializer"
-            serializer_class = globals().get(serializer_class_name)
-
-            # validates the generated file
-            serializer_class(
-                data=dict(
-                    file=f,
-                    schema=serializer.validated_data.get("schema", []),
-                    autodetect=serializer.validated_data.get("autodetect", False),
+            # Validate the file via the appropriate serializer
+            file_serializer_cls = _UPLOAD_SERIALIZER_MAP.get(file_type.upper())
+            if file_serializer_cls is None:
+                return Response(
+                    {"detail": _("Unsupported file type: {}").format(file_type)},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
+
+            file_serializer_cls(
+                data={
+                    "file": f,
+                    "schema": serializer.validated_data.get("schema", []),
+                    "autodetect": serializer.validated_data.get("autodetect", False),
+                }
             ).is_valid(raise_exception=True)
+
             serializer.validated_data["file"] = f
 
         file_service = FileServiceFactory.get_file_service(
             user=request.user, **serializer.validated_data
         )
+        if file_service is None:
+            return Response(
+                {"detail": _("Unsupported file type.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         file_url = file_service.process_file()
         return Response(
             {"detail": _("File uploaded successfully"), "file_url": file_url},
@@ -145,6 +157,7 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
     def file_preview(self, request, *args, **kwargs):
         serializer = FilePreviewSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
         preview = serializer.validated_data["preview"]
         skip_leading_rows = serializer.validated_data.get("skip_leading_rows")
         file_type = serializer.validated_data["file_type"]
@@ -167,23 +180,23 @@ class FileViewSet(mixins.ListModelMixin, GenericViewSet):
     )
     def search_query(self, request, *args, **kwargs):
         serializer = SearchQuerySerializer(
-            data=request.data, context=dict(request=request)
+            data=request.data, context={"request": request}
         )
-
-        if serializer.is_valid():
-            try:
-                bigquery_service = BigQueryService(user=request.user)
-                result = bigquery_service.query(
-                    query=serializer.validated_data.get("query", ""),
-                    limit=int(request.query_params.get("limit", 20)),
-                    offset=int(request.query_params.get("offset", 0)),
-                )
-                self.paginate_queryset(result)
-                return self.get_paginated_response(result)
-            except Exception as exp:
-                return Response(
-                    {"detail": _("Error processing request"), "error": str(exp)},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-        else:
+        if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            bigquery_service = BigQueryService(user=request.user)
+            result = bigquery_service.query(
+                query=serializer.validated_data.get("query", ""),
+                limit=int(request.query_params.get("limit", 20)),
+                offset=int(request.query_params.get("offset", 0)),
+            )
+            self.paginate_queryset(result)
+            return self.get_paginated_response(result)
+        except Exception as exc:
+            logger.error("search_query failed: %s", exc, exc_info=True)
+            return Response(
+                {"detail": _("Error processing request"), "error": str(exc)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
