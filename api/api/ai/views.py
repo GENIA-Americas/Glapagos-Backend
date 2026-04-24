@@ -1,15 +1,14 @@
-# Rest framework
+import logging
+
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import status
 
-# Models
 from api.ai.serializers import ChatSerializer
-from api.datasets.models import Table
-
-# Permissions
 from api.ai.services import ChatAssistant
+
+logger = logging.getLogger(__name__)
 
 
 class AiViewset(viewsets.ViewSet):
@@ -19,12 +18,23 @@ class AiViewset(viewsets.ViewSet):
         detail=False, methods=["post"], permission_classes=[permissions.IsAuthenticated]
     )
     def chat(self, request, *args, **kwargs):
-        serializer = ChatSerializer(data=request.data, context=dict(request=request))
+        serializer = ChatSerializer(
+            data=request.data, context=dict(request=request)
+        )
         serializer.is_valid(raise_exception=True)
 
         msg = serializer.validated_data.get("msg", "")
-        table = serializer.validated_data.get("table", "")
-        context = f"table_id = {table.path} \nbigquery table_schema = {table.schema}"
-        res = ChatAssistant.chat(msg, context)
+        table = serializer.validated_data.get("table")
+        history = serializer.validated_data.get("history", [])
 
-        return Response(dict(message=res.__dict__), status=status.HTTP_200_OK)
+        context = (
+            f"table_id = {table.path}\n"
+            f"bigquery table_schema = {table.schema}"
+        )
+
+        res = ChatAssistant.chat(msg, context, history=history)
+
+        return Response(
+            {"message": res.model_dump()},
+            status=status.HTTP_200_OK,
+        )
