@@ -1,80 +1,62 @@
-# Channels
-# Utilities
+import logging
 from http.cookies import SimpleCookie
 
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
-# Serializers
 from api.events.serializers import WSSerializer
+
+logger = logging.getLogger(__name__)
+
+CLOSE_CODE_AUTH_FAILURE = 4000
+CLOSE_CODE_SERVER_ERROR = 4500
 
 
 class Consumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
-        # We're always going to accept the connection, though we may
-        # close it later based on other factors.
-        print("connecting")
+        logger.info("WebSocket connection attempt from %s", self.scope.get("client"))
         await self.accept()
 
     async def notify(self, event):
         """
-        This handles calls elsewhere in this codebase that look
-        like:
-
-            channel_layer.group_send(group_name, {
-                'type': 'notify',  # This routes it to this handler.
-                'content': json_message,
-            })
-
-        Don't try to directly use send_json or anything; this
-        decoupling will help you as things grow.
+        Handles channel layer group_send calls with type='notify'.
+        Routes the content payload to the connected WebSocket client.
         """
-        print("notify", event["content"])
         await self.send_json(event["content"])
 
     async def receive_json(self, content, **kwargs):
         """
-        This handles data sent over the wire from the client.
-
-        We need to validate that the received data is of the correct
-        form. You can do this with a simple DRF serializer.
-
-        We then need to use that validated data to confirm that the
-        requesting user (available in self.scope["user"] because of
-        the use of channels.auth.AuthMiddlewareStack in routing) is
-        allowed to subscribe to the requested object.
+        Handles incoming JSON from the WebSocket client.
+        Validates auth via cookie-based JWT, then subscribes the socket to the
+        appropriate channel groups.
         """
+        cookie = self._extract_cookies()
+        combined = {**content, **cookie}
 
-        cookie = {}
-        for header in self.scope["headers"]:
-            if header[0].decode() == "cookie":
-                cookies = header[1].decode()
-                cookie = SimpleCookie(cookies)
-                cookie.load(cookies)
-                cookie = {k: c.value for k, c in cookie.items()}
-
-        content = {**content, **cookie}
-
-        serializer = WSSerializer(data=content)
+        serializer = WSSerializer(data=combined)
 
         try:
             await sync_to_async(serializer.is_valid)(raise_exception=True)
-        except Exception as e:
-            print("WEBSOCKET ERROR:", e)
-            print(cookie)
-            await self.close(code=4000)
-        else:
-            # Define this method on your serializer:
-            print(serializer.get_group_names())
-            group_names = await sync_to_async(serializer.get_group_names)()
+        except Exception as exc:
+            logger.warning("WebSocket authentication failed: %s", exc)
+            await self.close(code=CLOSE_CODE_AUTH_FAILURE)
+            return
 
-            # The AsyncJsonWebsocketConsumer parent class has a
-            # self.groups list already. It uses it in cleanup.
+        try:
+            group_names = await sync_to_async(serializer.get_group_names)()
             for group_name in group_names:
                 self.groups.append(group_name)
-                # This actually subscribes the requesting socket to the
-                # named group:
-                await self.channel_layer.group_add(
-                    group_name,
-                    self.channel_name,
-                )
+                await self.channel_layer.group_add(group_name, self.channel_name)
+            logger.info("WebSocket subscribed to groups: %s", group_names)
+        except Exception as exc:
+            logger.error("Error subscribing to channel groups: %s", exc, exc_info=True)
+            await self.close(code=CLOSE_CODE_SERVER_ERROR)
+
+    def _extract_cookies(self) -> dict:
+        """Parses the Cookie header from the ASGI scope into a plain dict."""
+        for key, value in self.scope.get("headers", []):
+            if key.decode() == "cookie":
+                cookie_str = value.decode()
+                parsed = SimpleCookie(cookie_str)
+                return {k: morsel.value for k, morsel in parsed.items()}
+        return {}
