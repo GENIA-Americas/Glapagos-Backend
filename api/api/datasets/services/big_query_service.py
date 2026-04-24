@@ -1,5 +1,6 @@
 import json
-from typing import List, Dict
+import logging
+from typing import List, Dict, Optional
 
 from google.cloud import bigquery
 from google.oauth2 import service_account
@@ -9,6 +10,10 @@ from django.conf import settings
 from api.datasets.exceptions import QueryFailedException, BigQueryMountTableException
 from api.datasets.models import Table
 from api.users.models import User
+
+logger = logging.getLogger(__name__)
+
+SUPPORTED_EXTENSIONS = {"csv", "json", "jsonl"}
 
 
 class BigQueryService:
@@ -35,96 +40,102 @@ class BigQueryService:
             "json": bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
             "jsonl": bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
         }
-        return formats.get(extension.lower(), bigquery.SourceFormat.CSV)
+        ext = extension.lower()
+        if ext not in formats:
+            logger.warning("Unsupported extension '%s', defaulting to CSV format.", extension)
+        return formats.get(ext, bigquery.SourceFormat.CSV)
 
     @classmethod
     def convert_schema_to_bigquery(cls, schema: List) -> List[bigquery.SchemaField]:
         bigquery_schema = []
-
         for field in schema:
-            if field["data_type"].upper() == "RECORD":
-                fields_schema = cls.convert_schema_to_bigquery(field["fields"])
+            field_type = field["data_type"].upper()
+            if field_type == "RECORD":
+                nested = cls.convert_schema_to_bigquery(field.get("fields", []))
                 schema_field = bigquery.SchemaField(
                     name=field["column_name"],
-                    field_type=field["data_type"],
+                    field_type=field_type,
                     mode=field.get("mode", "NULLABLE"),
-                    fields=fields_schema,
+                    fields=nested,
                 )
             else:
                 schema_field = bigquery.SchemaField(
                     name=field["column_name"],
-                    field_type=field["data_type"],
+                    field_type=field_type,
                     mode=field.get("mode", "NULLABLE"),
                 )
             bigquery_schema.append(schema_field)
         return bigquery_schema
 
     def get_schema(self, dataset: str, table: str) -> List:
-        query = f"""SELECT column_name, data_type, is_nullable 
-                    FROM `{self.project_id}.{dataset}.INFORMATION_SCHEMA.COLUMNS` 
-                    WHERE table_name = '{table}';"""
+        query = (
+            f"SELECT column_name, data_type, is_nullable "
+            f"FROM `{self.project_id}.{dataset}.INFORMATION_SCHEMA.COLUMNS` "
+            f"WHERE table_name = @table_name"
+        )
+        job_config = bigquery.QueryJobConfig(
+            query_parameters=[
+                bigquery.ScalarQueryParameter("table_name", "STRING", table)
+            ]
+        )
         schema = []
         try:
-            bigquery_schema = self.query(query)
-            if not bigquery_schema:
-                return schema
-            for field in bigquery_schema:
+            rows = self.client.query(query, job_config=job_config).result()
+            for field in rows:
                 schema.append(
                     {
                         "column_name": field.column_name,
                         "data_type": field.data_type,
-                        "mode": "NULLABLE" if field.is_nullable else "REQUIRED",
+                        "mode": "NULLABLE" if field.is_nullable == "YES" else "REQUIRED",
                     }
                 )
-        except GoogleAPIError as exp:
-            print(str(exp))
+        except GoogleAPIError as exc:
+            logger.error("Failed to fetch schema for %s.%s: %s", dataset, table, exc)
         return schema
 
     def get_dataset_reference(self, dataset: str) -> bigquery.DatasetReference:
-        dataset_ref = bigquery.DatasetReference(self.project_id, dataset)
-        return dataset_ref
+        return bigquery.DatasetReference(self.project_id, dataset)
 
     def get_table_reference(self, dataset: str, table_name: str):
         dataset_ref = self.get_dataset_reference(dataset)
-        dataset = self.client.get_dataset(dataset_ref)
-        table_ref = dataset.table(table_name)
-        return table_ref
+        bq_dataset = self.client.get_dataset(dataset_ref)
+        return bq_dataset.table(table_name)
 
     def create_dataset(self, dataset_name: str):
         owner_client = self.create_bigquery_client(project_owner=True)
         dataset_ref = self.get_dataset_reference(dataset_name)
-        dataset = owner_client.create_dataset(dataset_ref)
-        return dataset
+        return owner_client.create_dataset(dataset_ref)
 
     def query(
         self,
         query: str,
-        limit: int | None = None,
-        offset: int | None = None,
-        job_config: bigquery.QueryJobConfig = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        job_config: Optional[bigquery.QueryJobConfig] = None,
     ):
         assert self.user, "User must be set to send a query"
+
+        if limit is not None and offset is not None:
+            if not (isinstance(limit, int) and isinstance(offset, int)):
+                raise ValueError("limit and offset must be integers")
+
         try:
             job = self.client.query(query, job_config=job_config)
             result = job.result()
 
             if limit is not None and offset is not None:
-                assert (
-                    type(offset) is int and type(limit) is int
-                ), "limit and offset must be integers"
-
                 assert job.destination is not None, "Job destination should be defined"
-
                 destination = self.client.get_table(job.destination)
                 result = self.client.list_rows(
                     destination, start_index=offset, max_results=limit
                 )
 
             return result
-        except GoogleAPIError as exp:
-            # remove the job id and location
-            message = exp.message.split("\n")[0]
-            raise QueryFailedException(detail=message, error=str(exp))
+        except GoogleAPIError as exc:
+            # Strip internal job ID / location info from the error message
+            message = exc.message.split("\n")[0] if hasattr(exc, "message") else str(exc)
+            logger.error("BigQuery query failed: %s", exc)
+            raise QueryFailedException(detail=message, error=str(exc))
 
     def mount_table_from_gcs(
         self,
@@ -132,7 +143,7 @@ class BigQueryService:
         autodetect: bool,
         skip_leading_rows: int,
         schema: List,
-        format_params: Dict = None,
+        format_params: Optional[Dict] = None,
     ):
         try:
             owner_client = self.create_bigquery_client(project_owner=True)
@@ -148,25 +159,29 @@ class BigQueryService:
 
             if format_params:
                 job_config.field_delimiter = format_params.get("delimiter", ",")
-                job_config.quote_character = format_params.get("quotechar", ",")
+                job_config.quote_character = format_params.get("quotechar", '"')
 
             if skip_leading_rows:
                 job_config.skip_leading_rows = skip_leading_rows
+
             if schema:
-                bigquery_schema = BigQueryService.convert_schema_to_bigquery(schema)
-                job_config.schema = bigquery_schema
+                job_config.schema = BigQueryService.convert_schema_to_bigquery(schema)
+                job_config.autodetect = False  # explicit schema takes precedence
 
-            gcs_uri = table.file.storage_url
             load_job = owner_client.load_table_from_uri(
-                gcs_uri, table_ref, job_config=job_config
+                table.file.storage_url, table_ref, job_config=job_config
             )
-
             load_job.result()
             table.update_table_stats(table_ref)
+
             if not table.schema:
                 table.schema = self.get_schema(
                     dataset=table.dataset_name, table=table.name
                 )
                 table.save()
-        except Exception as exp:
-            raise BigQueryMountTableException(error=str(exp))
+
+        except BigQueryMountTableException:
+            raise
+        except Exception as exc:
+            logger.error("Failed to mount table from GCS: %s", exc, exc_info=True)
+            raise BigQueryMountTableException(error=str(exc))
