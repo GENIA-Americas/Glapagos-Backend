@@ -1,6 +1,6 @@
 # Glápagos Backend
 
-[![es](https://img.shields.io/badge/lang-es-yellow.svg)](https://github.com/Jisf4/Glapagos-Backend/blob/master/README.es.md)
+[![es](https://img.shields.io/badge/lang-es-yellow.svg)](https://github.com/Jisf4/Glapagos-Backend/blob/main/README.es.md)
 
 A modular, extensible Django-based backend designed to serve as the foundation
 for AI-enabled applications built on the Glápagos platform.
