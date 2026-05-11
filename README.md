@@ -1,21 +1,23 @@
 # Glápagos Backend
 
-A modular, extensible Django-based backend designed to serve as the foundation
-for AI-enabled applications built on the Glápagos platform.
+Un backend modular y extensible basado en Django, diseñado para servir como la base de aplicaciones habilitadas con IA construidas sobre la plataforma Glápagos.
 
-This repository provides:
-- A production-ready Django architecture
-- Dockerized deployment templates
-- API scaffolding
-- Background job execution via Celery + Redis
-- Environment-based configuration for dev/staging/prod
-- Optional integrations for AI/ML services
+Este repositorio proporciona:
+
+- Una arquitectura de Django lista para producción  
+- Plantillas de despliegue con Docker  
+- Estructura inicial para APIs  
+- Ejecución de tareas en segundo plano mediante Celery + Redis  
+- Configuración basada en entornos para desarrollo / staging / producción  
+- Integraciones opcionales con servicios de IA/ML  
 
 ---
 
-## Quickstart
+## 🚀 Inicio rápido
 
-### 1. Clone the repository
+### 1. Clonar el repositorio
+
 ```bash
 git clone https://github.com/GENIA-Americas/Glapagos-Backend.git
 cd Glapagos-Backend
+```
