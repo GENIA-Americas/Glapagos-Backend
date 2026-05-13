@@ -8,7 +8,7 @@ def response_error(func):
     def wrapper(*args, **kwargs):
         response = func(*args, **kwargs)
         if response.status_code >= 400:
-            print("Request Error:", response.code, response.data)
+            print("Request Error:", response.status_code, response.data)
         return response
 
     return wrapper

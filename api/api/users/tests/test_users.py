@@ -34,7 +34,6 @@ class UserTestHelper(DefaultTestHelper):
             "is_active": True,
         },
         "john_doe": {
-            "dob": "2000-01-01",
             "password": "SecurePassword#1",
             "setup_status": SetUpStatus.VALIDATED,
             "is_active": True,
