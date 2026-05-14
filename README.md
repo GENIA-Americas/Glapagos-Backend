@@ -12,8 +12,6 @@ linguistic, and market realities of the Western Hemisphere.
 **[→ Platform & Vision](https://www.glapagos.com)** · 
 **[→ Join the Discussion](https://github.com/GENIA-Americas/Glapagos-Backend/discussions)**
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/GENIA-Americas/Glapagos-Backend)
-
 ---
 
 ## AI Integrations
