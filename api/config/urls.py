@@ -38,4 +38,6 @@ urlpatterns = [
     re_path(settings.API_URI + "/", include("api.ai.urls")),
     re_path(settings.API_URI + "/", include("api.notebooks.urls")),
     re_path(settings.API_URI + "/", include("api.authentication.urls")),
+    re_path(settings.API_URI + "/", include("api.workspaces.urls")),
+    path("health/", include("api.health.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
