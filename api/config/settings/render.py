@@ -38,7 +38,7 @@ CORS_ALLOW_CREDENTIALS = True
 # No S3 for demo — use local storage
 DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "media")
 
 # No Redis/Channels for demo
 CHANNEL_LAYERS = {
