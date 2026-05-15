@@ -1,17 +1,18 @@
 # Glápagos Backend
 
-## 🚀 Live Demo
+## 🚀 Live Platform
 
-The Glápagos API is live and running:
+The Glápagos API is live, secured, and running in production:
 
-| Endpoint | URL |
-|---|---|
-| Health Check | [glapagos-backend.onrender.com/health/](https://glapagos-backend.onrender.com/health/) |
-| Platform | [glapagos.com](https://www.glapagos.com) |
-| Corridor Report | [glapagos.com/resources](https://www.glapagos.com/resources) |
+| Endpoint | URL | Status |
+|---|---|---|
+| Health | [/health/](https://glapagos-backend.onrender.com/health/) | ![Live](https://img.shields.io/badge/API-Live-brightgreen) |
+| Organizations | [/api/v1/organizations/](https://glapagos-backend.onrender.com/api/v1/organizations/) | 🔐 Auth required |
+| Workspaces | [/api/v1/workspaces/](https://glapagos-backend.onrender.com/api/v1/workspaces/) | 🔐 Auth required |
 
-[![Live](https://img.shields.io/badge/API-Live-brightgreen)](https://glapagos-backend.onrender.com/health/)
-[![GitHub](https://img.shields.io/badge/GitHub-Open%20Source-blue)](https://github.com/GENIA-Americas/Glapagos-Backend)
+**Platform:** [glapagos.com](https://www.glapagos.com)  
+**Corridor Report:** [glapagos.com/resources](https://www.glapagos.com/resources)  
+**Community:** [Join the Discussion](https://github.com/GENIA-Americas/Glapagos-Backend/discussions)
 
 ---
 
