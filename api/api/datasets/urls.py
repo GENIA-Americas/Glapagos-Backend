@@ -1,5 +1,5 @@
 # Django
-from django.urls import include, path, re_path
+from django.urls import include, path
 
 # Django Rest Framework
 from rest_framework.routers import DefaultRouter
@@ -15,11 +15,11 @@ from api.datasets.views.table import (
 
 router = DefaultRouter()
 
-router.register(r"datasets", FileViewSet, basename="datasets")
-router.register(r"table", TableViewSet, basename="datasets")
-router.register(r"table/public", PublicTableListView, basename="datasets")
-router.register(r"table/private", PrivateTableListView, basename="datasets")
-router.register(r"table/transformed", TransformedTableListView, basename="datasets")
+router.register(r"datasets", FileViewSet, basename="datasets-file")
+router.register(r"table", TableViewSet, basename="datasets-table")
+router.register(r"table/public", PublicTableListView, basename="datasets-table-public")
+router.register(r"table/private", PrivateTableListView, basename="datasets-table-private")
+router.register(r"table/transformed", TransformedTableListView, basename="datasets-table-transformed")
 
 urlpatterns = [
     path("", include(router.urls)),
