@@ -2,19 +2,11 @@
 
 import os
 from datetime import timedelta
-
 import environ
+env = environ.Env()
+ROOT_DIR = environ.Path(__file__) - 4
+environ.Env.read_env(os.path.join(ROOT_DIR, ".env"))
 
-APP_NAME = "{{app_name}}"
-
-API_URI = "api/v1"
-
-SITE_SCHEME = os.getenv("SITE_SCHEME")
-SITE_DOMAIN = os.getenv("SITE_DOMAIN")
-FRONTEND_LOGIN_URL = os.getenv("FRONTEND_LOGIN_URL")
-FRONTEND_RECOVER_URL = os.getenv("FRONTEND_RECOVER_URL")
-
-ROOT_DIR = environ.Path(__file__) - 3
 APPS_DIR = ROOT_DIR.path("api")
 
 env = environ.Env()
@@ -90,7 +82,6 @@ LOCAL_APPS = [
     "api.contacts.apps.ContactsConfig",
     "api.ai.apps.AiAppConfig",
     "api.notebooks.apps.NotebooksConfig",
-    "api.workspaces.apps.WorkspacesConfig",
 ]
 
 INSTALLED_APPS = THIRD_PARTY_APPS + DJANGO_APPS + LOCAL_APPS
@@ -370,3 +361,7 @@ FILE_UPLOAD_LIMIT = 100_000_000
 
 SECURED_FIELDS_KEY = os.getenv("SECURED_FIELDS_KEY")
 SECURED_FIELDS_HASH_SALT = os.getenv("SECURED_FIELDS_HASH_SALT")
+AI_PROVIDER = os.getenv("AI_PROVIDER", "openai")
+if AI_PROVIDER == "ollama":
+    from apps.ai.clients.ollama import OllamaClient
+    AI_CLIENT = OllamaClient()
