@@ -1,3 +1,6 @@
+## 🚀 一键部署到 Railway
+点击下方按钮，一键部署本项目到 Railway：
+[![Deploy to Railway](https://railway.app/button.svg)](https://railway.app/new)
 # Glápagos Backend
 
 ## 🚀 Live Platform
