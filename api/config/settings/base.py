@@ -82,6 +82,7 @@ LOCAL_APPS = [
     "api.contacts.apps.ContactsConfig",
     "api.ai.apps.AiAppConfig",
     "api.notebooks.apps.NotebooksConfig",
+    "api.health.apps.HealthAppConfig",
 ]
 
 INSTALLED_APPS = THIRD_PARTY_APPS + DJANGO_APPS + LOCAL_APPS

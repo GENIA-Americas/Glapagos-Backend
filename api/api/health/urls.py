@@ -1,8 +1,9 @@
-"""Health URLs"""
+"""Health check URLs."""
 
 from django.urls import path
-from api.health.views import HealthCheckView
+
+from api.health.views import HealthView
 
 urlpatterns = [
-    path("", HealthCheckView.as_view(), name="health-check"),
+    path("health/", HealthView.as_view(), name="health-check"),
 ]

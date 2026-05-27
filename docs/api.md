@@ -12,10 +12,22 @@ http://localhost:8000/api/
 ### Health Check
 - **URL:** `/health/`
 - **Method:** GET
-- **Description:** Checks if the API is running.
-- **Response:**
+- **Description:** Checks the health of connected services (database, Redis). Returns 200 when all services are healthy, 503 when any service is down.
+- **Response (200):**
 ```json
 {
-  "status": "ok",
+  "status": "healthy",
+  "database": "ok",
+  "redis": "ok",
   "timestamp": "2025-12-06T12:00:00Z"
 }
+```
+- **Response (503):**
+```json
+{
+  "status": "unhealthy",
+  "database": "error",
+  "redis": "ok",
+  "timestamp": "2025-12-06T12:00:00Z"
+}
+```
