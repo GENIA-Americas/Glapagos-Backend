@@ -19,8 +19,13 @@ class HealthView(APIView):
     def get(self, request):
         database_status = self._check_database()
         redis_status = self._check_redis()
+        celery_status = self._check_celery()
 
-        all_healthy = database_status == "ok" and redis_status == "ok"
+        all_healthy = (
+            database_status == "ok"
+            and redis_status == "ok"
+            and celery_status == "ok"
+        )
         overall = "healthy" if all_healthy else "unhealthy"
         http_status = (
             status.HTTP_200_OK if all_healthy else status.HTTP_503_SERVICE_UNAVAILABLE
@@ -31,6 +36,7 @@ class HealthView(APIView):
                 "status": overall,
                 "database": database_status,
                 "redis": redis_status,
+                "celery": celery_status,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             },
             status=http_status,
@@ -49,5 +55,17 @@ class HealthView(APIView):
             if channel_layer is None:
                 return "error"
             return "ok"
+        except Exception:
+            return "error"
+
+    def _check_celery(self):
+        try:
+            from celery import current_app
+
+            inspector = current_app.control.inspect(timeout=2)
+            stats = inspector.stats()
+            if stats:
+                return "ok"
+            return "error"
         except Exception:
             return "error"
