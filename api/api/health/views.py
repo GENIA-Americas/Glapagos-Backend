@@ -1,8 +1,9 @@
 """Health check views."""
+import redis
+from django.conf import settings
 
 from datetime import datetime, timezone
 
-from channels.layers import get_channel_layer
 from django.db import DatabaseError
 from django.db import connections
 from rest_framework import status
@@ -51,9 +52,16 @@ class HealthView(APIView):
 
     def _check_redis(self):
         try:
-            channel_layer = get_channel_layer()
-            if channel_layer is None:
-                return "error"
+
+            hosts = settings.CHANNEL_LAYERS["default"]["CONFIG"]["hosts"]
+            host = hosts[0]
+
+            if isinstance(host, str):
+                client = redis.from_url(host)
+            else:
+                client = redis.Redis(host=host[0], port=host[1])
+
+            client.ping()
             return "ok"
         except Exception:
             return "error"
