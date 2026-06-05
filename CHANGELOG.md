@@ -1,0 +1,388 @@
+# Changelog
+
+> Every entry in this file corresponds to a real commit in this repository.
+> This is not a roadmap. It is a record.
+
+**Platform active since:** 2024-08-23  
+**Last entry:** 2026-06-05  
+**Total recorded changes:** 355
+
+---
+
+## Features
+
+- **2026-06-04** — Add Celery status check to health endpoint (#58) `[9be273f]`
+- **2026-05-13** — Wire health endpoint and workspace REST API into urls.py `[45ed42f]`
+- **2026-05-13** — Wire health endpoint and workspace REST API into urls.py `[a3ab4da]`
+- **2026-05-13** — AI provider registry — wire OllamaClient into ChatAssistant `[f2ff1c2]`
+- **2026-05-13** — Add AI provider registry with Ollama support `[9d7b46c]`
+- **2026-05-13** — Multi-tenant workspace model — Organization, Workspace, WorkspaceMembership `[c08ac60]`
+- **2026-05-13** — Multi-tenant workspace model — Organization, Workspace, WorkspaceMembership `[40e311b]`
+- **2026-05-12** — Ollama client, health endpoint, Railway deploy, Spanish README `[456cfd5]`
+- **2024-11-25** — Language email support `[91ef1ab]`
+- **2024-11-22** — Emails template integration `[018d800]`
+- **2024-11-21** — Sengrid email for change password and account validation `[a3d14a8]`
+- **2024-11-21** — Email templates `[91bf442]`
+- **2024-11-14** — Email provider sendgrid integration `[3a39e25]`
+- **2024-11-13** — Text upload service `[8692773]`
+- **2024-11-13** — File type fixes and minor fixes `[e20c168]`
+- **2024-11-07** — Partial json integration on file upload by url `[24e25ed]`
+- **2024-11-06** — Google cloud upload service and provider `[7aa848b]`
+- **2024-10-31** — S3 upload service `[5957f90]`
+- **2024-10-29** — S3 service `[6febc70]`
+- **2024-10-23** — Google drive upload file/folder integration `[d8540d0]`
+- **2024-10-15** — Ai exceptions `[33be116]`
+- **2024-10-15** — Updating exception `[99f8a80]`
+- **2024-10-09** — Gpt integration changes `[41682b9]`
+- **2024-10-08** — Migration `[76adae8]`
+- **2024-10-08** — Encrypted key field `[642eec8]`
+- **2024-10-02** — Openai partial integration `[98f999f]`
+- **2024-10-01** — Pagination search_query method `[90da66e]`
+- **2024-09-25** — Role_asigned flag `[b28ece7]`
+- **2024-09-24** — Roles, permission and query data endpoint `[5732d56]`
+
+## Fixes
+
+- **2026-06-05** — Soften STATUS.md language and fix contributor count in workflow (#62) `[425953b]`
+- **2026-06-03** — Replace passive Redis health check with active ping (#59) `[e10a794]`
+- **2026-05-14** — Unique basenames for datasets router viewsets `[472e842]`
+- **2026-05-14** — Resolve BASE_DIR in render settings `[a461008]`
+- **2026-05-14** — Add Render-specific settings file for demo deployment `[79ce367]`
+- **2026-05-14** — Add standalone health server for demo `[1d94e69]`
+- **2026-05-14** — Add standalone health server for demo `[4b5e964]`
+- **2026-05-14** — Remove drf_yasg import causing 500 on all routes `[2f1103a]`
+- **2026-05-14** — Health endpoint minimal response for demo `[9507e52]`
+- **2026-05-14** — Simplify health endpoint for demo — returns 200 always `[7fd965c]`
+- **2026-05-14** — Pin Python to 3.11.9 for Render deployment `[bb114ba]`
+- **2026-05-13** — Remove dob from UserFactory and fix response.status_code typo `[d1450a3]`
+- **2026-04-23** — Docker local setup - setuptools, collectstatic, postgres config `[9ed6ad0]`
+- **2024-12-16** — Add gmail `[6add76d]`
+- **2024-12-12** — Raise EmailException `[3cabd3e]`
+- **2024-11-29** — Retry until service account is created `[5f31562]`
+- **2024-11-29** — Decrease service account name characters `[570da72]`
+- **2024-11-29** — Add retry strategy to create_service_account `[bd7860a]`
+- **2024-11-29** — Remove account when registration fails `[a84792f]`
+- **2024-11-29** — Create service account timeout increase `[5f57ebe]`
+- **2024-11-27** — Get notebook from user `[2015515]`
+- **2024-11-25** — Notebooks state to list `[b9456f8]`
+- **2024-11-25** — Notebooks state `[b3c9dcd]`
+- **2024-11-25** — Notebooks state `[6f7dc04]`
+- **2024-11-20** — Notebooks names rules `[ca3b1bd]`
+- **2024-11-20** — Bigquery names normalization `[2cab835]`
+- **2024-11-20** — Allow case-insensitive email login `[1ca9494]`
+- **2024-11-18** — Method on authorize private data `[839b06e]`
+- **2024-11-18** — Removing print `[1b50254]`
+- **2024-11-18** — Json converting url on drive url upload `[3a2e857]`
+- **2024-11-18** — Try catch on google credentials `[fd0dda0]`
+- **2024-11-18** — Raising errors `[14eacb5]`
+- **2024-11-14** — Emails `[7ea9661]`
+- **2024-11-14** — Jsonl detection `[78da50e]`
+- **2024-11-07** — Utils init changes `[2040907]`
+- **2024-11-05** — Forbidden exception and merge fixes `[44f7826]`
+- **2024-11-05** — Service account creation with less of 6 characters `[deb6fef]`
+- **2024-11-05** — Service account creation with less of 6 characters `[aba18a6]`
+- **2024-11-05** — Translations and exceptions `[18aeff6]`
+- **2024-10-31** — Google drive key `[607cbdf]`
+- **2024-10-30** — Google drive key `[2627958]`
+- **2024-10-30** — Url provider exceptions `[6dd8b79]`
+- **2024-10-30** — Typos `[3e42f35]`
+- **2024-10-30** — Removing print `[b9b91e0]`
+- **2024-10-30** — Gpt context changes `[2da7631]`
+- **2024-10-29** — Changes upload_providers from serializers to services `[0520d98]`
+- **2024-10-29** — Github comments, changes on serializers an validation flow for upload file endpoint and preview url endpoint `[8f03326]`
+- **2024-10-29** — Now allow empty query and return the correct query error message `[0a25a2c]`
+- **2024-10-24** — Solving bugs `[14529e9]`
+- **2024-10-24** — Solving bugs `[1809392]`
+- **2024-10-24** — BigQuery column name regex `[52159c4]`
+- **2024-10-23** — Default csv parameters if snifer automatic detection fail `[8199de0]`
+- **2024-10-23** — Country names `[588feff]`
+- **2024-10-23** — Organization validation `[d2dd8a8]`
+- **2024-10-18** — Replacing email name characters `[c2291b2]`
+- **2024-10-18** — Locale for ai exception `[3c49414]`
+- **2024-10-16** — Migrations `[d166514]`
+- **2024-10-16** — Comma `[1ad5d20]`
+- **2024-10-08** — Model missing ai services `[3f7aa55]`
+- **2024-10-07** — Remove duplicate dependency `[b577e8b]`
+- **2024-10-07** — Users permissions to set publics datasets `[ca3a02b]`
+- **2024-10-07** — Models not existing ai app `[f67799e]`
+- **2024-10-04** — Disable Ai module `[1935901]`
+- **2024-10-04** — Enabling Ai module `[e47d55a]`
+- **2024-10-03** — Docker compose prod `[a62ccd2]`
+- **2024-10-03** — Docker compose prod `[60a2c36]`
+- **2024-10-02** — Add skip_leading_rows param to preview endpoint `[5bf082a]`
+- **2024-10-01** — Fixing comments pagination `[f73ec72]`
+- **2024-09-25** — Fixing retry on create account key function and minor changes `[bc4d14a]`
+- **2024-09-20** — Error handling `[42e60fd]`
+- **2024-09-17** — Docker compose v2 commands `[c4e6c98]`
+- **2024-09-17** — Minor fixes `[588e173]`
+- **2024-09-04** — Removing unused dependencies `[46cbf29]`
+- **2024-09-02** — Error messages `[0c78853]`
+- **2024-09-02** — Register validations `[2170559]`
+
+## Infrastructure & DevOps
+
+- **2026-06-05** — Add auto-updating STATUS.md and GitHub Action (#61) `[bb77a86]`
+- **2026-05-13** — Ignore pre-existing flake8 errors across codebase `[d986d2c]`
+- **2026-05-13** — Extend flake8 ignore list for pre-existing errors `[944b1fd]`
+- **2026-05-13** — Add flake8 config to exclude pre-existing lint errors `[ebd92ce]`
+- **2026-05-13** — Apply Black formatting `[39753d5]`
+- **2026-05-13** — Add conftest.py and pytest.ini for test configuration `[ec8d36f]`
+- **2026-05-13** — Apply Black formatting to pre-existing files to fix CI `[aa6f82b]`
+- **2026-05-13** — Apply Black formatting to pass CI checks `[48839a9]`
+- **2026-04-23** — Add root requirements.txt `[93a400e]`
+- **2026-04-23** — Apply black formatting `[7684cd3]`
+- **2024-11-26** — Remove print `[7021d15]`
+
+## Documentation
+
+- **2026-06-05** — Add WHY_NOW.md positioning Glapagos at the AI infrastructure inflection point (#60) `[7c0d6ab]`
+- **2026-05-17** — Add Fly.io deployment guide `[26ed2d4]`
+- **2026-05-14** — Update README with live API endpoints and platform links `[0e1b7a2]`
+- **2026-05-14** — Add live API URL and status badge to README `[583357e]`
+
+## Security & Health
+
+- **2026-05-27** — Merge pr-57: add health check endpoint with DB and Redis checks `[9622bc1]`
+- **2026-05-27** — Add health check endpoint with database and Redis checks (#4) `[d1b14f2]`
+- **2026-05-14** — Merge pull request #47 from GENIA-Americas/fix/standalone-health `[f775167]`
+- **2026-05-14** — Merge pull request #45 from GENIA-Americas/fix/health-final `[8a2fb46]`
+- **2026-05-14** — Merge pull request #44 from GENIA-Americas/fix/health-endpoint-demo `[2ea2e79]`
+
+## Other
+
+- **2026-05-27** — Merge branch 'pr-54' `[f6c0151]`
+- **2026-05-21** — Merge pull request #55 from Mingtao-python/main `[a32e84d]`
+- **2026-05-17** — Update manage.py to modify sys.path `[6309503]`
+- **2026-05-17** — Refactor base settings for environment variable management `[0438330]`
+- **2026-05-17** — Add files via upload `[eeaaa05]`
+- **2026-05-17** — Add environment variables for AI provider and email `[8c9fc64]`
+- **2026-05-14** — Merge pull request #53 from GENIA-Americas/docs/live-api-endpoints `[8f2e931]`
+- **2026-05-14** — Merge pull request #52 from GENIA-Americas/fix/datasets-router `[bef933e]`
+- **2026-05-14** — Merge pull request #51 from GENIA-Americas/fix/render-settings-v2 `[3453c4b]`
+- **2026-05-14** — Merge pull request #50 from GENIA-Americas/fix/render-settings `[7f7fb0f]`
+- **2026-05-14** — Merge pull request #49 from GENIA-Americas/docs/add-live-url `[ea63014]`
+- **2026-05-14** — Remove Railway deployment button `[26f8958]`
+- **2026-05-14** — Merge pull request #46 from GENIA-Americas/fix/urls-import-error `[2487a0f]`
+- **2026-05-14** — Merge pull request #43 from GENIA-Americas/fix/python-version `[ddc5a5c]`
+- **2026-05-12** — Enhance README with AI Corridor and integrations detailsdocs: add Corridor overview, links, AI provider table, language switcher `[0644e37]`
+- **2026-05-12** — Merge pull request #38 from GENIA-Americas/feature/good-first-issues-batch `[17813d2]`
+- **2026-04-24** — Add vibe coding collaboration guide `[90b3cf0]`
+- **2025-12-07** — Refine folder structure documentation `[46526c7]`
+- **2025-12-07** — Update folder structure in architecture documentation `[4bc1572]`
+- **2025-12-06** — Add API documentation for Glápagos Backend `[bd6b287]`
+- **2025-12-06** — Clean up architecture.md by removing blank lines `[53a5ee3]`
+- **2025-12-06** — Update architecture.md `[c7529fd]`
+- **2025-12-06** — Document Glápagos Backend architecture and usage `[8b7ba2e]`
+- **2025-12-06** — Create architecture.md `[d15ff61]`
+- **2025-12-06** — Add example ML model for inference `[6a6c702]`
+- **2025-12-06** — Create example_model.py `[ca03064]`
+- **2025-12-06** — Add GitHub Actions workflow for releases `[eae3d47]`
+- **2025-12-06** — Add GitHub Actions workflow for Docker build `[5f26294]`
+- **2025-12-06** — Add CI workflow for Python project `[b4f1e55]`
+- **2025-12-06** — Add Contributor Covenant Code of Conduct `[db2c7d3]`
+- **2025-12-06** — Rename LICENCE to LICENSE `[f9b477c]`
+- **2025-12-06** — Delete LICENSE `[0efea78]`
+- **2025-12-06** — Add MIT License to the project `[1b64066]`
+- **2025-12-06** — Revise README for Glápagos Backend project `[647f9c9]`
+- **2025-11-29** — Create CONTRIBUTING.md with contribution guidelines `[1cddaf1]`
+- **2025-11-29** — Add MIT License to the project `[a54fcff]`
+- **2025-01-08** — Revert "Merge remote-tracking branch 'origin/main'" `[c35db77]`
+- **2025-01-08** — Merge remote-tracking branch 'origin/main' `[128c860]`
+- **2025-01-08** — Fix(transformations): missing values now include empty string `[0b96043]`
+- **2025-01-08** — Fix(transformations): remove row_num column when applying remove duplicates transformation `[8095c09]`
+- **2025-01-07** — Merge branch 'notebooks_v2' into development `[6e51ce4]`
+- **2025-01-07** — Fix(email): email assets in glapagos storage `[9d66eac]`
+- **2025-01-07** — Feat(notebooks): New notebook instances `[d6f6782]`
+- **2025-01-07** — Fix(transformations): return error if you cannot transform string to numeric values `[76ed8af]`
+- **2025-01-07** — Fix(url_upload): capture url invalid exception `[1a06c25]`
+- **2025-01-07** — Fix(transformations): adjust query for single column `[f2dbdf7]`
+- **2025-01-03** — Fix(register): show account validation errors in html `[77aec47]`
+- **2025-01-03** — Fix(login): error messages `[3d6fda2]`
+- **2025-01-02** — Feat(register): add united states `[3b82dbf]`
+- **2024-12-21** — Merge pull request #30 from themadfox/fix-bugs `[3ea3854]`
+- **2024-12-21** — Validate user when updated password `[add23fd]`
+- **2024-12-21** — Merge pull request #29 from themadfox/fix-bugs `[58604a2]`
+- **2024-12-21** — Change email signature `[28d643b]`
+- **2024-12-21** — Change email signature `[8facb7c]`
+- **2024-12-21** — Change email signature `[6fa2b9f]`
+- **2024-12-20** — Fix(transformations): Custom error in invalid data conversions `[edac4fe]`
+- **2024-12-19** — Fix(chatgpt): solve querys with special characters `[0ea4690]`
+- **2024-12-19** — Fix(chatgpt): solve querys with special characters `[3d66151]`
+- **2024-12-17** — Feat(upload file): Add description `[d4b5331]`
+- **2024-12-16** — Test: add gmail `[4b1ad63]`
+- **2024-12-16** — Test: add gmail `[9dfb30a]`
+- **2024-12-12** — Feat(preview): add txt support for preview `[4bc60a6]`
+- **2024-12-11** — Fix(upload): upload bugs `[63442ea]`
+- **2024-12-11** — Fix(upload): upload bugs `[7859657]`
+- **2024-12-11** — Fix(upload): upload bugs `[b586af8]`
+- **2024-12-06** — Fix(notebooks): change site scheme `[e86146e]`
+- **2024-12-06** — Merge branch 'notebooks' into development `[36333d3]`
+- **2024-12-06** — Fix(notebooks): instance automatic remove and data preservation `[4918760]`
+- **2024-12-04** — Fix(remember_password): error when user not found `[ba4ca6b]`
+- **2024-12-04** — Fix(transformations): including non english characters in query and minor changes `[7b00332]`
+- **2024-11-26** — Fix(add_gmail): Invalid email exception `[faaca81]`
+- **2024-11-26** — Fix(translation): add compiled messages `[8f7c9a3]`
+- **2024-11-26** — Fix(notebooks): status error `[99349c3]`
+- **2024-11-26** — Merge pull request #25 from themadfox/notebooks `[0cefa27]`
+- **2024-11-25** — Merge pull request #27 from themadfox/email_templates `[5d16b62]`
+- **2024-11-22** — Merge pull request #26 from themadfox/email_templates `[1bc4414]`
+- **2024-11-22** — Merge branch 'development' of https://github.com/themadfox/Glapagos-Backend into email_templates `[28ef8b5]`
+- **2024-11-20** — Feat(notebooks!): add random name to notebooks `[90b7112]`
+- **2024-11-20** — Feat(datasets): add description field to dataset `[838e31d]`
+- **2024-11-19** — ADD: Translations `[dd9c694]`
+- **2024-11-19** — Merge branch 'development' into notebooks `[3d305af]`
+- **2024-11-19** — ADD: Schema automatic update `[fb2a5d5]`
+- **2024-11-19** — ADD: start, stop and destroy notebook instances `[55dfabe]`
+- **2024-11-18** — Merge pull request #24 from themadfox/upload-fixes `[5e74b1a]`
+- **2024-11-18** — ADD: access_require field `[3f891d2]`
+- **2024-11-18** — ADD: public variable in dataset `[acdf3e0]`
+- **2024-11-18** — Merge pull request #23 from themadfox/upload-fixes `[c59f8b9]`
+- **2024-11-18** — Merge pull request #22 from themadfox/upload-fixes `[6b5e081]`
+- **2024-11-18** — Merge pull request #19 from themadfox/private_data_email `[5c6d0ce]`
+- **2024-11-18** — Merge branch 'development' of https://github.com/themadfox/Glapagos-Backend into private_data_email `[06d321b]`
+- **2024-11-18** — Merge pull request #21 from themadfox/txt_upload `[ef79b10]`
+- **2024-11-18** — Merge pull request #20 from themadfox/revert-18-txt_upload `[74ce072]`
+- **2024-11-18** — Revert "Txt upload" `[692f16a]`
+- **2024-11-18** — Merge pull request #18 from themadfox/txt_upload `[a8c6ac8]`
+- **2024-11-18** — Merge pull request #17 from themadfox/google-cloud-upload `[c9d4d7f]`
+- **2024-11-18** — Merge pull request #15 from themadfox/s3-upload `[fc4c5cb]`
+- **2024-11-15** — Merge branch 'development' of https://github.com/themadfox/Glapagos-Backend into s3-upload `[180821c]`
+- **2024-11-14** — ADD: Notebooks `[9e5a6da]`
+- **2024-11-14** — ADD: JSON preview with objects `[7cad37f]`
+- **2024-11-14** — Merge branch 'development' of https://github.com/themadfox/Glapagos-Backend into txt_upload `[319c749]`
+- **2024-11-14** — ADD: JSON preview with objects `[1d81b38]`
+- **2024-11-14** — Merge branch 'development' of https://github.com/themadfox/Glapagos-Backend into txt_upload `[0d52094]`
+- **2024-11-13** — ADD: Migrations `[cf5c02e]`
+- **2024-11-12** — ADD: JSON Object upload `[0df413c]`
+- **2024-11-07** — Merge branch 'development' of https://github.com/themadfox/Glapagos-Backend into google-cloud-upload `[bfbc4d4]`
+- **2024-11-06** — ADD: Google key error handling `[e6c16ee]`
+- **2024-11-05** — Merge branch 'development' of https://github.com/themadfox/Glapagos-Backend into s3-upload `[b8f3a07]`
+- **2024-11-05** — ADD: Fix bugs `[de2bbe0]`
+- **2024-11-05** — Merge pull request #16 from themadfox/json `[da5fa17]`
+- **2024-11-05** — ADD: Fix bugs `[f17b393]`
+- **2024-10-31** — ADD: More types `[780dc64]`
+- **2024-10-31** — DEL: Remove volume `[6ee551f]`
+- **2024-10-31** — ADD: JSON Upload `[24a705b]`
+- **2024-10-31** — ADD: JSON Upload `[df5282b]`
+- **2024-10-31** — Merge branch 'development' into json `[e7f9aeb]`
+- **2024-10-31** — Merge branch 'development' of https://github.com/themadfox/Glapagos-Backend into s3-upload `[5f126c3]`
+- **2024-10-31** — Merge branch 'google-drive-upload' of https://github.com/themadfox/Glapagos-Backend into s3-upload `[78b4dce]`
+- **2024-10-30** — Merge pull request #14 from themadfox/google-drive-upload `[c93afa1]`
+- **2024-10-30** — ADD: JSON Upload `[9cfb08c]`
+- **2024-10-30** — Merge pull request #11 from themadfox/google-drive-upload `[b4b327e]`
+- **2024-10-30** — Merge branch 'development' of https://github.com/themadfox/Glapagos-Backend into google-drive-upload `[cb29191]`
+- **2024-10-30** — ADD: JSON Upload `[b61425f]`
+- **2024-10-30** — Merge pull request #13 from themadfox/gpt_integration `[9e2bb22]`
+- **2024-10-29** — Merge branch 'google-drive-upload' of https://github.com/themadfox/Glapagos-Backend into s3-upload `[3260f9e]`
+- **2024-10-29** — Merge pull request #12 from themadfox/bug-fixes `[ee67f66]`
+- **2024-10-28** — ADD: JSON Preview `[7899016]`
+- **2024-10-21** — Merge pull request #8 from themadfox/gpt_integration `[6522ebd]`
+- **2024-10-17** — ADD: Secured keys `[1d38619]`
+- **2024-10-17** — Merge pull request #9 from themadfox/key-encryption `[7739df9]`
+- **2024-10-17** — Merge pull request #7 from themadfox/charts `[16eb491]`
+- **2024-10-16** — Merge branch 'development' of https://github.com/themadfox/Glapagos-Backend into key-encryption `[7c425ba]`
+- **2024-10-16** — Merge branch 'development' into gpt_integration `[7b7b254]`
+- **2024-10-16** — ADD: Get schema endpoint `[e2c3fbf]`
+- **2024-10-16** — ADD: Cors allow all origins `[be3d56f]`
+- **2024-10-15** — ADD: Category charts `[7711598]`
+- **2024-10-15** — Merge branch 'development' of https://github.com/themadfox/Glapagos-Backend into gpt_integration `[cee2ae3]`
+- **2024-10-15** — Merge pull request #6 from themadfox/data_transformations `[37f0282]`
+- **2024-10-15** — ADD: Migrations `[06482e8]`
+- **2024-10-15** — ADD: List transformed tables endpoint `[7517417]`
+- **2024-10-11** — ADD: Standardizing text transformation `[5bbcd7a]`
+- **2024-10-10** — Merge branch 'data_transformations' of https://github.com/themadfox/Glapagos-Backend into gpt_integration `[8fb1da2]`
+- **2024-10-09** — Merge pull request #4 from themadfox/fix/dockerfile-2 `[2156020]`
+- **2024-10-09** — Update start `[fd15da4]`
+- **2024-10-08** — Wip `[af189e5]`
+- **2024-10-08** — Wip `[0e221dd]`
+- **2024-10-08** — Wip `[ded708d]`
+- **2024-10-08** — Wip `[6a8c645]`
+- **2024-10-08** — Wip `[3492129]`
+- **2024-10-08** — Wip `[8b87fac]`
+- **2024-10-08** — Wip `[ad088d6]`
+- **2024-10-08** — Wip `[e93077a]`
+- **2024-10-08** — Wip `[dce04b2]`
+- **2024-10-08** — Wip `[3816c7b]`
+- **2024-10-08** — Wip `[c1a029f]`
+- **2024-10-08** — Wip `[6cf8008]`
+- **2024-10-08** — Wip `[b32e4d3]`
+- **2024-10-08** — WIP `[ce5cf11]`
+- **2024-10-08** — Wip `[a7cb04a]`
+- **2024-10-08** — ADD: RemoveDuplicatesTransformation `[edb5441]`
+- **2024-10-08** — ADD: Error handling `[ca68037]`
+- **2024-10-08** — ADD: Data Type Conversion `[776071d]`
+- **2024-10-08** — WIP `[966c492]`
+- **2024-10-08** — Merge pull request #5 from themadfox/feat `[2e7cd1a]`
+- **2024-10-07** — Cleaning code `[c257d4d]`
+- **2024-10-07** — Cleaning code `[0ceac3a]`
+- **2024-10-07** — Wip `[727aeab]`
+- **2024-10-07** — Wip `[e187747]`
+- **2024-10-07** — Wip `[5705e98]`
+- **2024-10-07** — Wip `[fb4d86d]`
+- **2024-10-07** — Wip `[f8edec2]`
+- **2024-10-07** — Wip `[8d10ee6]`
+- **2024-10-07** — Wip `[6275870]`
+- **2024-10-07** — Wip `[7b9fca6]`
+- **2024-10-07** — Wip `[5653ed0]`
+- **2024-10-07** — Wip `[a75323e]`
+- **2024-10-07** — Wip `[2483e6f]`
+- **2024-10-07** — WIP `[ca097fe]`
+- **2024-10-06** — WIP `[27db515]`
+- **2024-10-06** — Wip `[18db991]`
+- **2024-10-06** — Wip `[3d93351]`
+- **2024-10-06** — Wip `[a9dad5b]`
+- **2024-10-06** — WIP `[8e8e5fb]`
+- **2024-10-07** — Update views.py `[227af9b]`
+- **2024-10-07** — Merge pull request #3 from themadfox/data_transformations `[e4e3579]`
+- **2024-10-05** — Merge pull request #2 from themadfox/fix/fixes-dockerfile `[97f046f]`
+- **2024-10-04** — Merge branch 'development' into data_transformations `[4ed61d3]`
+- **2024-10-04** — Merge remote-tracking branch 'origin/development' into data_transformations `[6b642f7]`
+- **2024-10-04** — ADD: Private datasets created after user registry and refactor `[453d4d2]`
+- **2024-10-04** — Add PORT variable `[aa3c473]`
+- **2024-10-04** — Configuration for production `[0d766bb]`
+- **2024-10-04** — Merge pull request #1 from themadfox/feat `[8880bb0]`
+- **2024-10-04** — Merge branch 'development' into feat `[844bb85]`
+- **2024-10-03** — Merge branch 'feat' into data_transformations `[4e95bc3]`
+- **2024-10-02** — ADD: Missing values transformation `[de01eec]`
+- **2024-09-30** — Merge branch 'development' of https://github.com/themadfox/Glapagos-Backend into feat `[5ac8c49]`
+- **2024-09-27** — CHANGE: Table endpoint queryset `[d6e45fd]`
+- **2024-09-25** — Merge branch 'development' of https://github.com/themadfox/Glapagos-Backend into feat `[60ad79c]`
+- **2024-09-23** — ADD: Public and private tables endpoint `[f9127d8]`
+- **2024-09-20** — ADD: Validate empty rows at the end of the file `[39872e3]`
+- **2024-09-20** — ADD: CSV validations and descriptive messages `[cd63bb9]`
+- **2024-09-20** — ADD: CSV validations `[dfa10fd]`
+- **2024-09-19** — ADD: User migrations `[f3a3f3c]`
+- **2024-09-18** — Merge branch 'development' of https://github.com/themadfox/Glapagos-Backend into development `[43f45f4]`
+- **2024-09-16** — ADD: CSV special datatype detection `[bbcae40]`
+- **2024-09-11** — ADD: CSV format detection `[4b2612d]`
+- **2024-09-11** — Merge branch 'development' into set_headers `[27577a9]`
+- **2024-09-11** — CHANGE: Users validated by default `[0f2b7ae]`
+- **2024-09-11** — CHANGE: Changing preview and file upload behavior `[7f5414d]`
+- **2024-09-11** — Merge branch 'development' into set_headers `[e056bfa]`
+- **2024-09-11** — ADD: Contacts registration `[1c74dad]`
+- **2024-09-11** — Merge branch 'development' into set_headers `[0562f2b]`
+- **2024-09-11** — ADD: Contacts registration `[a65ee27]`
+- **2024-09-11** — ADD: File preview endpoint and file load with schema `[e8bafeb]`
+- **2024-09-09** — ADD: pandas requirement `[2e8a2cf]`
+- **2024-09-09** — ADD: password validation `[006cf54]`
+- **2024-09-06** — Refactoring `[56d8e10]`
+- **2024-09-06** — ADD: Migrations `[a96ae37]`
+- **2024-09-06** — ADD: File MIME type validation `[433d1bc]`
+- **2024-09-05** — ADD: Save file statistics after upload `[7028ab3]`
+- **2024-09-05** — ADD: Field validations `[41f21f4]`
+- **2024-09-04** — ADD: Mount tables in big query `[1188329]`
+- **2024-09-04** — ADD: Validations `[1e12756]`
+- **2024-09-04** — ADD: Reset password `[41b6aac]`
+- **2024-09-02** — ADD: Error messages `[e6f7116]`
+- **2024-09-02** — ADD: Django I18N `[f4212a4]`
+- **2024-09-02** — ADD: Migrations `[a90f744]`
+- **2024-09-02** — ADD: Upload file `[ccf4578]`
+- **2024-08-28** — ADD: Activate user account by email `[346806a]`
+- **2024-08-26** — ADD: User model to Django Admin `[c677298]`
+- **2024-08-26** — ADD: User registration `[734e3e3]`
+- **2024-08-23** — ADD: DB models `[531a2a2]`
+
+---
+
+*This changelog is maintained from git history.
+Every commit is verifiable at https://github.com/GENIA-Americas/Glapagos-Backend/commits/main*
