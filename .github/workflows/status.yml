@@ -23,7 +23,7 @@ jobs:
         run: |
           # Core metrics
           TOTAL_COMMITS=$(git log --oneline | wc -l | tr -d ' ')
-          CONTRIBUTORS=$(git shortlog -sn | wc -l | tr -d ' ')
+          CONTRIBUTORS=$(git shortlog -sn HEAD | wc -l | tr -d ' ')
           FIRST_COMMIT_DATE=$(git log --format="%ad" --date=short | tail -1)
           LAST_COMMIT=$(git log -1 --format="%H")
           LAST_COMMIT_SHORT=$(git log -1 --format="%h")
@@ -43,7 +43,7 @@ jobs:
           MIGRATIONS=$(find . -path "*/migrations/0*.py" | wc -l | tr -d ' ')
 
           # Top contributors
-          CONTRIBUTORS_LIST=$(git shortlog -sn | head -5 | awk '{$1=$1; print "| " $1 " commits | " substr($0, index($0,$2)) " |"}')
+          CONTRIBUTORS_LIST=$(git shortlog -sn HEAD | head -5 | awk '{$1=$1; print "| " $1 " commits | " substr($0, index($0,$2)) " |"}')
 
           # Days active
           DAYS_ACTIVE=$(( ( $(date +%s) - $(date -d "$FIRST_COMMIT_DATE" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "$FIRST_COMMIT_DATE" +%s) ) / 86400 ))
@@ -125,11 +125,9 @@ jobs:
 
           ## What this proves
 
-          This is not a concept. This is not a pilot. This is not a slide deck.
-
           This is $TOTAL_COMMITS commits across $DAYS_ACTIVE days of active development
-          by $CONTRIBUTORS contributors building the AI infrastructure layer the Americas needs
-          — while others were still debating whether it was possible.
+          by $CONTRIBUTORS contributors — proof that the AI infrastructure layer the Americas
+          needs is not a future project. It is here, and it is working.
 
           → [Platform access and Corridor Report](https://www.glapagos.com/resources)
           → [Why this matters now](docs/WHY_NOW.md)
