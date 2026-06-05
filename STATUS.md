@@ -72,11 +72,7 @@ through the AI Corridor of the Americas by RaceFor.AI and GENIA Americas.
 
 ## What this proves
 
-This is not a concept. This is not a pilot. This is not a slide deck.
-
-This is 355 commits across 652 days of active development
-by 0 contributors building the AI infrastructure layer the Americas needs
-— while others were still debating whether it was possible.
+This is 355 commits across 652 days of active development by 10 contributors — proof that the AI infrastructure layer the Americas needs is not a future project. It is here, and it is working.
 
 → [Platform access and Corridor Report](https://www.glapagos.com/resources)
 → [Why this matters now](docs/WHY_NOW.md)
