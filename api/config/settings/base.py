@@ -36,7 +36,7 @@ DATABASES = {
         "HOST": os.environ.get("DB_HOST"),
     }
 }
-DATABASES["default"]["ATOMIC_REQUESTS"] = False
+DATABASES["default"]["ATOMIC_REQUESTS"] = True
 
 # URLs
 ROOT_URLCONF = "config.urls"
@@ -83,6 +83,7 @@ LOCAL_APPS = [
     "api.ai.apps.AiAppConfig",
     "api.notebooks.apps.NotebooksConfig",
     "api.health.apps.HealthAppConfig",
+    "api.workspaces.apps.WorkspacesConfig",
 ]
 
 INSTALLED_APPS = THIRD_PARTY_APPS + DJANGO_APPS + LOCAL_APPS
@@ -248,7 +249,7 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_COOKIE_HTTP_ONLY": True,
     # Whether to set the flag restricting cookie leaks on cross-site requests.
     "REFRESH_TOKEN_COOKIE_SAMESITE": "Lax",
-    "SESSION_COOKIE_DOMAIN": "{{app_name}}.io",
+    
 }
 # external token format
 AUTHENTICATION_EXTERNAL_MESSAGE_PROVIDERS = [

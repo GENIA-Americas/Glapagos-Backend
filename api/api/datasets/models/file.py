@@ -1,5 +1,5 @@
 from django.db import models
-from utils.models import BaseModel
+from api.utils.models import BaseModel
 from api.users.models import User
 from api.datasets.enums import FileType
 

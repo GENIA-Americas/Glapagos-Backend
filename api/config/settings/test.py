@@ -80,3 +80,6 @@ AWS_LOCATION = "media"
 # DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 # PUBLIC_MEDIA_LOCATION = 'media'
+API_URI = 'api/v1'
+SECURED_FIELDS_KEY = 'dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleXRlc3Q='
+SECURED_FIELDS_HASH_SALT = 'testsalt'

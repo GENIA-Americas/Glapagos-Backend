@@ -178,8 +178,8 @@ class TestHealthEndpoint:
     """Tests for GET /health/"""
 
     @pytest.fixture
-    def client(self, django_test_client):
-        return django_test_client
+    def client(self, client):
+        return client
 
     @patch("api.health.views._check_database")
     @patch("api.health.views._check_redis")
@@ -191,7 +191,7 @@ class TestHealthEndpoint:
         mock_redis.return_value = {"status": "ok", "latency_ms": 0.8, "error": None}
         mock_celery.return_value = {"status": "ok", "workers": 2, "error": None}
 
-        response = client.get("/health/")
+        response = client.get("/api/v1/health/")
 
         assert response.status_code == 200
         data = response.json()
@@ -216,7 +216,7 @@ class TestHealthEndpoint:
         mock_redis.return_value = {"status": "ok", "latency_ms": 0.8, "error": None}
         mock_celery.return_value = {"status": "ok", "workers": 1, "error": None}
 
-        response = client.get("/health/")
+        response = client.get("/api/v1/health/")
 
         assert response.status_code == 503
         data = response.json()
@@ -237,7 +237,7 @@ class TestHealthEndpoint:
             "error": "No Celery workers responded to ping",
         }
 
-        response = client.get("/health/")
+        response = client.get("/api/v1/health/")
 
         assert response.status_code == 503
         assert response.json()["status"] == "degraded"
@@ -253,7 +253,7 @@ class TestHealthEndpoint:
         mock_redis.return_value = {"status": "ok", "latency_ms": 0.5, "error": None}
         mock_celery.return_value = {"status": "ok", "workers": 1, "error": None}
 
-        data = client.get("/health/").json()
+        data = client.get("/api/v1/health/").json()
 
         assert set(data.keys()) >= {"status", "version", "timestamp", "services"}
         assert set(data["services"].keys()) == {"database", "redis", "celery"}

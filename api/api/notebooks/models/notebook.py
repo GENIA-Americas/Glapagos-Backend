@@ -1,7 +1,7 @@
 from django.db import models
 
 from api.users.models import User
-from utils.models import BaseModel
+from api.utils.models import BaseModel
 
 
 class Notebook(BaseModel):

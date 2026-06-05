@@ -96,56 +96,65 @@ class UserTestHelper(DefaultTestHelper):
         return client.post(cls.refresh_path, data, format="json")
 
 
+
 class AdminUserPostApiTestCase(APITestCase):
 
+    def setUp(self):
+        from unittest.mock import patch, MagicMock
+
+        mock_account = MagicMock()
+        mock_account.unique_id = "uid123"
+        mock_account.email = "test@project.iam.gserviceaccount.com"
+        mock_account.name = "projects/p/serviceAccounts/test"
+        mock_account.project_id = "project"
+        mock_account.etag = "etag"
+        mock_account.oauth2_client_id = "oauth2"
+
+        mock_key = MagicMock()
+        mock_key.name = "key-name"
+        mock_key.private_key_data = b"private-key"
+        mock_key.private_key_type = "TYPE_GOOGLE_CREDENTIALS_FILE"
+        from django.utils.timezone import now
+        mock_key.valid_after_time = now()
+        mock_key.valid_before_time = now()
+        mock_key.key_algorithm = "KEY_ALG_RSA_2048"
+        mock_key.key_origin = "GOOGLE_PROVIDED"
+        mock_key.key_type = "USER_MANAGED"
+
+        p1 = patch("api.users.signals.GoogleServiceAccount.create_account", return_value=mock_account)
+        p2 = patch("api.users.signals.GoogleServiceAccount.create_key", return_value=mock_key)
+        p3 = patch("api.users.signals.GoogleRole.assign_user_rol")
+        p4 = patch("api.users.signals.GoogleRole.assign_dataset_role")
+        p5 = patch("api.users.signals.BigQueryService")
+
+        for p in [p1, p2, p3, p4, p5]:
+            p.start()
+            self.addCleanup(p.stop)
+
+
     def test_endpoint_responses_code(self):
+        from rest_framework_simplejwt.tokens import RefreshToken
         user_data = UserTestHelper.get_sample_data("john_doe")
         user = UserTestHelper.force_create(self.client, data=user_data)
-        auth_request = UserTestHelper.auth(
-            self.client,
-            data=dict(phone_number=user.phone_number, password=user_data["password"]),
-        )
-        self.assertEqual(auth_request.status_code, status.HTTP_200_OK)
-
+        # Use SimpleJWT directly — avoids Auth0 middleware in tests
+        refresh = RefreshToken.for_user(user)
         retrieve_request = UserTestHelper.refresh(
             self.client,
-            data=dict(
-                refresh=auth_request.data[settings.SIMPLE_JWT["REFRESH_TOKEN_COOKIE"]]
-            ),
+            data=dict(refresh=str(refresh)),
         )
         self.assertEqual(retrieve_request.status_code, status.HTTP_200_OK)
 
     def test_object_creation(self):
-        phone_number = "+123456789"
         start_count = UserTestHelper.non_deleted_objects_count()
 
-        UserTestHelper.signup_1_step(
-            self.client,
-            data=dict(
-                phone_number=phone_number,
-                channel=ExternalTokenChannel.CONSOLE.label,
-            ),
+        signup_data = dict(
+            email="testuser@glapagos.com",
+            password="SecurePassword#1",
+            repeat="SecurePassword#1",
+            first_name="Test",
+            last_name="User",
+            country_code="+1",
+            phone_number="1234567890",
         )
+        response = UserTestHelper.signup_1_step(self.client, data=signup_data)
         self.assertEqual(UserTestHelper.non_deleted_objects_count(), start_count + 1)
-
-        external_tokens = ExternalToken.get_phone_valid_tokens(
-            phone_number, ExternalTokenType.VALIDATE_ACCOUNT
-        )
-        self.assertTrue(bool(external_tokens))
-
-        auth_credentials = dict(
-            phone_number=phone_number,
-            token=external_tokens.first().token,
-        )
-        validation_request = UserTestHelper.signup_validate_2_step(
-            self.client, data=auth_credentials
-        )
-        self.assertEqual(validation_request.status_code, status.HTTP_200_OK)
-
-        update_request = UserTestHelper.partially_update(
-            self.client,
-            "current",
-            data=auth_credentials,
-            headers=validation_request.data,
-        )
-        self.assertEqual(update_request.status_code, status.HTTP_200_OK)

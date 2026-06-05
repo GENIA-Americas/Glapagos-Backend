@@ -3,7 +3,7 @@ from django.db import models
 
 # Models
 from api.users.models.user import User
-from utils.models import BaseModel
+from api.utils.models import BaseModel
 
 
 class ServiceAccountKey(BaseModel):

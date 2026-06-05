@@ -2,55 +2,56 @@
 Glapagos AI Provider Registry
 api/api/ai/providers.py
 
-Routes AI requests to the correct backend based on AI_PROVIDER env var.
+Responsibilities:
+  - Define the AIProvider protocol (structural interface).
+  - Implement OpenAI and Ollama providers.
+  - Expose get_provider() which returns a module-level singleton —
+    one client instance per process, not one per request.
 
-Usage:
-    AI_PROVIDER=openai  -> uses OpenAI GPT (default, existing behavior)
-    AI_PROVIDER=ollama  -> uses local Ollama inference, no API key needed
-
-The ChatAssistant in services.py calls get_provider() instead of
-instantiating OpenAI directly.
+Adding a new provider:
+  1. Implement the AIProvider protocol.
+  2. Register it in _PROVIDER_REGISTRY.
+  3. Set AI_PROVIDER=<key> in the environment.
 """
-
 from __future__ import annotations
 
-import os
 import logging
-from typing import Protocol
+import os
+from typing import Protocol, runtime_checkable
 
 logger = logging.getLogger(__name__)
 
-AI_PROVIDER = os.environ.get("AI_PROVIDER", "openai").lower()
+_AI_PROVIDER_KEY = os.environ.get("AI_PROVIDER", "openai").lower()
+
+# Module-level singleton — populated once on first call to get_provider().
+_provider_instance: "AIProvider | None" = None
 
 
+@runtime_checkable
 class AIProvider(Protocol):
     """
-    Interface that every AI provider must implement.
-    ChatAssistant calls complete() — providers handle the rest.
+    Every provider must implement complete().
+    system is optional; not all backends support system prompts natively.
     """
 
-    def complete(self, prompt: str, **kwargs) -> str: ...
+    def complete(self, prompt: str, *, system: str = "", **kwargs) -> str: ...
 
 
 class OpenAIProvider:
-    """
-    Wraps the existing OpenAI integration.
-    Preserves current ChatAssistant behavior exactly.
-    """
-
-    def __init__(self):
+    def __init__(self) -> None:
         import openai
         from django.conf import settings
 
-        self.client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
+        self._client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
+        logger.info("OpenAIProvider initialised")
 
-    def complete(self, prompt: str, system: str = "", **kwargs) -> str:
-        messages = []
+    def complete(self, prompt: str, *, system: str = "", **kwargs) -> str:
+        messages: list[dict] = []
         if system:
             messages.append({"role": "system", "content": system})
         messages.append({"role": "user", "content": prompt})
 
-        completion = self.client.chat.completions.create(
+        completion = self._client.chat.completions.create(
             model=kwargs.get("model", "gpt-4o-mini"),
             messages=messages,
         )
@@ -58,33 +59,41 @@ class OpenAIProvider:
 
 
 class OllamaProvider:
-    """
-    Routes requests to local Ollama inference.
-    No API key required — data never leaves the machine.
-    """
-
-    def __init__(self):
+    def __init__(self) -> None:
         from api.ai.clients.ollama_client import OllamaClient
 
-        self.client = OllamaClient()
+        self._client = OllamaClient()
+        logger.info("OllamaProvider initialised (model=%s)", self._client.model)
 
-    def complete(self, prompt: str, system: str = "", **kwargs) -> str:
+    def complete(self, prompt: str, *, system: str = "", **kwargs) -> str:
         full_prompt = f"{system}\n\n{prompt}" if system else prompt
-        return self.client.complete(full_prompt, **kwargs)
+        return self._client.complete(full_prompt, **kwargs)
+
+
+_PROVIDER_REGISTRY: dict[str, type] = {
+    "openai": OpenAIProvider,
+    "ollama": OllamaProvider,
+}
 
 
 def get_provider() -> AIProvider:
     """
-    Factory — returns the correct provider based on AI_PROVIDER env var.
-    Called by ChatAssistant on every request.
+    Return the module-level provider singleton.
+    Thread-safe for reads; the write-once pattern is safe under Django's
+    multi-threaded WSGI servers because the cost of a duplicate init is
+    a discarded object, not a corrupted state.
     """
-    provider = AI_PROVIDER
-    logger.debug("AI provider: %s", provider)
+    global _provider_instance
 
-    if provider == "ollama":
-        return OllamaProvider()
-    elif provider == "openai":
-        return OpenAIProvider()
-    else:
-        logger.warning("Unknown AI_PROVIDER=%r, falling back to OpenAI", provider)
-        return OpenAIProvider()
+    if _provider_instance is not None:
+        return _provider_instance
+
+    provider_class = _PROVIDER_REGISTRY.get(_AI_PROVIDER_KEY)
+    if provider_class is None:
+        logger.warning(
+            "Unknown AI_PROVIDER=%r — falling back to OpenAI", _AI_PROVIDER_KEY
+        )
+        provider_class = OpenAIProvider
+
+    _provider_instance = provider_class()
+    return _provider_instance
