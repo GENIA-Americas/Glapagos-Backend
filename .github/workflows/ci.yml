@@ -2,32 +2,38 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: "3.11"
+          cache: pip
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements/local.txt
 
-      - name: Lint code
+      - name: Lint
         run: |
           pip install black flake8
-          black --check .
-          flake8 .
+          black --check api/
+          flake8 api/
 
-      - name: Run tests
+      - name: Test
+        working-directory: ./
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.test
+          SENDGRID_API_KEY: test
+          SENDGRID_SENDER: test@test.com
+          SECURED_FIELDS_KEY: dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleXRlc3Q=
+          SECURED_FIELDS_HASH_SALT: testsalt
         run: |
-          pip install pytest
-          pytest --maxfail=1 --disable-warnings
+          python -m pytest api/api/ --import-mode=importlib -v --tb=short
