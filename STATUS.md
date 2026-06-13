@@ -4,7 +4,7 @@
 > It reflects the real state of the platform, not a press release.
 
 **Last updated:** 2026-06-13 20:04 UTC
-**Status:** 🟢 Active Development
+**Status:** Active Development
 
 ---
 

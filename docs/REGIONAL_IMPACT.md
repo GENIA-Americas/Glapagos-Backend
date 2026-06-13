@@ -105,7 +105,7 @@ This is not a roadmap. It is a record of what exists today:
   worker infrastructure
 - **Celery-based async task processing** for file uploads, notebook management,
   and long-running AI workloads
-- **Full audit trail** — 355 commits across 652 days, all verifiable at
+- **Full audit trail** — 433 commits across 660 days, all verifiable at
   https://github.com/GENIA-Americas/Glapagos-Backend/commits/main
 
 ---

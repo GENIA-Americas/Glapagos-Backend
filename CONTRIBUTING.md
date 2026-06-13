@@ -1,24 +1,32 @@
 # Contributing to Glapagos-Backend
 
-Thank you for your interest in contributing to **Glapagos-Backend**! We welcome contributions of all sizes, from bug fixes to new features. To ensure smooth collaboration, please follow these guidelines.
+We welcome contributions of all sizes, from bug fixes to new features.
 
 ---
 
-## 1. How to Fork the Repository
+## How to contribute
 
-1. Navigate to the [Glapagos-Backend GitHub page](https://github.com/GENIA-Americas/Glapagos-Backend).  
-2. Click the **Fork** button in the top-right corner.  
-3. This creates a copy of the repository under your GitHub account.  
-
----
-
-## 2. How to Create a Branch
-
-1. Clone your fork locally:  
-   ```bash
+1. Fork the repository on GitHub
+2. Clone your fork locally:
+```bash
    git clone https://github.com/YOUR-USERNAME/Glapagos-Backend.git
    cd Glapagos-Backend
-git checkout -b feature/my-feature
-git checkout main
-git pull upstream main
-git push origin feature/my-feature
+```
+3. Create a branch:
+```bash
+   git checkout -b feature/my-feature
+```
+4. Make your changes and commit:
+```bash
+   git commit -m 'Add my feature'
+```
+5. Push and open a Pull Request:
+```bash
+   git push origin feature/my-feature
+```
+
+For collaboration principles, pairing workflow, code review standards, and how we give feedback, read [VIBE_CODING_GUIDE.md](VIBE_CODING_GUIDE.md).
+
+For our community standards, read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+
+For good first issues, see issues labeled [`good first issue`](https://github.com/GENIA-Americas/Glapagos-Backend/issues?q=label%3A%22good+first+issue%22).

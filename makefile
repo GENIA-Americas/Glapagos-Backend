@@ -44,9 +44,6 @@ me:# Make empty migration
 mmm:# Make Migrations Merge
 	docker compose -f $(DOCKER_COMPOSE_FILE) run --rm django python manage.py makemigrations --merge
 
-translate:
-	docker compose -f $(DOCKER_COMPOSE_FILE) run --rm django python manage.py makemessages --locale=es
-
 permission:
 	docker compose -f $(DOCKER_COMPOSE_FILE) run --rm django python manage.py load_policies
 
