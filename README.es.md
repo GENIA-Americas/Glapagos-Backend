@@ -1,9 +1,12 @@
 # Glápagos Backend
 
-Un backend modular y extensible basado en Django, diseñado como la base
-para aplicaciones habilitadas con IA construidas sobre la plataforma Glápagos.
+Un backend modular y extensible basado en Django — la columna vertebral open-source del **Corredor de IA de las Américas**, construido para las realidades regulatorias, lingüísticas y de mercado del hemisferio occidental.
 
-Este repositorio incluye:
+**Plataforma:** [glapagos.com](https://www.glapagos.com) · **Corridor Report:** [glapagos.com/resources](https://www.glapagos.com/resources) · **Comunidad:** [Discusiones](https://github.com/GENIA-Americas/Glapagos-Backend/discussions)
+
+---
+
+## Lo que incluye
 
 * Una arquitectura Django lista para producción
 * Plantillas de despliegue con Docker
@@ -74,11 +77,9 @@ AI_PROVIDER=openai
 OPENAI_API_KEY=sk-...
 ```
 
-### Ollama — LLMs locales sin clave API
+### Ollama — inferencia local sin clave API
 
-[Ollama](https://ollama.ai/) permite ejecutar modelos de lenguaje de forma
-local, sin depender de servicios externos. Ideal para entornos con restricciones
-de conectividad o datos sensibles.
+Ollama permite ejecutar modelos de forma local, sin depender de servicios externos. Ideal para entornos con restricciones de conectividad o datos sensibles.
 
 ```env
 AI_PROVIDER=ollama
