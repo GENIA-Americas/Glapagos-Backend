@@ -40,6 +40,7 @@ DATABASES["default"]["ATOMIC_REQUESTS"] = True
 
 # URLs
 ROOT_URLCONF = "config.urls"
+API_URI = "api/v1"
 
 # WSGI
 WSGI_APPLICATION = "config.wsgi.application"
