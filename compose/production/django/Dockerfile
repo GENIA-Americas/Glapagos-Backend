@@ -56,6 +56,9 @@ RUN chmod +x /start
 COPY ./compose/production/django/celery/beat/start /start-celerybeat
 RUN chmod +x /start-celerybeat
 
+COPY ./compose/production/django/celery/worker/start /start-celeryworker
+RUN chmod +x /start-celeryworker
+
 EXPOSE $PORT
 
 ENTRYPOINT ["/start"]

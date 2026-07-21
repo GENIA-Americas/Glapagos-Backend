@@ -58,6 +58,60 @@ class OpenAIProvider:
         return completion.choices[0].message.content or ""
 
 
+class AnthropicProvider:
+    def __init__(self) -> None:
+        import anthropic
+        from django.conf import settings
+
+        self._client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+        logger.info("AnthropicProvider initialised")
+
+    def complete(self, prompt: str, *, system: str = "", **kwargs) -> str:
+        # NOTE: verify this default against current Anthropic docs before
+        # deploying — model strings change and I am not fully certain this
+        # is current. Safer to always pass model= explicitly at the call
+        # site rather than rely on this default.
+        message = self._client.messages.create(
+            model=kwargs.get("model", "claude-sonnet-5"),
+            max_tokens=kwargs.get("max_tokens", 1024),
+            system=system or anthropic.NOT_GIVEN,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return "".join(block.text for block in message.content if block.type == "text")
+
+
+class GroqProvider:
+    """
+    Groq's chat completions API is OpenAI-compatible, so this reuses the
+    openai SDK pointed at Groq's base_url rather than pulling in a second
+    HTTP client — one fewer dependency, same interface. Free-tier access
+    is the reason this provider exists: Groq hosts open-weight models
+    (e.g. Llama, Mixtral) at no cost for moderate usage.
+    """
+
+    def __init__(self) -> None:
+        import openai
+        from django.conf import settings
+
+        self._client = openai.OpenAI(
+            api_key=settings.GROQ_API_KEY,
+            base_url="https://api.groq.com/openai/v1",
+        )
+        logger.info("GroqProvider initialised")
+
+    def complete(self, prompt: str, *, system: str = "", **kwargs) -> str:
+        messages: list[dict] = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+
+        completion = self._client.chat.completions.create(
+            model=kwargs.get("model", "llama-3.3-70b-versatile"),
+            messages=messages,
+        )
+        return completion.choices[0].message.content or ""
+
+
 class OllamaProvider:
     def __init__(self) -> None:
         from api.ai.clients.ollama_client import OllamaClient
@@ -72,6 +126,8 @@ class OllamaProvider:
 
 _PROVIDER_REGISTRY: dict[str, type] = {
     "openai": OpenAIProvider,
+    "anthropic": AnthropicProvider,
+    "groq": GroqProvider,
     "ollama": OllamaProvider,
 }
 

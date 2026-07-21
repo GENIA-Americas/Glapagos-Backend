@@ -2,10 +2,10 @@
 
 -r ./base.txt
 
-gunicorn
-Twisted[tls,http2]
-daphne
-sentry-sdk
+gunicorn==26.0.0
+Twisted[tls,http2]==26.4.0
+daphne==4.2.2
+sentry-sdk==2.66.0
 
 # Media
-django-storages
+django-storages==1.14.6
