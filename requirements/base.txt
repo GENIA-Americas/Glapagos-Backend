@@ -1,86 +1,97 @@
 # Base
-pytz
-python-slugify
-jinja2
+pytz==2026.2
+python-slugify==8.0.4
+jinja2==3.1.6
 
-openai
-pydantic
+# AI providers — see api/api/ai/providers.py. All three are pinned even
+# though a given deployment may only use one, since AI_PROVIDER is an
+# env-var runtime switch, not a build-time choice.
+openai==2.46.0
+anthropic==0.117.0
+groq==1.5.0
+pydantic==2.13.4
 
 # Mail
-sendgrid
+sendgrid==6.12.5
 
 # Django
-Django==3.2
-django-cors-headers==3.7.0
-django-rest-passwordreset
-django-extensions
-django-secured-fields
+Django==5.2.16
+django-cors-headers==4.9.0
+django-rest-passwordreset==1.6.0
+django-extensions==4.1
+django-secured-fields==0.4.4
 
 # Environment
-django-environ==0.4.5
+django-environ==0.14.0
 
 # Django REST Framework
-djangorestframework==3.12.4
-django-filter==2.4.0
-drf-nested-routers==0.93.4
-djangorestframework-simplejwt==4.6.0
-pyJWT
+djangorestframework==3.17.1
+django-filter==26.1
+drf-nested-routers==0.95.0
+djangorestframework-simplejwt==5.5.1
+pyjwt==2.13.0
 
 # Passwords security
-argon2-cffi==21.3.0
+argon2-cffi==25.1.0
 
 # Static files
-whitenoise==5.2.0
+whitenoise==6.12.0
 
 # AWS
-boto3==1.17.64
+boto3==1.43.52
 
 # Storage
-psycopg2-binary==2.9.3
-django-storages
+psycopg2-binary==2.9.12
+django-storages==1.14.6
 
 # Channels
-channels
-channels_redis
+channels==4.3.2
+channels_redis==4.3.0
 
+# Async tasks — celery/django-celery-beat were used in code
+# (api/api/ai/tasks.py) and referenced by compose/*/django/celery/beat/start
+# but were entirely absent from requirements before this change.
+celery==5.6.3
+django-celery-beat==2.9.0
+redis==8.0.1
 
 # CMS
-django-modeltranslation
+django-modeltranslation==0.20.3
 
 # Images
-pillow
+pillow==12.3.0
 
 # Swagger
-drf-yasg==1.21.7
+drf-yasg==1.21.15
 
 # Authentication
-twilio
+twilio==9.10.9
 
 # Cipher
 django-cryptography==1.1
 
 # interface
-django-admin-interface
+django-admin-interface==0.32.0
 
 # Google Cloud
-google-cloud-storage
-google-cloud-bigquery
-google-cloud-firestore
-google-cloud-datacatalog
-google-cloud-dataplex
-google-cloud-dataproc
-google-cloud-iam
-google-cloud-resource-manager
-grpc-google-iam-v1
-google-api-python-client
+google-cloud-storage==3.13.0
+google-cloud-bigquery==3.42.2
+google-cloud-firestore==2.28.0
+google-cloud-datacatalog==3.31.0
+google-cloud-dataplex==2.20.0
+google-cloud-dataproc==5.30.0
+google-cloud-iam==2.24.0
+google-cloud-resource-manager==1.18.0
+grpc-google-iam-v1==0.14.4
+google-api-python-client==2.198.0
 
 # MIME TYPES
-python-magic
+python-magic==0.4.27
 
 # Dataframes
-pandas
+pandas==3.0.3
 
-#Notebooks
-google-cloud-notebooks
+# Notebooks
+google-cloud-notebooks==1.17.0
 
-setuptools
+setuptools==83.0.0

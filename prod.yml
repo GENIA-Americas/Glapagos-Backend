@@ -27,3 +27,21 @@ services:
 
   redis:
     image: redis:6.2
+
+  celeryworker:
+    <<: *django
+    image: base-default-celeryworker-prod
+    depends_on:
+      - redis
+      - postgres
+    ports: []
+    command: /start-celeryworker
+
+  celerybeat:
+    <<: *django
+    image: base-default-celerybeat-prod
+    depends_on:
+      - redis
+      - postgres
+    ports: []
+    command: /start-celerybeat

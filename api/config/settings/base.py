@@ -40,6 +40,7 @@ DATABASES["default"]["ATOMIC_REQUESTS"] = True
 
 # URLs
 ROOT_URLCONF = "config.urls"
+API_URI = "api/v1"
 
 # WSGI
 WSGI_APPLICATION = "config.wsgi.application"
@@ -72,6 +73,7 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "django_filters",
     "secured_fields",
+    "django_celery_beat",
 ]
 
 LOCAL_APPS = [
@@ -356,14 +358,29 @@ ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+# AI providers — see api/api/ai/providers.py for the registry.
+# AI_PROVIDER selects which one get_provider() instantiates; each
+# provider's own __init__ only requires the key(s) it actually uses,
+# so it's fine to leave the others unset.
+AI_PROVIDER = os.getenv("AI_PROVIDER", "openai")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
 GOOGLE_DRIVE_KEY = os.getenv("GOOGLE_DRIVE_KEY")
 
 FILE_UPLOAD_LIMIT = 100_000_000
 
 SECURED_FIELDS_KEY = os.getenv("SECURED_FIELDS_KEY")
 SECURED_FIELDS_HASH_SALT = os.getenv("SECURED_FIELDS_HASH_SALT")
-AI_PROVIDER = os.getenv("AI_PROVIDER", "openai")
-if AI_PROVIDER == "ollama":
-    from apps.ai.clients.ollama import OllamaClient
-    AI_CLIENT = OllamaClient()
+
+# Celery — broker/backend were previously unset entirely; config/celery.py
+# (the module compose/*/django/celery/*/start actually invokes) reads
+# these via app.config_from_object("django.conf:settings", namespace="CELERY").
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
