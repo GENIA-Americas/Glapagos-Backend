@@ -6,6 +6,7 @@ Single source of truth — providers.py and any other module imports from here.
 Uses requests with explicit timeouts. Streams disabled for simplicity;
 enable streaming only via Celery tasks, not inside the request cycle.
 """
+
 from __future__ import annotations
 
 import logging

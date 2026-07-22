@@ -13,6 +13,7 @@ Adding a new provider:
   2. Register it in _PROVIDER_REGISTRY.
   3. Set AI_PROVIDER=<key> in the environment.
 """
+
 from __future__ import annotations
 
 import logging
@@ -71,12 +72,15 @@ class AnthropicProvider:
         # deploying — model strings change and I am not fully certain this
         # is current. Safer to always pass model= explicitly at the call
         # site rather than rely on this default.
-        message = self._client.messages.create(
-            model=kwargs.get("model", "claude-sonnet-5"),
-            max_tokens=kwargs.get("max_tokens", 1024),
-            system=system or anthropic.NOT_GIVEN,
-            messages=[{"role": "user", "content": prompt}],
-        )
+        create_kwargs = {
+            "model": kwargs.get("model", "claude-sonnet-5"),
+            "max_tokens": kwargs.get("max_tokens", 1024),
+            "messages": [{"role": "user", "content": prompt}],
+        }
+        if system:
+            create_kwargs["system"] = system
+
+        message = self._client.messages.create(**create_kwargs)
         return "".join(block.text for block in message.content if block.type == "text")
 
 

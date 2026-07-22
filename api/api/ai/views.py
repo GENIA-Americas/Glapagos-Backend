@@ -7,6 +7,7 @@ It creates an Event, dispatches the Celery task, and returns the
 job_id immediately (HTTP 202). The client tracks progress via WebSocket
 or polls /api/v1/events/<id>/.
 """
+
 from __future__ import annotations
 
 import uuid
@@ -33,10 +34,7 @@ class AiViewset(viewsets.ViewSet):
 
         msg: str = serializer.validated_data["msg"]
         table = serializer.validated_data["table"]
-        context = (
-            f"table_id = {table.path}\n"
-            f"bigquery table_schema = {table.schema}"
-        )
+        context = f"table_id = {table.path}\n" f"bigquery table_schema = {table.schema}"
 
         event_id = str(uuid.uuid4())
 

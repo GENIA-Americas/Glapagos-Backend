@@ -2,6 +2,7 @@
 Canonical Ollama client for apps.ai.clients.
 api/apps/ai/clients/ollama_client.py
 """
+
 from __future__ import annotations
 
 import json
@@ -98,8 +99,7 @@ class OllamaClient:
             response.raise_for_status()
             models = [m["name"] for m in response.json().get("models", [])]
             model_available = any(
-                m == self.model or m.startswith(f"{self.model}:")
-                for m in models
+                m == self.model or m.startswith(f"{self.model}:") for m in models
             )
             return {
                 "status": "ok",
