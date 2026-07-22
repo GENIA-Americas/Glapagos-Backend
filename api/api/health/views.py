@@ -14,6 +14,7 @@ Response schema:
     }
   }
 """
+
 from __future__ import annotations
 
 import time
@@ -73,6 +74,7 @@ def _check_redis() -> dict:
 def _check_celery() -> dict:
     try:
         from celery import current_app
+
         inspector = current_app.control.inspect(timeout=2)
         stats = inspector.stats() or {}
         workers = len(stats)
@@ -104,5 +106,7 @@ class HealthView(APIView):
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "services": services,
             },
-            status=status.HTTP_200_OK if all_ok else status.HTTP_503_SERVICE_UNAVAILABLE,
+            status=(
+                status.HTTP_200_OK if all_ok else status.HTTP_503_SERVICE_UNAVAILABLE
+            ),
         )

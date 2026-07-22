@@ -16,7 +16,11 @@ class HealthCheckTestCase(APITestCase):
     def _mock_all(self, db="ok", redis="ok", celery="ok"):
         db_result = {"status": db, "latency_ms": 1.0, "error": None}
         redis_result = {"status": redis, "latency_ms": 0.5, "error": None}
-        celery_result = {"status": celery, "workers": 1 if celery == "ok" else 0, "error": None}
+        celery_result = {
+            "status": celery,
+            "workers": 1 if celery == "ok" else 0,
+            "error": None,
+        }
         return (
             patch("api.health.views._check_database", return_value=db_result),
             patch("api.health.views._check_redis", return_value=redis_result),
@@ -88,7 +92,10 @@ class RedisHealthCheckUnitTestCase(APITestCase):
 
     def test_url_string_host_ping_succeeds_returns_ok(self):
         from api.health.views import _check_redis
-        with patch("api.health.views.settings") as mock_settings,              patch("api.health.views.redis") as mock_redis:
+
+        with patch("api.health.views.settings") as mock_settings, patch(
+            "api.health.views.redis"
+        ) as mock_redis:
             mock_settings.CHANNEL_LAYERS = {
                 "default": {"CONFIG": {"hosts": ["redis://localhost:6379"]}}
             }
@@ -98,7 +105,10 @@ class RedisHealthCheckUnitTestCase(APITestCase):
 
     def test_tuple_host_ping_succeeds_returns_ok(self):
         from api.health.views import _check_redis
-        with patch("api.health.views.settings") as mock_settings,              patch("api.health.views.redis") as mock_redis:
+
+        with patch("api.health.views.settings") as mock_settings, patch(
+            "api.health.views.redis"
+        ) as mock_redis:
             mock_settings.CHANNEL_LAYERS = {
                 "default": {"CONFIG": {"hosts": [("redis-host", 6379)]}}
             }
@@ -108,7 +118,10 @@ class RedisHealthCheckUnitTestCase(APITestCase):
 
     def test_ping_raises_exception_returns_error(self):
         from api.health.views import _check_redis
-        with patch("api.health.views.settings") as mock_settings,              patch("api.health.views.redis") as mock_redis:
+
+        with patch("api.health.views.settings") as mock_settings, patch(
+            "api.health.views.redis"
+        ) as mock_redis:
             mock_settings.CHANNEL_LAYERS = {
                 "default": {"CONFIG": {"hosts": ["redis://localhost:6379"]}}
             }

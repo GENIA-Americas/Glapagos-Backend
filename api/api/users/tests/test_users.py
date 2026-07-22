@@ -96,7 +96,6 @@ class UserTestHelper(DefaultTestHelper):
         return client.post(cls.refresh_path, data, format="json")
 
 
-
 class AdminUserPostApiTestCase(APITestCase):
 
     def setUp(self):
@@ -115,14 +114,20 @@ class AdminUserPostApiTestCase(APITestCase):
         mock_key.private_key_data = b"private-key"
         mock_key.private_key_type = "TYPE_GOOGLE_CREDENTIALS_FILE"
         from django.utils.timezone import now
+
         mock_key.valid_after_time = now()
         mock_key.valid_before_time = now()
         mock_key.key_algorithm = "KEY_ALG_RSA_2048"
         mock_key.key_origin = "GOOGLE_PROVIDED"
         mock_key.key_type = "USER_MANAGED"
 
-        p1 = patch("api.users.signals.GoogleServiceAccount.create_account", return_value=mock_account)
-        p2 = patch("api.users.signals.GoogleServiceAccount.create_key", return_value=mock_key)
+        p1 = patch(
+            "api.users.signals.GoogleServiceAccount.create_account",
+            return_value=mock_account,
+        )
+        p2 = patch(
+            "api.users.signals.GoogleServiceAccount.create_key", return_value=mock_key
+        )
         p3 = patch("api.users.signals.GoogleRole.assign_user_rol")
         p4 = patch("api.users.signals.GoogleRole.assign_dataset_role")
         p5 = patch("api.users.signals.BigQueryService")
@@ -131,9 +136,9 @@ class AdminUserPostApiTestCase(APITestCase):
             p.start()
             self.addCleanup(p.stop)
 
-
     def test_endpoint_responses_code(self):
         from rest_framework_simplejwt.tokens import RefreshToken
+
         user_data = UserTestHelper.get_sample_data("john_doe")
         user = UserTestHelper.force_create(self.client, data=user_data)
         # Use SimpleJWT directly — avoids Auth0 middleware in tests

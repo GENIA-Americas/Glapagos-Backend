@@ -11,6 +11,7 @@ Retry policy:
   - Hard time limit: 5 minutes per task.
   - Soft limit warning at 4 minutes.
 """
+
 from __future__ import annotations
 
 import logging
@@ -51,6 +52,8 @@ def run_chat(self, msg: str, context: str, event_id: str) -> dict:
         EventService.mark_complete(event_id, payload=result.__dict__)
         return result.__dict__
     except Exception as exc:
-        logger.exception("run_chat failed (attempt %d): %s", self.request.retries + 1, exc)
+        logger.exception(
+            "run_chat failed (attempt %d): %s", self.request.retries + 1, exc
+        )
         EventService.mark_failed(event_id, reason=str(exc))
-        raise self.retry(exc=exc, countdown=_RETRY_BACKOFF * (2 ** self.request.retries))
+        raise self.retry(exc=exc, countdown=_RETRY_BACKOFF * (2**self.request.retries))

@@ -89,7 +89,15 @@ google-api-python-client==2.198.0
 python-magic==0.4.27
 
 # Dataframes
-pandas==3.0.3
+# NOTE: pinned to 2.3.3, not the latest 3.x line, because the production
+# Docker image (compose/production/django/Dockerfile, Alpine 3.16) ships
+# Python 3.10, and pandas>=3.0.0 requires Python>=3.11. This was missed
+# in the original dependency upgrade because it was verified against
+# Python 3.11 (CI) and 3.13 (local dev), neither of which matches the
+# actual Docker image's Python version. Confirmed a prebuilt
+# musllinux_1_2_x86_64 wheel exists for cp310, so this won't fall back
+# to a slow source build in Alpine.
+pandas==2.3.3
 
 # Notebooks
 google-cloud-notebooks==1.17.0

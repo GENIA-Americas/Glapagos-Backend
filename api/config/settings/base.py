@@ -3,6 +3,7 @@
 import os
 from datetime import timedelta
 import environ
+
 env = environ.Env()
 ROOT_DIR = environ.Path(__file__) - 4
 environ.Env.read_env(os.path.join(ROOT_DIR, ".env"))
@@ -251,7 +252,6 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_COOKIE_HTTP_ONLY": True,
     # Whether to set the flag restricting cookie leaks on cross-site requests.
     "REFRESH_TOKEN_COOKIE_SAMESITE": "Lax",
-    
 }
 # external token format
 AUTHENTICATION_EXTERNAL_MESSAGE_PROVIDERS = [

@@ -8,6 +8,7 @@ missing entirely before this change, which meant `celery -A
 config.celery_app ...` had nothing to import — the worker and beat
 containers could not have started.
 """
+
 import os
 
 from celery import Celery
