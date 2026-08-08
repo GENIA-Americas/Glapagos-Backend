@@ -103,3 +103,4 @@ pandas==2.3.3
 google-cloud-notebooks==1.17.0
 
 setuptools==83.0.0
+dj-database-url==2.3.0
