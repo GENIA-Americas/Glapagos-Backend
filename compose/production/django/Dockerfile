@@ -52,6 +52,7 @@ COPY ./compose/production/django/wait_for_postgres.py /wait_for_postgres.py
 RUN chmod +x /wait_for_postgres.py
 
 ARG CACHEBUST=1786294043
+RUN echo "Cache bust: $CACHEBUST"
 COPY ./compose/production/django/start /start
 RUN chmod +x /start
 
