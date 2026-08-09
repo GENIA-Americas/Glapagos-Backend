@@ -5,7 +5,7 @@
     "dockerfilePath": "compose/production/django/Dockerfile"
   },
   "deploy": {
-    "startCommand": "echo BEFORE_MIGRATE && python manage.py migrate && echo BEFORE_GUNICORN && gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --log-level debug --access-logfile - --error-logfile -",
+    "startCommand": "python -c \"import psycopg2, os, sys; print('CONNECTING...'); sys.stdout.flush(); c = psycopg2.connect(os.environ['DATABASE_URL'], connect_timeout=5); print('DB_CONNECT_OK')\" && echo BEFORE_MIGRATE && python manage.py migrate && echo BEFORE_GUNICORN && gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120",
     "healthcheckPath": "/api/v1/health/",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
