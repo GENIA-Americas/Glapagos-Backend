@@ -51,7 +51,7 @@ RUN echo "*/30 * * * * /usr/local/bin/remove_notebooks.sh >> /proc/1/fd/1 2>&1" 
 COPY ./compose/production/django/wait_for_postgres.py /wait_for_postgres.py
 RUN chmod +x /wait_for_postgres.py
 
-ARG CACHEBUST=1
+ARG CACHEBUST=1786294043
 COPY ./compose/production/django/start /start
 RUN chmod +x /start
 
