@@ -5,7 +5,7 @@
     "dockerfilePath": "compose/production/django/Dockerfile"
   },
   "deploy": {
-    "startCommand": "pg_isready -d $DATABASE_URL -t 5 && echo BEFORE_MIGRATE && python manage.py migrate && echo BEFORE_GUNICORN && gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120",
+    "startCommand": "python manage.py migrate && echo AFTER_MIGRATE && gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120",
     "healthcheckPath": "/api/v1/health/",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
