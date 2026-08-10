@@ -5,7 +5,7 @@
     "dockerfilePath": "compose/production/django/Dockerfile"
   },
   "deploy": {
-    "startCommand": "python manage.py migrate; echo MIGRATE_EXIT_CODE_$?; gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120",
+    "startCommand": "gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120",
     "healthcheckPath": "/api/v1/health/",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
