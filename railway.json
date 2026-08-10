@@ -5,7 +5,7 @@
     "dockerfilePath": "compose/production/django/Dockerfile"
   },
   "deploy": {
-    "startCommand": "sh -c \"gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120\"",
+    "startCommand": "sh -c \"echo $GOOGLE_CREDENTIALS_JSON_B64 | base64 -d > /tmp/gcp-key.json && gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120\"",
     "healthcheckPath": "/admin/login/",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
