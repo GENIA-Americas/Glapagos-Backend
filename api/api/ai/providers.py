@@ -110,7 +110,7 @@ class GroqProvider:
         messages.append({"role": "user", "content": prompt})
 
         completion = self._client.chat.completions.create(
-            model=kwargs.get("model", "llama-3.3-70b-versatile"),
+            model=kwargs.get("model", "openai/gpt-oss-120b"),
             messages=messages,
         )
         return completion.choices[0].message.content or ""
