@@ -5,9 +5,7 @@
     "dockerfilePath": "compose/production/django/Dockerfile"
   },
   "deploy": {
-    "startCommand": "sh -c \"if [ ${RUN_AS_WORKER:-false} = true ]; then celery -A config.celery_app worker -l INFO --concurrency=2; else echo $GOOGLE_CREDENTIALS_JSON_B64 | base64 -d > /tmp/gcp-key.json && gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120; fi\"",
-    "healthcheckPath": "/admin/login/",
-    "healthcheckTimeout": 120,
+    "startCommand": "sh -c \"if [ ${RUN_AS_WORKER:-false} = true ]; then celery -A config.celery_app worker -l INFO --concurrency=1; else echo $GOOGLE_CREDENTIALS_JSON_B64 | base64 -d > /tmp/gcp-key.json && gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120; fi\"",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }
