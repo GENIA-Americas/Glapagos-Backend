@@ -1,23 +1,23 @@
 """
-AI ViewSet — async-first design.
+AI ViewSet — synchronous for now.
 api/api/ai/views.py
 
-The chat endpoint no longer blocks on inference.
-It creates an Event, dispatches the Celery task, and returns the
-job_id immediately (HTTP 202). The client tracks progress via WebSocket
-or polls /api/v1/events/<id>/.
+NOTE: This was originally designed as async (Celery + Events polling),
+but the Event model/EventService job-status tracking was never finished
+(no status/payload fields, no detail route, no AI event type). Reverted
+to a synchronous response until that's built out properly. See
+production readiness doc for details.
 """
 
 from __future__ import annotations
-
-import uuid
 
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from api.ai.exceptions import UnrelatedTopicException
 from api.ai.serializers import ChatSerializer
-from api.ai.tasks import run_chat
+from api.ai.services import ChatAssistant
 
 
 class AiViewset(viewsets.ViewSet):
@@ -36,11 +36,12 @@ class AiViewset(viewsets.ViewSet):
         table = serializer.validated_data["table"]
         context = f"table_id = {table.path}\n" f"bigquery table_schema = {table.schema}"
 
-        event_id = str(uuid.uuid4())
-
-        run_chat.delay(msg=msg, context=context, event_id=event_id)
+        try:
+            result = ChatAssistant.chat(msg, context)
+        except UnrelatedTopicException as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
-            {"job_id": event_id, "status": "queued"},
-            status=status.HTTP_202_ACCEPTED,
+            {"status": "complete", "explanation": result.explanation, "query": result.query},
+            status=status.HTTP_200_OK,
         )
