@@ -51,12 +51,7 @@ def _check_database() -> dict:
 def _check_redis() -> dict:
     t0 = time.monotonic()
     try:
-        hosts = settings.CHANNEL_LAYERS["default"]["CONFIG"]["hosts"]
-        host = hosts[0]
-        if isinstance(host, str):
-            client = redis.from_url(host)
-        else:
-            client = redis.Redis(host=host[0], port=host[1])
+        client = redis.from_url(settings.CELERY_BROKER_URL)
         client.ping()
         return {
             "status": "ok",
