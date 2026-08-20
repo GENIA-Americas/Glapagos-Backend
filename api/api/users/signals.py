@@ -5,7 +5,11 @@ from django.db.models.signals import post_save
 
 # Django
 from django.dispatch import receiver
+import logging
 
+from django.conf import settings
+
+logger = logging.getLogger(__name__)
 # Models
 from api.datasets.models import ServiceAccount, ServiceAccountKey
 from api.users.models import User
@@ -69,3 +73,36 @@ def create_service_account(sender, instance, created, **kwargs):
             account_instance.save()
         except Exception as exp:
             raise DatasetCreateException(error=str(exp))
+            account_instance = ServiceAccount(
+                name=account.name,
+                project_id=account.project_id,
+                unique_id=account.unique_id,
+                email=account.email,
+                etag=account.etag,
+                oauth2_client_id=account.oauth2_client_id,
+                key=key_instance,
+                owner=instance,
+                dataset_name=dataset_name,
+            )
+            account_instance.save()
+        except Exception as exp:
+            raise DatasetCreateException(error=str(exp))
+
+        # Grant access to the shared public dataset so this user can
+        # upload public datasets. Fail-open: a failure here shouldn't
+        # block account creation, since private-dataset access already
+        # works without it.
+        if settings.BQ_DATASET_ID:
+            try:
+                GoogleRole.assign_dataset_role(
+                    dataset_name=settings.BQ_DATASET_ID,
+                    account_email=account.email,
+                    role="WRITER",
+                )
+            except Exception as exp:
+                logger.warning(
+                    "Failed to grant %s access to public dataset %s: %s",
+                    account.email,
+                    settings.BQ_DATASET_ID,
+                    exp,
+                )
