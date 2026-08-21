@@ -190,7 +190,7 @@ EMAIL_BACKEND = env(
 
 SENDGRID_API_KEY = env("SENDGRID_API_KEY")
 SENDGRID_SENDER = env("SENDGRID_SENDER")
-
+APP_NAME = os.getenv("APP_NAME", "Glapagos")
 # Admin
 ADMIN_URL = "admin/"
 CMS_ADMIN_URL = "cms-admin/"
