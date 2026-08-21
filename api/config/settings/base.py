@@ -191,6 +191,15 @@ EMAIL_BACKEND = env(
 SENDGRID_API_KEY = env("SENDGRID_API_KEY")
 SENDGRID_SENDER = env("SENDGRID_SENDER")
 APP_NAME = os.getenv("APP_NAME", "Glapagos")
+SITE_SCHEME = os.getenv("SITE_SCHEME", "https")
+SITE_DOMAIN = os.getenv("SITE_DOMAIN", "glapagos-backend-production.up.railway.app")
+
+# NOTE: this should point at the actual production frontend once one exists
+# beyond the Wix demo page — verify this before real users start signing up.
+FRONTEND_LOGIN_URL = os.getenv("FRONTEND_LOGIN_URL", "https://www.glapagos.com/live")
+FRONTEND_RECOVER_URL = os.getenv("FRONTEND_RECOVER_URL", "https://www.glapagos.com/live")
+
+SMS_PROVIDER = os.getenv("SMS_PROVIDER", "twilio")
 # Admin
 ADMIN_URL = "admin/"
 CMS_ADMIN_URL = "cms-admin/"
@@ -294,7 +303,7 @@ AUTHENTICATION_EXTERNAL_TOKEN_TITLE_FORMATS = {
     for provider in AUTHENTICATION_EXTERNAL_MESSAGE_PROVIDERS
     if provider["has_title"]
 }
-
+AUTHENTICATION_EXTERNAL_TOKEN_FORMATS = AUTHENTICATION_EXTERNAL_TOKEN_MESSAGE_FORMATS
 # external token times
 AUTHENTICATION_EXTERNAL_TOKEN_RESEND = {
     "validate_account": timedelta(
