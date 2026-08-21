@@ -1,12 +1,20 @@
 """
-AI ViewSet — synchronous for now.
+AI ViewSet — synchronous by design.
 api/api/ai/views.py
 
-NOTE: This was originally designed as async (Celery + Events polling),
-but the Event model/EventService job-status tracking was never finished
-(no status/payload fields, no detail route, no AI event type). Reverted
-to a synchronous response until that's built out properly. See
-production readiness doc for details.
+DECISION (2026-08-21): this was originally scaffolded as async
+(Celery + Events polling), but that job-status system was never
+finished (no status/payload fields on Event, no EventService
+mark_complete/mark_failed, no detail route, no AI event type).
+
+Rather than build that out under time pressure, we've formally
+committed to a synchronous response for now. This is a considered
+tradeoff, not a stopgap: revisit if/when request volume or LLM latency
+makes blocking a gunicorn worker per chat request a real problem.
+
+The Celery worker (remarkable-endurance) currently has nothing
+dispatched to it as a result — see production readiness doc for the
+cost/keep-idle decision.
 """
 
 from __future__ import annotations
