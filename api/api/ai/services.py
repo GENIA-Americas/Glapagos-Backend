@@ -1,4 +1,5 @@
 import json
+import re
 from pydantic import BaseModel
 from django.utils.translation import gettext_lazy as _
 from .exceptions import UnrelatedTopicException
@@ -20,29 +21,26 @@ class ChatAssistant:
         )
         provider = get_provider()
         raw = provider.complete(msg, system=system_prompt + "\n\nContext: " + context)
+
         try:
-    cleaned = raw.strip()
-    if cleaned.startswith("```"):
-        cleaned = cleaned.split("\n", 1)[-1]
-    if cleaned.endswith("```"):
-        cleaned = cleaned.rsplit("```", 1)[0]
+            cleaned = raw.strip()
+            if cleaned.startswith("```"):
+                cleaned = cleaned.split("\n", 1)[-1]
+            if cleaned.endswith("```"):
+                cleaned = cleaned.rsplit("```", 1)[0]
 
-    import json as _json
-    import re
+            try:
+                data = json.loads(cleaned.strip())
+            except json.JSONDecodeError:
+                # Model wrapped the JSON in extra text/reasoning — extract the
+                # first {...} block instead of failing outright.
+                match = re.search(r"\{.*\}", cleaned, re.DOTALL)
+                if not match:
+                    raise
+                data = json.loads(match.group(0))
 
-    try:
-        data = _json.loads(cleaned.strip())
-    except _json.JSONDecodeError:
-        # Model wrapped the JSON in extra text/reasoning — extract the
-        # first {...} block instead of failing outright.
-        match = re.search(r"\{.*\}", cleaned, re.DOTALL)
-        if not match:
-            raise
-        data = _json.loads(match.group(0))
+            res = QueryResponse(**data)
+        except Exception:
+            raise UnrelatedTopicException(error=_("Error processing the request"))
 
-    res = QueryResponse(**data)
-except Exception:
-    raise UnrelatedTopicException(error=_("Error processing the request"))
-        if res.query:
-            return res
-        raise UnrelatedTopicException(error=_("Error processing the request"))
+        return res
