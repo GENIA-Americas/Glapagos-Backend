@@ -1,4 +1,16 @@
+import logging
 from enum import Enum
+
+from api.utils.sendgrid_mail import (
+    send_change_password_mail,
+    send_activate_account_mail,
+)
+from api.users.enums import SetUpStatus, PasswordStatus
+from api.users.models import User
+from api.authentication.enums import ExternalTokenType
+from api.authentication.models import ExternalToken
+
+logger = logging.getLogger(__name__)from enum import Enum
 
 from api.utils.sendgrid_mail import (
     send_change_password_mail,
@@ -29,20 +41,24 @@ def destroy_token_by(
 
 
 def create_token(
-    user_id, channel, token_type=ExternalTokenType.VALIDATE_ACCOUNT, locale: str = "en"
-):
-
-    token = ExternalToken.objects.create(
-        type=token_type, user_id=user_id, channel=channel
-    )
-
+    # Email sending is best-effort: don't block account creation if the
+    # mail provider is unavailable (e.g. SendGrid trial expired). The
+    # activation URL is still printed via the CONSOLE channel below, so
+    # accounts remain usable — this just means the automated email isn't
+    # sent until email delivery is properly configured/paid for.
     if token.type == ExternalTokenType.RECOVER_ACCOUNT:
         data = dict(email=token.user.email, url=token.reset_password_url)
-        send_change_password_mail(data, [token.user.email], locale=locale)
+        try:
+            send_change_password_mail(data, [token.user.email], locale=locale)
+        except Exception as exc:
+            logger.warning("Failed to send password-reset email: %s", exc)
 
     elif token.type == ExternalTokenType.VALIDATE_ACCOUNT:
         data = dict(url=token.activation_url)
-        send_activate_account_mail(data, [token.user.email], locale=locale)
+        try:
+            send_activate_account_mail(data, [token.user.email], locale=locale)
+        except Exception as exc:
+            logger.warning("Failed to send activation email: %s", exc)
 
     return token.resend_at, token.expires_at
 
