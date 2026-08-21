@@ -10,16 +10,7 @@ from api.users.models import User
 from api.authentication.enums import ExternalTokenType
 from api.authentication.models import ExternalToken
 
-logger = logging.getLogger(__name__)from enum import Enum
-
-from api.utils.sendgrid_mail import (
-    send_change_password_mail,
-    send_activate_account_mail,
-)
-from api.users.enums import SetUpStatus, PasswordStatus
-from api.users.models import User
-from api.authentication.enums import ExternalTokenType
-from api.authentication.models import ExternalToken
+logger = logging.getLogger(__name__)
 
 # class SetUpStatus(Enum):
 #     SIGN_UP_VALIDATION = 0
@@ -41,6 +32,13 @@ def destroy_token_by(
 
 
 def create_token(
+    user_id, channel, token_type=ExternalTokenType.VALIDATE_ACCOUNT, locale: str = "en"
+):
+
+    token = ExternalToken.objects.create(
+        type=token_type, user_id=user_id, channel=channel
+    )
+
     # Email sending is best-effort: don't block account creation if the
     # mail provider is unavailable (e.g. SendGrid trial expired). The
     # activation URL is still printed via the CONSOLE channel below, so
