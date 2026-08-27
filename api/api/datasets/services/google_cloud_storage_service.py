@@ -13,18 +13,12 @@ from api.datasets.exceptions import (
 class GCSService:
 
     @classmethod
-    def upload_file(cls, file, filename: str) -> str:
-        """Upload file to Google Cloud Storage."""
-        try:
-            client = storage.Client()
-            bucket_name = settings.GCS_BUCKET
-            bucket = client.get_bucket(bucket_name)
-            blob = bucket.blob(filename)
-            blob.upload_from_file(file, content_type=file.content_type)
-            file.seek(0)
-            return blob.public_url
-        except Exception as exp:
-            raise UploadFailedException(error=str(exp))
+    def upload_file(self, file, filename, public=False):
+    blob = self.bucket.blob(filename)
+    blob.upload_from_file(file, content_type=file.content_type)
+    if public:
+        blob.make_public()
+    return blob.public_url
 
     @staticmethod
     def create_folder(bucket_name: str, folder_name: str) -> None:
