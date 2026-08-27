@@ -99,7 +99,7 @@ class StructuredFileService(FileService):
 
 class TXTFileService(FileService):
     def process_file(self):
-        file_url = GCSService.upload_file(self.file, self.filename)
+        file_url = GCSService.upload_file(self.file, self.filename, public=self.public)
         return file_url
 
 
@@ -113,7 +113,7 @@ class CSVFileService(StructuredFileService):
         return prepare_csv_data_format(data=data, skip_leading_rows=skip_leading_rows)
 
     def process_file(self):
-        file_url = GCSService.upload_file(self.file, self.filename)
+        file_url = GCSService.upload_file(self.file, self.filename, public=self.public)
         file_obj = self.create_file_object(file_url)
         table_obj = self.create_table_obj(file_obj)
         sample = self.file.read(4096).decode("utf-8")
@@ -139,7 +139,7 @@ class JSONFileService(StructuredFileService):
 
     def process_file(self):
         upload_service = JSONGCSService()
-        file_url = upload_service.upload_file(self.file, self.filename)
+        file_url = GCSService.upload_file(self.file, self.filename, public=self.public)
         file_obj = self.create_file_object(file_url)
         table_obj = self.create_table_obj(file_obj)
         big_query_service = BigQueryService(user=self.user)
