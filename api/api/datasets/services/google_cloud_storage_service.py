@@ -13,12 +13,20 @@ from api.datasets.exceptions import (
 class GCSService:
 
     @classmethod
-    def upload_file(self, file, filename, public=False):
-    blob = self.bucket.blob(filename)
-    blob.upload_from_file(file, content_type=file.content_type)
-    if public:
-        blob.make_public()
-    return blob.public_url
+    def upload_file(cls, file, filename: str, public: bool = False) -> str:
+        """Upload file to Google Cloud Storage."""
+        try:
+            client = storage.Client()
+            bucket_name = settings.GCS_BUCKET
+            bucket = client.get_bucket(bucket_name)
+            blob = bucket.blob(filename)
+            blob.upload_from_file(file, content_type=file.content_type)
+            file.seek(0)
+            if public:
+                blob.make_public()
+            return blob.public_url
+        except Exception as exp:
+            raise UploadFailedException(error=str(exp))
 
     @staticmethod
     def create_folder(bucket_name: str, folder_name: str) -> None:
@@ -79,10 +87,10 @@ class JSONGCSService(GCSService):
         file.name = file.name
 
     @classmethod
-    def upload_file(cls, file, filename: str) -> str:
+    def upload_file(cls, file, filename: str, public: bool = False) -> str:
         cls.convert_to_newline_delimited_json(file)
         file.seek(0)
-        return super(JSONGCSService, cls).upload_file(file, filename)
+        return super(JSONGCSService, cls).upload_file(file, filename, public)
 
 
 class GCSUploadFactory:
