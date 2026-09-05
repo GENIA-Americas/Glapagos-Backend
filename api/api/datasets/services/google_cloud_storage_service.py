@@ -14,16 +14,23 @@ class GCSService:
 
     @classmethod
     def upload_file(cls, file, filename: str, public: bool = False) -> str:
-        """Upload file to Google Cloud Storage."""
+        """Upload file to Google Cloud Storage.
+
+        Public files are stored under a public/ prefix. The bucket has
+        Uniform Bucket-Level Access enabled and permanently locked (Google
+        does not allow disabling it after 90 days), so per-object ACLs
+        (blob.make_public()) cannot be used. Public read access is instead
+        granted once, at the bucket level, to this specific prefix only,
+        via IAM condition — see the one-time gcloud command run for this.
+        """
         try:
             client = storage.Client()
             bucket_name = settings.GCS_BUCKET
             bucket = client.get_bucket(bucket_name)
-            blob = bucket.blob(filename)
+            blob_name = f"public/{filename}" if public else filename
+            blob = bucket.blob(blob_name)
             blob.upload_from_file(file, content_type=file.content_type)
             file.seek(0)
-            if public:
-                blob.make_public()
             return blob.public_url
         except Exception as exp:
             raise UploadFailedException(error=str(exp))
