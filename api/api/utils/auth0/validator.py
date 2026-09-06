@@ -23,6 +23,18 @@ class Auth0JWTBearerTokenAuthentication(TokenAuthentication):
     def get_jwks_client(cls) -> jwt.PyJWKClient:
         if not cls._jwks_client:
             domain = cls.get_setting("AUTH0_DOMAIN", "")
+            if not domain:
+                # Previously this fell through to f"https://{domain}/..." with
+                # domain=None, producing the literal URL "https://None/.well-known/
+                # jwks.json" and paying for a real (failing) DNS lookup on every
+                # single authenticated request. Fail immediately instead — this
+                # raises PyJWKClientError, a PyJWTError subclass, so it's still
+                # caught by DoubleAuthentication.authenticate()'s existing
+                # except clause and falls through to CookieOrHeaderAuthentication
+                # exactly as before, just without the wasted network round trip.
+                raise jwt.exceptions.PyJWKClientError(
+                    "AUTH0_DOMAIN is not configured; skipping Auth0 JWT authentication."
+                )
             issuer = f"https://{domain}/"
             jsonurl = f"{issuer}.well-known/jwks.json"
             cls._jwks_client = jwt.PyJWKClient(jsonurl)
