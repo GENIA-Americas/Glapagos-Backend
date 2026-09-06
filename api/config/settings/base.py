@@ -1,4 +1,4 @@
-"""Base settings to build other settings files upon."""
+""Base settings to build other settings files upon.
 
 import os
 from datetime import timedelta
@@ -360,6 +360,7 @@ TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_FROM_PHONE_NUMBER = os.getenv("TWILIO_FROM_PHONE_NUMBER")
 
 GCS_BUCKET = os.getenv("GCS_BUCKET")
+GCS_PUBLIC_BUCKET = os.getenv("GCS_PUBLIC_BUCKET")
 GCS_NOTEBOOK_BUCKET = os.getenv("GCS_NOTEBOOK_BUCKET")
 BQ_PROJECT_ID = os.getenv("BQ_PROJECT_ID")
 BQ_DATASET_ID = os.getenv("BQ_DATASET_ID")
