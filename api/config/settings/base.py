@@ -1,4 +1,4 @@
-""Base settings to build other settings files upon.
+"""Base settings to build other settings files upon."""
 
 import os
 from datetime import timedelta
