@@ -50,6 +50,10 @@ class AiViewset(viewsets.ViewSet):
             return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
-            {"status": "complete", "explanation": result.explanation, "query": result.query},
+            {
+                "status": "complete",
+                "explanation": result.explanation,
+                "query": result.query,
+            },
             status=status.HTTP_200_OK,
         )
