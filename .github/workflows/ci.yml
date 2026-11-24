@@ -23,7 +23,7 @@ jobs:
 
       - name: Lint
         run: |
-          pip install black flake8
+          pip install black==26.10.1 flake8==7.3.0
           black --check api/
           flake8 api/
 
