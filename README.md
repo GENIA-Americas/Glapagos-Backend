@@ -6,19 +6,23 @@ A modular, extensible Django backend for AI-enabled applications on the Glápago
 
 ---
 
-## Live API
+## Hosted instance
 
-| Endpoint | URL | Auth |
+A deployment of this backend has run at `https://glapagos-backend.onrender.com`. Availability is not tracked in this repository, so check the hosting dashboard for current status.
+
+| Endpoint | Path | Notes |
 |---|---|---|
-| Health | [/health/](https://glapagos-backend.onrender.com/health/) | ![Live](https://img.shields.io/badge/API-Live-brightgreen) |
-| Organizations | [/api/v1/organizations/](https://glapagos-backend.onrender.com/api/v1/organizations/) | Required |
-| Workspaces | [/api/v1/workspaces/](https://glapagos-backend.onrender.com/api/v1/workspaces/) | Required |
+| Health | `/api/v1/health/` | Checks database, Redis, and Celery worker connectivity |
+| Organizations | `/api/v1/organizations/` | Authentication required |
+| Workspaces | `/api/v1/workspaces/` | Authentication required |
+
+The full list of endpoints is in [docs/api.md](docs/api.md).
 
 ---
 
 ## What's Included
 
-- Production-ready Django architecture
+- Django project structure with Docker, Celery, and CI
 - Dockerized deployment templates
 - API scaffolding
 - Background jobs via Celery + Redis
