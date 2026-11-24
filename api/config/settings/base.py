@@ -197,7 +197,9 @@ SITE_DOMAIN = os.getenv("SITE_DOMAIN", "glapagos-backend-production.up.railway.a
 # NOTE: this should point at the actual production frontend once one exists
 # beyond the Wix demo page — verify this before real users start signing up.
 FRONTEND_LOGIN_URL = os.getenv("FRONTEND_LOGIN_URL", "https://www.glapagos.com/live")
-FRONTEND_RECOVER_URL = os.getenv("FRONTEND_RECOVER_URL", "https://www.glapagos.com/live")
+FRONTEND_RECOVER_URL = os.getenv(
+    "FRONTEND_RECOVER_URL", "https://www.glapagos.com/live"
+)
 
 SMS_PROVIDER = os.getenv("SMS_PROVIDER", "twilio")
 # Admin
