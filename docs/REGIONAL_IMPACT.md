@@ -40,7 +40,7 @@ in Chile needs to comply with local banking regulations. A platform built for
 the EU does not map to the reality of a government agency in Peru.
 
 Glapagos is the only AI DevOps platform built specifically for multi-jurisdiction
-compliance across the Western Hemisphere. It is deployed across 12+ regions
+compliance across the Western Hemisphere. It is active in 12+ regions (figure not independently published; some engagements are confidential)
 and is designed to accommodate the regulatory realities of each.
 
 **What this means in practice:** A health network operating across multiple

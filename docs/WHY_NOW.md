@@ -61,7 +61,7 @@ This is the gap Glapagos closes.
 | Cross-border data pipelines tuned for regional markets | ✗ | ✓ |
 | AI models contextualized for Latin American industries | ✗ | ✓ |
 | Open-source, digital sovereignty by design | ✗ | ✓ |
-| Deployed across 12+ regions in the hemisphere today | ✗ | ✓ |
+| Active in 12+ regions of the hemisphere (figure not independently published; some engagements are confidential) | ✗ | ✓ |
 
 Global platforms give you the engine. Glapagos gives you the road, the map, and the
 compliance framework to drive it across the hemisphere.
