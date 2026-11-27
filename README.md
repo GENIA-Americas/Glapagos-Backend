@@ -6,17 +6,21 @@ A modular, extensible Django backend for AI-enabled applications on the Glápago
 
 ---
 
-## Hosted instance
+## Hosted demo
 
-A deployment of this backend has run at `https://glapagos-backend.onrender.com`. Availability is not tracked in this repository, so check the hosting dashboard for current status.
+A demo of an earlier build of this backend runs at `https://glapagos-backend.onrender.com` on a free Render instance. It is not a production deployment:
 
-| Endpoint | Path | Notes |
+- The first request after a period of inactivity can take about a minute while the instance wakes.
+- The demo has no persistent database. It uses a temporary SQLite file, so data can reset when the service restarts.
+- The hosted build is older than `main`, so some paths differ.
+
+| Endpoint | Path on the hosted demo | Notes |
 |---|---|---|
-| Health | `/api/v1/health/` | Checks database, Redis, and Celery worker connectivity |
+| Health | `/health/` | `main` serves the health check at `/api/v1/health/` |
 | Organizations | `/api/v1/organizations/` | Authentication required |
 | Workspaces | `/api/v1/workspaces/` | Authentication required |
 
-The full list of endpoints is in [docs/api.md](docs/api.md).
+Availability is not tracked in this repository. The full list of endpoints for `main` is in [docs/api.md](docs/api.md).
 
 ---
 
